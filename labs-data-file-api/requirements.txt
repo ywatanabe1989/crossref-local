@@ -1,0 +1,6 @@
+rich
+django
+click
+requests
+crossrefapi
+gzinfo

@@ -1,0 +1,54 @@
+[project]
+
+# name: String, REQUIRED
+name = "dois2sqlite"
+
+version = "0.1"
+
+
+description = "A tools for loading Crossref snapshots or public data files into a SQLite database."
+
+readme = "README.md"
+
+requires-python = ">=3.11"
+
+license = {text = "MIT"}
+
+
+authors = [
+    { name = "Geoffrey Bilder", email = "gbilder@crossref.org" },
+    { name = "Crossref Labs", email = "labs@crossref.org" },
+]
+
+# urls: Table
+# Should describe where to find useful info for your project
+urls = { source = "https://gitlab.com/crossref/labs/dois2sqlite", documentation = "https://crossref.org", homepage = "https://gitlab.com/crossref/labs/dois2sqlite", issues = "https://gitlab.com/crossref/labs/dois2sqlite/issues", ci = "https://gitlab.com/crossref/labs/dois2sqlite/pipelines" }
+
+# dependencies: Array of Strings
+# A list of requirements for our package
+dependencies = [
+    "typer",
+    "commonmeta-py",
+    "joblib",
+    "fastapi",
+    "uvicorn",
+    
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "mypy",
+    "black",
+    "ruff",
+    "typer-cli",
+]
+doc = ["sphinx"]
+
+[tool.setuptools.packages.find]
+
+include = ["dois2sqlite"]
+
+# entry points
+[project.scripts]
+dois2sqlite = "dois2sqlite.cli:app"

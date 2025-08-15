@@ -1,0 +1,17 @@
+# Dataset Download
+**/*.log
+**/*.session
+**/*.torrent
+
+# Dataset
+**/*.jsonl.gz
+**/*.json.gz
+
+# Database
+**/*.db
+**/*.db-*
+
+# Python
+**/*.env
+**/*__pycache__
+**/*.egg-info
