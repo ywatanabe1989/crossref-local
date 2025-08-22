@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Timestamp: "2025-08-22 19:37:47 (ywatanabe)"
+# Timestamp: "2025-08-22 19:06:06 (ywatanabe)"
 # File: /mnt/nas_ug/crossref_local/labs-data-file-api/crossrefDataFile/api.py
 # ----------------------------------------
 from __future__ import annotations
@@ -70,6 +70,42 @@ def iterate_all(data_directory) -> (dict, str, int):
                             yield json_item, file, location
 
                             location = location + 1
+
+
+# def fetch_work(doi, gzip_file, location=None):
+#     """Fetch a work from a gzip file by DOI"""
+#     with gzip.open(gzip_file, "rt") as f_handle:
+#         contents = f_handle.read()
+#         json_contents = json.loads(contents)
+
+#         # if a location in the JSON file has been stored, return that
+#         if location:
+#             return json_contents["items"][location]
+
+#         # otherwise, crawl the JSON file for the DOI
+#         for json_item in json_contents["items"]:
+#             if json_item["DOI"] == doi:
+#                 return json_item
+
+#     return None
+
+
+# def fetch_work(doi):
+#     try:
+#         data_entry = DataIndexWithLocation.objects.get(doi=doi)
+#     except DataIndexWithLocation.DoesNotExist:
+#         return None
+
+#     data_directory = "../data/March 2025 Public Data File from Crossref"
+#     file_path = os.path.join(data_directory, data_entry.file_name)
+
+#     with gzip.open(file_path, "rt") as file_:
+#         file_.seek(data_entry.location)
+#         line = file_.readline().strip()
+#         if line:
+#             return json.loads(line)
+
+#     return None
 
 
 def fetch_work(doi):
@@ -170,94 +206,5 @@ def _log_error(log, message):
     """Log errors to the console (stderr)"""
     if log:
         log.error(message)
-
-
-def search_by_metadata(title=None, year=None, authors=None, limit=10):
-    from django.db import connection
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT doi FROM crossrefDataFile_dataindexwithlocation
-            LIMIT 5000
-        """
-        )
-
-        results = []
-        for row in cursor.fetchall():
-            work = fetch_work(row[0])
-            if not work:
-                continue
-
-            matches = True
-
-            if title and "title" in work:
-                title_match = any(
-                    title.lower() in work_title.lower()
-                    for work_title in work["title"]
-                )
-                matches = matches and title_match
-
-            if year:
-                year_match = False
-                if (
-                    "published-print" in work
-                    and "date-parts" in work["published-print"]
-                ):
-                    if work["published-print"]["date-parts"]:
-                        work_year = work["published-print"]["date-parts"][0][0]
-                        year_match = str(work_year) == str(year)
-                elif (
-                    "published-online" in work
-                    and "date-parts" in work["published-online"]
-                ):
-                    if work["published-online"]["date-parts"]:
-                        work_year = work["published-online"]["date-parts"][0][
-                            0
-                        ]
-                        year_match = str(work_year) == str(year)
-                elif "issued" in work and "date-parts" in work["issued"]:
-                    if work["issued"]["date-parts"]:
-                        work_year = work["issued"]["date-parts"][0][0]
-                        year_match = str(work_year) == str(year)
-                matches = matches and year_match
-
-            if authors and "author" in work:
-                authors_list = [
-                    auth.strip().lower() for auth in authors.split(",")
-                ]
-                author_match = any(
-                    any(
-                        auth_query
-                        in f"{author.get('given', '')} {author.get('family', '')}".lower()
-                        for author in work["author"]
-                    )
-                    for auth_query in authors_list
-                )
-                matches = matches and author_match
-
-            if matches:
-                result = {"doi": work["DOI"]}
-                if "title" in work and work["title"]:
-                    result["title"] = work["title"][0]
-                if (
-                    "published-print" in work
-                    and "date-parts" in work["published-print"]
-                ):
-                    if work["published-print"]["date-parts"]:
-                        result["year"] = work["published-print"]["date-parts"][
-                            0
-                        ][0]
-                if "author" in work:
-                    result["authors"] = [
-                        f"{author.get('given', '')} {author.get('family', '')}"
-                        for author in work["author"][:3]
-                    ]
-                results.append(result)
-
-                if len(results) >= limit:
-                    break
-
-        return results
 
 # EOF

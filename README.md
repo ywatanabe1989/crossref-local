@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2025-08-22 19:09:51
+!-- Timestamp: 2025-08-22 19:45:15
 !-- Author: ywatanabe
 !-- File: /mnt/nas_ug/crossref_local/README.md
 !-- --- -->
@@ -105,7 +105,15 @@ python3 manage.py runserver 0.0.0.0:3333
 
 # Usage:
 curl "http://127.0.0.1:3333/api/search/?doi=10.1001/.387"
-curl "http://127.0.0.1:3333/api/search/?title=medicine"
+# {"DOI": "10.1001/.387", "ISSN": ["0003-9926"], "URL": "https://doi.org/10.1001/.387", "container-title": ["Archives of Internal Medicine"], "content-domain": {"crossmark-restriction": false, "domain": []}, "created": {"date-parts": [[2006, 2, 27]], "date-time": "2006-02-27T21:28:23Z", "timestamp": 1141075703000}, "deposited": {"date-parts": [[2016, 4, 21]], "date-time": "2016-04-21T12:21:44Z", "timestamp": 1461241304000}, "indexed": {"date-parts": [[2024, 2, 29]], "date-time": "2024-02-29T21:30:11Z", "timestamp": 1709242211235}, "is-referenced-by-count": 0, "issn-type": [{"type": "print", "value": "0003-9926"}], "issue": "4", "issued": {"date-parts": [[2006, 2, 27]]}, "journal-issue": {"issue": "4", "published-print": {"date-parts": [[2006, 2, 27]]}}, "language": "en", "member": "10", "page": "387-387", "prefix": "10.1001", "published": {"date-parts": [[2006, 2, 27]]}, "published-print": {"date-parts": [[2006, 2, 27]]}, "publisher": "American Medical Association (AMA)", "reference-count": 0, "references-count": 0, "resource": {"primary": {"URL": "http://archinte.ama-assn.org/cgi/doi/10.1001/.387"}}, "score": 0.0, "short-container-title": ["Archives of Internal Medicine"], "source": "Crossref", "title": ["In This Issue of Archives of Internal Medicine"], "type": "journal-article", "volume": "166"}
+
+curl "http://127.0.0.1:3333/api/search/?title=deep%20learning&year=1979"
+# {"results": [{"doi": "10.1001/archderm.115.10.1169", "year": 1979}, {"doi": "10.1001/archderm.115.10.1171", "year": 1979}]}
+
+curl "http://127.0.0.1:3333/api/search/?authors=smith&year=2020"
+# {"results": [{"doi": "10.1001/amajethics.2020.10", "title": "How Should Clinicians Integrate Mental Health Into Epidemic Responses?"}, {"doi": "10.1001/amajethics.2020.1004", "title": "Should a Patient Who Is Pregnant and Brain Dead Receive Life Support, Despite Objection From Her Appointed Surrogate?"}, {"doi": "10.1001/amajethics.2020.1010", "title": "How Educators Can Help Prevent False Brain Death Diagnoses"}, {"doi": "10.1001/amajethics.2020.1019", "title": "Reexamining the Flawed Legal Basis of the \u201cDead Donor Rule\u201d as a Foundation for Organ Donation Policy"}, {"doi": "10.1001/amajethics.2020.102", "title": "Can International Patent Law Help Mitigate Cancer Inequity in LMICs?"}, {"doi": "10.1001/amajethics.2020.1025", "title": "AMA Code of Medical Ethics'  Opinions About End-of-Life Care and Death"}, {"doi": "10.1001/amajethics.2020.1027", "title": "Inconsistency in Brain Death Determination Should Not Be Tolerated"}, {"doi": "10.1001/amajethics.2020.1033", "title": "Guidance for Physicians Who Wish to Influence Policy Development on Determination of Death by Neurologic Criteria"}, {"doi": "10.1001/amajethics.2020.1038", "title": "What Should We Do About the Mismatch Between Legal Criteria for Death and How Brain Death Is Diagnosed?"}, {"doi": "10.1001/amajethics.2020.1047", "title": "What Does the Public Need to Know About Brain Death?"}]}
+curl "http://127.0.0.1:3333/api/search/?title=Archives&year=2006&authors=smith"
+# {"results": [{"doi": "10.1001/.387", "title": "In This Issue of Archives of Internal Medicine", "year": 2006}]}
 ```
 
 ## References
