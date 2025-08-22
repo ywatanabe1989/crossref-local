@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2025-08-15 10:21:06
+!-- Timestamp: 2025-08-22 19:09:51
 !-- Author: ywatanabe
 !-- File: /mnt/nas_ug/crossref_local/README.md
 !-- --- -->
@@ -84,15 +84,28 @@ dois2sqlite index /mnt/nas_ug/crossref_local/crossref.db
 ## Run as a Service
 
 ``` bash
+# ssh ugreen-nas
 git clone https://gitlab.com/crossref/labs/labs-data-file-api.git
 # Edit the dois2sqlite as in this repository
-cd /path/to/labs-data-file-api
+cd /path/to/labs-data-file-api # cd ~/crossref_local/labs-data-file-api/
 python3 -m venv .env && source .env/bin/activate && pip install -r requirements.txt
 ln -s ../data/crossref.db crossref.db
 python3 manage.py migrate
-python3 manage.py runserver
+
 python main.py index-all-with-location --data-directory "../data/March 2025 Public Data File from Crossref"
-curl http://127.0.0.1:8000/api/lookup/10.1000/182
+# sqlite3 crossref.db "SELECT COUNT(*) FROM crossrefDataFile_dataindexwithlocation;" # 167008748
+# sqlite3 crossref.db "SELECT doi FROM crossrefDataFile_dataindexwithlocation LIMIT 5;"
+# 10.1001/.387
+# 10.1001/.389
+# 10.1001/.391
+# 10.1001/.399
+# 10.1001/.404
+# (.env) ywatanabe@DXP480TPLUS-994:~/crossref_local/labs-data-file-api$ 
+python3 manage.py runserver 0.0.0.0:3333
+
+# Usage:
+curl "http://127.0.0.1:3333/api/search/?doi=10.1001/.387"
+curl "http://127.0.0.1:3333/api/search/?title=medicine"
 ```
 
 ## References

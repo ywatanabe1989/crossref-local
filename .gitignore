@@ -6,6 +6,7 @@
 # Dataset
 **/*.jsonl.gz
 **/*.json.gz
+**/*.json.tar
 
 # Database
 **/*.db

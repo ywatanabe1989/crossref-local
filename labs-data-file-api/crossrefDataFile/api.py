@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Timestamp: "2025-08-15 09:45:54 (ywatanabe)"
+# Timestamp: "2025-08-22 19:06:06 (ywatanabe)"
 # File: /mnt/nas_ug/crossref_local/labs-data-file-api/crossrefDataFile/api.py
 # ----------------------------------------
 from __future__ import annotations
 import os
 __FILE__ = (
-    "./crossrefDataFile/api.py"
+    "./labs-data-file-api/crossrefDataFile/api.py"
 )
 __DIR__ = os.path.dirname(__FILE__)
 # ----------------------------------------
+
 import gzip
 import json
 import logging
@@ -71,22 +72,91 @@ def iterate_all(data_directory) -> (dict, str, int):
                             location = location + 1
 
 
-def fetch_work(doi, gzip_file, location=None):
-    """Fetch a work from a gzip file by DOI"""
-    with gzip.open(gzip_file, "rt") as f_handle:
-        contents = f_handle.read()
-        json_contents = json.loads(contents)
+# def fetch_work(doi, gzip_file, location=None):
+#     """Fetch a work from a gzip file by DOI"""
+#     with gzip.open(gzip_file, "rt") as f_handle:
+#         contents = f_handle.read()
+#         json_contents = json.loads(contents)
 
-        # if a location in the JSON file has been stored, return that
-        if location:
-            return json_contents["items"][location]
+#         # if a location in the JSON file has been stored, return that
+#         if location:
+#             return json_contents["items"][location]
 
-        # otherwise, crawl the JSON file for the DOI
-        for json_item in json_contents["items"]:
-            if json_item["DOI"] == doi:
-                return json_item
+#         # otherwise, crawl the JSON file for the DOI
+#         for json_item in json_contents["items"]:
+#             if json_item["DOI"] == doi:
+#                 return json_item
+
+#     return None
+
+
+# def fetch_work(doi):
+#     try:
+#         data_entry = DataIndexWithLocation.objects.get(doi=doi)
+#     except DataIndexWithLocation.DoesNotExist:
+#         return None
+
+#     data_directory = "../data/March 2025 Public Data File from Crossref"
+#     file_path = os.path.join(data_directory, data_entry.file_name)
+
+#     with gzip.open(file_path, "rt") as file_:
+#         file_.seek(data_entry.location)
+#         line = file_.readline().strip()
+#         if line:
+#             return json.loads(line)
+
+#     return None
+
+
+def fetch_work(doi):
+    try:
+        data_entry = DataIndexWithLocation.objects.get(doi=doi)
+    except DataIndexWithLocation.DoesNotExist:
+        return None
+
+    data_directory = "../data/March 2025 Public Data File from Crossref"
+    file_path = os.path.join(data_directory, data_entry.file_name)
+
+    with gzip.open(file_path, "rt") as file_:
+        line_number = 0
+        for line in file_:
+            if line_number == data_entry.location:
+                line = line.strip()
+                if line:
+                    return json.loads(line)
+                return None
+            line_number += 1
 
     return None
+
+
+def search_by_title(title_query, limit=10):
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT doi FROM crossrefDataFile_dataindexwithlocation
+            WHERE doi IN (
+                SELECT doi FROM crossrefDataFile_dataindexwithlocation
+                LIMIT 1000
+            )
+        """
+        )
+
+        results = []
+        for row in cursor.fetchall():
+            work = fetch_work(row[0])
+            if work and "title" in work:
+                for work_title in work["title"]:
+                    if title_query.lower() in work_title.lower():
+                        results.append(
+                            {"doi": work["DOI"], "title": work_title}
+                        )
+                        if len(results) >= limit:
+                            return results
+
+        return results
 
 
 def lookup(data_directory, doi, log=None):

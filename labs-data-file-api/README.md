@@ -1,3 +1,26 @@
+<!-- ---
+!-- Timestamp: 2025-08-22 19:09:35
+!-- Author: ywatanabe
+!-- File: /mnt/nas_ug/crossref_local/labs-data-file-api/README.md
+!-- --- -->
+
+
+# Debugging
+
+```python
+# python manager.py shell
+from crossrefDataFile.models import DataIndexWithLocation
+from pprint import pprint
+print(DataIndexWithLocation.objects.filter(doi__icontains="10.1001").count()) # 587811
+print(DataIndexWithLocation.objects.filter(doi="10.1001/.387").exists()) # True
+print(DataIndexWithLocation.objects.filter(doi__icontains="10.1001").values('doi', 'file_name')[:5])
+# <QuerySet [{'doi': '10.1001/jama.2024.24064', 'file_name': '387.jsonl.gz'}, {'doi': '10.1001/jamapsychiatry.2015.2732', 'file_name': '18488.jsonl.gz'}, {'doi': '10.1001/jamapsychiatry.2015.2964', 'file_name': '18488.jsonl.gz'}, {'doi': '10.1001/jamasurg.2015.5116', 'file_name': '18488.jsonl.gz'}, {'doi': '10.1001/jamasurg.2015.5233', 'file_name': '18488.jsonl.gz'}]>
+
+# Usage:
+# curl "http://127.0.0.1:3333/api/search/?doi=10.1001/.387"
+# curl "http://127.0.0.1:3333/api/search/?title=medicine"
+```
+
 # API for Interacting with the Crossref Annual Data File
 A python API for interacting with the Crossref Annual Data File dump.
 
@@ -72,3 +95,5 @@ You can adjust the database settings in settings.py.
 * [Rich](https://github.com/Textualize/rich) from Textualize.
 
 &copy; Crossref 2024
+
+<!-- EOF -->
