@@ -1,4 +1,6 @@
-GITIGNORED
+# Legacy/Historical
+legacy/
+.old/
 
 # Dataset Download
 **/*.log

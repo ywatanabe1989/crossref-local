@@ -1,128 +1,176 @@
-<!-- ---
-!-- Timestamp: 2025-08-22 19:45:15
-!-- Author: ywatanabe
-!-- File: /mnt/nas_ug/crossref_local/README.md
-!-- --- -->
+# CrossRef Local Database
 
-# CrossRef 2025 Public Data
+Local hosting and analysis tools for CrossRef 2025 Public Data File (167M papers, 1.4TB).
 
-## Download Json files
-https://academictorrents.com/details/e0eda0104902d61c025e27e4846b66491d4c9f98
+## Components
 
-``` bash
-nohup aria2c \
-	--continue=true \
-	--check-integrity=true \
-	--max-connection-per-server=16 \
-	--split=16 \
-	--save-session=aria2.session \
-	--save-session-interval=30 \
-	--log=aria2-resume.log "March2025PublicDataFilefromCrossref-e0eda0104902d61c025e27e4846b66491d4c9f98.torrent" &
+| Directory | Description |
+|-----------|-------------|
+| [`impact_factor/`](./impact_factor/) | Journal impact factor calculator |
+| [`vendor/dois2sqlite/`](./vendor/dois2sqlite/) | JSON to SQLite converter (from CrossRef Labs) |
+| [`vendor/labs-data-file-api/`](./vendor/labs-data-file-api/) | REST API server (from CrossRef Labs) |
+| `data/` | Database storage (gitignored) |
+
+## Quick Start
+
+```bash
+# Calculate Impact Factor
+cd impact_factor
+python cli/calculate_if.py --journal "Nature" --year 2024
+
+# Query API
+curl "http://localhost:3333/api/search/?doi=10.1038/nature12373"
 ```
 
-#### Verification
+---
 
-``` bash
-n_json_gz_files_provided=33402
-n_json_gz_files_actual=$(find "March 2025 Public Data File from Crossref" -type f | wc -l)
-if [ $n_json_gz_files_provided = $n_json_gz_files_actual ]; then
-    echo "Successfully downloaded all the .json.gz files in March 2025 Public Data File from Crossref"
-else
-    echo "Downloaded failed or not complete for all the .json.gz files in March 2025 Public Data File from Crossref"
-fi
+<details>
+<summary><strong>Setup Guide</strong></summary>
+
+### 1. Download CrossRef Data
+
+```bash
+# Download via torrent (168GB compressed)
+aria2c --continue=true --max-connection-per-server=16 \
+  "https://academictorrents.com/details/e0eda0104902d61c025e27e4846b66491d4c9f98"
 ```
 
-## GitLab/GitHub Setup
+### 2. Create Database
 
-``` bash
-SSH_KEY_GITLAB="$HOME/.ssh/gitlab"
-SSH_KEY_GITHUB="$HOME/.ssh/gitlab"
+```bash
+cd vendor/dois2sqlite
+python3.11 -m venv .env && source .env/bin/activate
+pip install -e .
 
-# Generate ssh keys
-ssh-keygen -t rsa -b 2048 -f "$SSH_KEY_GITLAB"
-ssh-keygen -t rsa -b 2048 -f "$SSH_KEY_GITHUB"
-
-# Add the pub contents to GitLab through web browser
-cat "$SSH_KEY_GITLAB".pub
-cat "$SSH_KEY_GITHUB".pub
-
-# Fix private key permissions
-chmod 600 "$SSH_KEY_GITLAB"
-chmod 644 "$SSH_KEY_GITLAB".pub
-chmod 600 "$SSH_KEY_GITHUB"
-chmod 644 "$SSH_KEY_GITHUB".pub
-chmod 700 ~/.ssh
-
-# Check the connection
-ssh -T git@gitlab.com -i "$SSH_KEY_GITLAB"
-ssh -T git@github.com -i "$SSH_KEY_GITHUB"
-```
-
-## Jsons to sqlite3 db
-
-``` bash
-git clone https://gitlab.com/crossref/labs/dois2sqlite.git
-# Edit the dois2sqlite as in this repository
-```
-
-## To Database
-
-``` bash
-cd /path/to/dois2sqlite
-python3.11 -m venv .env && source .env/bin/activate && pip install -e dois2sqlite/
-
-# Create database
+# Create and load database
 dois2sqlite create ./data/crossref.db
-
-# Load all JSONL files
-dois2sqlite load "./data/March 2025 Public Data File from Crossref" ./data/crossref.db --n-jobs 8 --commit-size 100000
-
-# Create indexes
-dois2sqlite index /mnt/nas_ug/crossref_local/crossref.db
+dois2sqlite load "./data/March 2025 Public Data File from Crossref" ./data/crossref.db \
+  --n-jobs 8 --commit-size 100000
+dois2sqlite index ./data/crossref.db
 ```
 
-## Run as a Service
+### 3. Run API Server
 
-``` bash
-# ssh ugreen-nas
-git clone https://gitlab.com/crossref/labs/labs-data-file-api.git
-# Edit the dois2sqlite as in this repository
-cd /path/to/labs-data-file-api # cd ~/crossref_local/labs-data-file-api/
-python3 -m venv .env && source .env/bin/activate && pip install -r requirements.txt
-ln -s ../data/crossref.db crossref.db
+```bash
+cd vendor/labs-data-file-api
+python3 -m venv .env && source .env/bin/activate
+pip install -r requirements.txt
+ln -s ../../data/crossref.db crossref.db
 python3 manage.py migrate
-
-python main.py index-all-with-location --data-directory "../data/March 2025 Public Data File from Crossref"
-# sqlite3 crossref.db "SELECT COUNT(*) FROM crossrefDataFile_dataindexwithlocation;" # 167008748
-# sqlite3 crossref.db "SELECT doi FROM crossrefDataFile_dataindexwithlocation LIMIT 5;"
-# 10.1001/.387
-# 10.1001/.389
-# 10.1001/.391
-# 10.1001/.399
-# 10.1001/.404
-# (.env) ywatanabe@DXP480TPLUS-994:~/crossref_local/labs-data-file-api$ 
+python main.py index-all-with-location --data-directory "../../data/March 2025 Public Data File from Crossref"
 python3 manage.py runserver 0.0.0.0:3333
-
-# Usage:
-curl "http://127.0.0.1:3333/api/search/?doi=10.1001/.387"
-# {"DOI": "10.1001/.387", "ISSN": ["0003-9926"], "URL": "https://doi.org/10.1001/.387", "container-title": ["Archives of Internal Medicine"], "content-domain": {"crossmark-restriction": false, "domain": []}, "created": {"date-parts": [[2006, 2, 27]], "date-time": "2006-02-27T21:28:23Z", "timestamp": 1141075703000}, "deposited": {"date-parts": [[2016, 4, 21]], "date-time": "2016-04-21T12:21:44Z", "timestamp": 1461241304000}, "indexed": {"date-parts": [[2024, 2, 29]], "date-time": "2024-02-29T21:30:11Z", "timestamp": 1709242211235}, "is-referenced-by-count": 0, "issn-type": [{"type": "print", "value": "0003-9926"}], "issue": "4", "issued": {"date-parts": [[2006, 2, 27]]}, "journal-issue": {"issue": "4", "published-print": {"date-parts": [[2006, 2, 27]]}}, "language": "en", "member": "10", "page": "387-387", "prefix": "10.1001", "published": {"date-parts": [[2006, 2, 27]]}, "published-print": {"date-parts": [[2006, 2, 27]]}, "publisher": "American Medical Association (AMA)", "reference-count": 0, "references-count": 0, "resource": {"primary": {"URL": "http://archinte.ama-assn.org/cgi/doi/10.1001/.387"}}, "score": 0.0, "short-container-title": ["Archives of Internal Medicine"], "source": "Crossref", "title": ["In This Issue of Archives of Internal Medicine"], "type": "journal-article", "volume": "166"}
-
-curl "http://127.0.0.1:3333/api/search/?title=deep%20learning&year=1979"
-# {"results": [{"doi": "10.1001/archderm.115.10.1169", "year": 1979}, {"doi": "10.1001/archderm.115.10.1171", "year": 1979}]}
-
-curl "http://127.0.0.1:3333/api/search/?authors=smith&year=2020"
-# {"results": [{"doi": "10.1001/amajethics.2020.10", "title": "How Should Clinicians Integrate Mental Health Into Epidemic Responses?"}, {"doi": "10.1001/amajethics.2020.1004", "title": "Should a Patient Who Is Pregnant and Brain Dead Receive Life Support, Despite Objection From Her Appointed Surrogate?"}, {"doi": "10.1001/amajethics.2020.1010", "title": "How Educators Can Help Prevent False Brain Death Diagnoses"}, {"doi": "10.1001/amajethics.2020.1019", "title": "Reexamining the Flawed Legal Basis of the \u201cDead Donor Rule\u201d as a Foundation for Organ Donation Policy"}, {"doi": "10.1001/amajethics.2020.102", "title": "Can International Patent Law Help Mitigate Cancer Inequity in LMICs?"}, {"doi": "10.1001/amajethics.2020.1025", "title": "AMA Code of Medical Ethics'  Opinions About End-of-Life Care and Death"}, {"doi": "10.1001/amajethics.2020.1027", "title": "Inconsistency in Brain Death Determination Should Not Be Tolerated"}, {"doi": "10.1001/amajethics.2020.1033", "title": "Guidance for Physicians Who Wish to Influence Policy Development on Determination of Death by Neurologic Criteria"}, {"doi": "10.1001/amajethics.2020.1038", "title": "What Should We Do About the Mismatch Between Legal Criteria for Death and How Brain Death Is Diagnosed?"}, {"doi": "10.1001/amajethics.2020.1047", "title": "What Does the Public Need to Know About Brain Death?"}]}
-curl "http://127.0.0.1:3333/api/search/?title=Archives&year=2006&authors=smith"
-# {"results": [{"doi": "10.1001/.387", "title": "In This Issue of Archives of Internal Medicine", "year": 2006}]}
 ```
 
-## References
-https://www.crossref.org/learning/public-data-file/
-https://academictorrents.com/browse.php?search=Crossref
-https://gitlab.com/crossref/labs/dois2sqlite
-https://gitlab.com/crossref/labs/labs-data-file-api
+</details>
+
+<details>
+<summary><strong>Impact Factor Calculator</strong></summary>
+
+### Setup (One-Time)
+
+Rebuild citations table for fast IF calculations:
+
+```bash
+cd impact_factor
+screen -S citations-rebuild
+python scripts/database/rebuild_citations_table.py \
+  --db ../data/crossref.db --batch-size 8192
+# Takes 12-48 hours, reduces IF calculation from 5+ min to < 1 sec
+```
+
+### Usage
+
+```bash
+# Single journal
+python cli/calculate_if.py --journal "Nature" --year 2024
+
+# Using ISSN (faster)
+python cli/calculate_if.py --issn "0028-0836" --year 2024
+
+# Batch processing
+echo -e "Nature\nScience\nCell" > journals.txt
+python cli/calculate_if.py --journal-file journals.txt --year 2024 --output results.csv
+
+# 5-year impact factor
+python cli/calculate_if.py --journal "Nature" --year 2024 --window 5
+```
+
+See [impact_factor/docs/](./impact_factor/docs/) for detailed documentation.
+
+</details>
+
+<details>
+<summary><strong>API Endpoints</strong></summary>
+
+### Search by DOI
+
+```bash
+curl "http://localhost:3333/api/search/?doi=10.1001/.387"
+```
+
+### Search by Title
+
+```bash
+curl "http://localhost:3333/api/search/?title=deep%20learning&year=2020"
+```
+
+### Search by Author
+
+```bash
+curl "http://localhost:3333/api/search/?authors=smith&year=2020"
+```
+
+### Combined Search
+
+```bash
+curl "http://localhost:3333/api/search/?title=medicine&year=2020&authors=jones"
+```
+
+</details>
+
+<details>
+<summary><strong>Project Structure</strong></summary>
+
+```
+crossref_local/
+├── README.md                 # This file
+├── impact_factor/            # Impact factor calculator
+│   ├── cli/                  # Command-line tools
+│   ├── src/                  # Core library
+│   ├── scripts/              # Database maintenance
+│   ├── tests/                # Test suite
+│   └── docs/                 # Documentation
+├── vendor/                   # External tools (vendored)
+│   ├── dois2sqlite/          # JSON to SQLite converter
+│   └── labs-data-file-api/   # REST API server
+├── data/                     # Database (gitignored)
+│   └── crossref.db           # 1.4TB SQLite database
+├── docs/                     # Root documentation
+└── legacy/                   # Historical files (gitignored)
+```
+
+</details>
+
+<details>
+<summary><strong>Data Sources</strong></summary>
+
+- **CrossRef Public Data File**: [March 2025 release](https://www.crossref.org/learning/public-data-file/)
+- **Download**: [Academic Torrents](https://academictorrents.com/details/e0eda0104902d61c025e27e4846b66491d4c9f98)
+- **Size**: 168GB compressed, 1.4TB database
+- **Papers**: 167,008,748 records
+
+### Vendored Dependencies
+
+Original repositories (preserved locally in case of upstream changes):
+- [gitlab.com/crossref/labs/dois2sqlite](https://gitlab.com/crossref/labs/dois2sqlite)
+- [gitlab.com/crossref/labs/labs-data-file-api](https://gitlab.com/crossref/labs/labs-data-file-api)
+
+</details>
+
+## License
+
+For academic and research purposes. CrossRef data usage subject to [CrossRef terms](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-metadata-license-information/).
 
 ## Contact
-Yusuke Watanabe (ywatanabe@scitex.ai)
 
-<!-- EOF -->
+Yusuke Watanabe (ywatanabe@scitex.ai)
