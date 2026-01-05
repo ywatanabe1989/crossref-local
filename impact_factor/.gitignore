@@ -1,6 +1,8 @@
 
 ### Source: /home/ywatanabe/.git-templates/.gitignore-templates/Custom/Specific.gitignore ###
 # Please add files here
+legacy/
+__pycache__/
 
 ### Source: /home/ywatanabe/.git-templates/.gitignore-templates/Custom/Claude.gitignore ###
 docs/to_claude
