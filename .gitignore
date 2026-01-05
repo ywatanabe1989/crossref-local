@@ -1,3 +1,5 @@
+GITIGNORED
+
 # Dataset Download
 **/*.log
 **/*.session
