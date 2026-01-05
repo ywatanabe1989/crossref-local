@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2025-12-06 04:30:57
+!-- Timestamp: 2026-01-05 20:07:40
 !-- Author: ywatanabe
 !-- File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/impact_factor/README.md
 !-- --- -->
@@ -143,5 +143,13 @@ python cli/compare_with_jcr.py --journal "Nature" --year 2023 \
 ## License
 
 For academic and research purposes. CrossRef data usage subject to CrossRef terms.
+
+---
+
+<p align="center">
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+  <br>
+  AGPL-3.0 · ywatanabe@scitex.ai
+</p>
 
 <!-- EOF -->

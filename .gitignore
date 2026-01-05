@@ -2,6 +2,11 @@
 legacy/
 .old/
 
+# Development/Claude
+.claude/
+.dev/
+docs/to_claude/
+
 # Dataset Download
 **/*.log
 **/*.session

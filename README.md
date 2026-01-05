@@ -1,3 +1,9 @@
+<!-- ---
+!-- Timestamp: 2026-01-05 20:14:14
+!-- Author: ywatanabe
+!-- File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/README.md
+!-- --- -->
+
 # CrossRef Local Database
 
 Local hosting and analysis tools for CrossRef 2025 Public Data File (167M papers, 1.4TB).
@@ -171,6 +177,12 @@ Original repositories (preserved locally in case of upstream changes):
 
 For academic and research purposes. CrossRef data usage subject to [CrossRef terms](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-metadata-license-information/).
 
-## Contact
+---
 
-Yusuke Watanabe (ywatanabe@scitex.ai)
+<p align="center">
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+  <br>
+  AGPL-3.0 · ywatanabe@scitex.ai
+</p>
+
+<!-- EOF -->
