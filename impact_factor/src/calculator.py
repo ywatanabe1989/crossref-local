@@ -14,6 +14,8 @@ from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 import logging
 
+from .journal_lookup import JournalLookup
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,6 +43,7 @@ class ImpactFactorCalculator:
 
         self.conn = None
         self._connect()
+        self._journal_lookup = JournalLookup(str(db_path))
 
     def _connect(self):
         """Establish database connection."""
@@ -51,6 +54,8 @@ class ImpactFactorCalculator:
         """Close database connection."""
         if self.conn:
             self.conn.close()
+        if self._journal_lookup:
+            self._journal_lookup.close()
 
     def __enter__(self):
         return self
@@ -62,22 +67,16 @@ class ImpactFactorCalculator:
         """
         Get ISSN for a journal name.
 
+        Uses the journals lookup table for fast resolution.
+        Falls back to slow query if table doesn't exist.
+
         Args:
             journal_name: Journal name (e.g., "Nature")
 
         Returns:
             ISSN string or None
         """
-        query = """
-        SELECT DISTINCT json_extract(metadata, '$.ISSN[0]') as issn
-        FROM works
-        WHERE json_extract(metadata, '$.container-title[0]') LIKE ?
-        LIMIT 1
-        """
-
-        cursor = self.conn.execute(query, (f"%{journal_name}%",))
-        result = cursor.fetchone()
-        return result[0] if result else None
+        return self._journal_lookup.get_issn(journal_name)
 
     def get_articles_by_journal_year(
         self,
