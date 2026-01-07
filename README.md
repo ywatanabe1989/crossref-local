@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-01-05 20:14:14
+!-- Timestamp: 2026-01-07 23:02:46
 !-- Author: ywatanabe
 !-- File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/README.md
 !-- --- -->
@@ -7,6 +7,10 @@
 # CrossRef Local Database
 
 Local hosting and analysis tools for CrossRef 2025 Public Data File (167M papers, 1.4TB).
+
+<p align="center">
+  <img src="examples/impact_factor/02_compare_jcr_plot_out/scatter_calc_vs_jcr.png" alt="IF Validation" width="500"/>
+</p>
 
 ## Components
 
@@ -71,12 +75,6 @@ python3 manage.py runserver 0.0.0.0:3333
 
 <details>
 <summary><strong>Impact Factor Calculator</strong></summary>
-
-### Validation
-
-<p align="center">
-  <img src="examples/impact_factor/02_compare_jcr_plot_out/scatter_calc_vs_jcr.png" alt="IF Validation" width="500"/>
-</p>
 
 **Results**: Strong rank correlation (Spearman r = 0.736) with JCR values across 33 journals.
 
