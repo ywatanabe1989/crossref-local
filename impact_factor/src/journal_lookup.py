@@ -60,22 +60,23 @@ class JournalLookup:
         """)
         return cursor.fetchone() is not None
 
-    def get_issn(self, journal_name: str) -> Optional[str]:
+    def get_issn(self, journal_name: str, strict: bool = True) -> Optional[str]:
         """
         Get ISSN for a journal name.
 
         Args:
             journal_name: Journal name (case-insensitive)
+            strict: If True, only exact matches. If False, allow partial matches.
 
         Returns:
             ISSN string or None if not found
         """
         if self._openalex_exists:
-            return self._get_issn_openalex(journal_name)
+            return self._get_issn_openalex(journal_name, strict)
         else:
-            return self._get_issn_slow(journal_name)
+            return self._get_issn_slow(journal_name, strict)
 
-    def _get_issn_openalex(self, journal_name: str) -> Optional[str]:
+    def _get_issn_openalex(self, journal_name: str, strict: bool = True) -> Optional[str]:
         """Fast lookup using OpenAlex journals table."""
         # Try exact match first
         cursor = self.conn.execute("""
@@ -88,26 +89,46 @@ class JournalLookup:
         if result and result[0]:
             return result[0]
 
-        # Try partial match
+        # If strict mode, don't try partial match
+        if strict:
+            logger.debug(f"Strict mode: no exact match for '{journal_name}'")
+            return None
+
+        # Try partial match (only if not strict)
+        logger.warning(f"Using partial match for '{journal_name}' - results may be inaccurate")
         cursor = self.conn.execute("""
-            SELECT issn_l FROM journals_openalex
+            SELECT issn_l, name FROM journals_openalex
             WHERE name_lower LIKE ?
             ORDER BY works_count DESC
             LIMIT 1
         """, (f"%{journal_name.lower()}%",))
 
         result = cursor.fetchone()
-        return result[0] if result and result[0] else None
+        if result and result[0]:
+            logger.warning(f"  Matched to: '{result[1]}'")
+            return result[0]
+        return None
 
-    def _get_issn_slow(self, journal_name: str) -> Optional[str]:
+    def _get_issn_slow(self, journal_name: str, strict: bool = True) -> Optional[str]:
         """Slow lookup by scanning works table."""
-        cursor = self.conn.execute("""
-            SELECT DISTINCT json_extract(metadata, '$.ISSN[0]') as issn
-            FROM works
-            WHERE json_extract(metadata, '$.container-title[0]') LIKE ?
-            AND json_extract(metadata, '$.ISSN[0]') IS NOT NULL
-            LIMIT 1
-        """, (f"%{journal_name}%",))
+        if strict:
+            # Exact match
+            cursor = self.conn.execute("""
+                SELECT DISTINCT json_extract(metadata, '$.ISSN[0]') as issn
+                FROM works
+                WHERE json_extract(metadata, '$.container-title[0]') = ?
+                AND json_extract(metadata, '$.ISSN[0]') IS NOT NULL
+                LIMIT 1
+            """, (journal_name,))
+        else:
+            # Partial match
+            cursor = self.conn.execute("""
+                SELECT DISTINCT json_extract(metadata, '$.ISSN[0]') as issn
+                FROM works
+                WHERE json_extract(metadata, '$.container-title[0]') LIKE ?
+                AND json_extract(metadata, '$.ISSN[0]') IS NOT NULL
+                LIMIT 1
+            """, (f"%{journal_name}%",))
 
         result = cursor.fetchone()
         return result[0] if result else None
@@ -202,12 +223,13 @@ class JournalLookup:
             }
         return None
 
-    def get_if_proxy(self, journal_name: str) -> Optional[float]:
+    def get_if_proxy(self, journal_name: str, strict: bool = True) -> Optional[float]:
         """
         Get OpenAlex Impact Factor proxy for a journal.
 
         Args:
             journal_name: Journal name
+            strict: If True, only exact matches
 
         Returns:
             2-year mean citedness (IF proxy) or None
@@ -215,6 +237,7 @@ class JournalLookup:
         if not self._openalex_exists:
             return None
 
+        # Try exact match
         cursor = self.conn.execute("""
             SELECT two_year_mean_citedness FROM journals_openalex
             WHERE name_lower = ?
@@ -225,7 +248,10 @@ class JournalLookup:
         if result and result[0]:
             return result[0]
 
-        # Try partial match
+        if strict:
+            return None
+
+        # Try partial match (only if not strict)
         cursor = self.conn.execute("""
             SELECT two_year_mean_citedness FROM journals_openalex
             WHERE name_lower LIKE ?

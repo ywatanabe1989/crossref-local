@@ -72,6 +72,23 @@ python3 manage.py runserver 0.0.0.0:3333
 <details>
 <summary><strong>Impact Factor Calculator</strong></summary>
 
+### Validation
+
+<p align="center">
+  <img src="examples/impact_factor/02_compare_jcr_plot_out/scatter_calc_vs_jcr.png" alt="IF Validation" width="500"/>
+</p>
+
+**Results**: Strong rank correlation (Spearman r = 0.736) with JCR values across 33 journals.
+
+**Important Limitation**: Some publishers (notably Elsevier journals like *The Lancet*, *NEJM*) don't deposit complete reference lists to CrossRef, resulting in low citation coverage (<10%) and unreliable IF calculations. Journals with >10% coverage show excellent agreement (ratio 0.96-1.46).
+
+| Coverage | Journals | Accuracy |
+|----------|----------|----------|
+| >10% | Nature, Science, Cell, most neuroscience | Reliable (within 50% of JCR) |
+| <10% | The Lancet, NEJM, IEEE, eLife | Unreliable (use with caution) |
+
+Run validation: `./examples/impact_factor/run_all_demos.sh` ([sample output](examples/impact_factor/run_all_demos.sh.log))
+
 ### Setup (One-Time)
 
 Rebuild citations table for fast IF calculations:

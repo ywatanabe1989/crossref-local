@@ -1,0 +1,7 @@
+journal,issn,citable_items,citations,calc_if,jcr_if,openalex_if,ratio,coverage_pct,match
+Nature Biomedical Engineering,2157-846X,231,7047,30.51,26.8,17.87,1.14,32.5,good
+Biomaterials,0142-9612,1234,16703,13.54,12.8,11.05,1.06,33.9,good
+Journal of Neural Engineering,1741-2552,0,0,0.0,3.7,4.87,,0.0,no_jcr
+IEEE Trans Biomedical Engineering,0018-9294,703,188,0.27,4.4,,0.06,1.7,poor
+IEEE Trans Neural Syst Rehabil Eng,1534-4320,552,179,0.32,4.8,,0.07,1.9,poor
+Biomedical Engineering Online,1475-925X,207,752,3.63,2.9,5.51,1.25,35.3,good

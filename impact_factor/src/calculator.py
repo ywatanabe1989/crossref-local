@@ -78,53 +78,55 @@ class ImpactFactorCalculator:
         """
         return self._journal_lookup.get_issn(journal_name)
 
-    def get_articles_by_journal_year(
+    def get_article_dois(
         self,
         journal_identifier: str,
         year: int,
-        use_issn: bool = False
-    ) -> List[Dict]:
+        use_issn: bool = False,
+        citable_only: bool = True
+    ) -> List[str]:
         """
-        Get all articles for a journal in a specific year.
+        Get DOIs for articles in a journal for a specific year.
+
+        Optimized: only fetches DOIs, not full metadata.
 
         Args:
             journal_identifier: Journal name or ISSN
             year: Publication year
             use_issn: If True, search by ISSN instead of name
+            citable_only: If True, only return citable items (>20 references)
+                         This matches JCR's definition of citable items.
 
         Returns:
-            List of article metadata dictionaries
+            List of DOI strings
         """
+        # Citable items filter: research articles typically have >20 references
+        # This excludes news, editorials, letters, corrections, etc.
+        citable_filter = "AND json_array_length(json_extract(metadata, '$.reference')) > 20" if citable_only else ""
+
         if use_issn:
-            query = """
-            SELECT doi, metadata
+            query = f"""
+            SELECT doi
             FROM works
             WHERE json_extract(metadata, '$.ISSN[0]') = ?
             AND json_extract(metadata, '$.published.date-parts[0][0]') = ?
             AND type = 'journal-article'
+            {citable_filter}
             """
             params = (journal_identifier, year)
         else:
-            query = """
-            SELECT doi, metadata
+            query = f"""
+            SELECT doi
             FROM works
             WHERE json_extract(metadata, '$.container-title[0]') LIKE ?
             AND json_extract(metadata, '$.published.date-parts[0][0]') = ?
             AND type = 'journal-article'
+            {citable_filter}
             """
             params = (f"%{journal_identifier}%", year)
 
         cursor = self.conn.execute(query, params)
-        articles = []
-
-        for row in cursor:
-            metadata = json.loads(row['metadata'])
-            articles.append({
-                'doi': row['doi'],
-                'metadata': metadata
-            })
-
-        return articles
+        return [row[0] for row in cursor]
 
     def count_articles(
         self,
@@ -170,7 +172,7 @@ class ImpactFactorCalculator:
         self,
         dois: List[str],
         citation_year: int,
-        method: str = "is-referenced-by"
+        method: str = "citations-table"
     ) -> int:
         """
         Count citations to a list of DOIs in a specific year.
@@ -178,15 +180,42 @@ class ImpactFactorCalculator:
         Args:
             dois: List of DOIs to check citations for
             citation_year: Year when citations occurred
-            method: "is-referenced-by" (fast) or "reference-graph" (accurate)
+            method: "citations-table" (fast, year-specific),
+                    "is-referenced-by" (fast, cumulative),
+                    "reference-graph" (slow, accurate)
 
         Returns:
             Total citation count
         """
-        if method == "is-referenced-by":
+        if method == "citations-table":
+            return self._count_citations_from_table(dois, citation_year)
+        elif method == "is-referenced-by":
             return self._count_citations_simple(dois, citation_year)
         else:
             return self._count_citations_from_graph(dois, citation_year)
+
+    def _count_citations_from_table(self, dois: List[str], citation_year: int) -> int:
+        """
+        Fast citation count using citations table with indexed lookup.
+
+        Uses idx_citations_cited_new (cited_doi, citing_year) index.
+        """
+        if not dois:
+            return 0
+
+        # Batch query for efficiency
+        placeholders = ','.join('?' * len(dois))
+        query = f"""
+        SELECT COUNT(*) as total
+        FROM citations
+        WHERE cited_doi IN ({placeholders})
+        AND citing_year = ?
+        """
+
+        params = dois + [citation_year]
+        cursor = self.conn.execute(query, params)
+        result = cursor.fetchone()
+        return result[0] if result and result[0] else 0
 
     def _count_citations_simple(self, dois: List[str], citation_year: int) -> int:
         """
@@ -258,7 +287,8 @@ class ImpactFactorCalculator:
         target_year: int,
         window_years: int = 2,
         use_issn: bool = False,
-        method: str = "is-referenced-by"
+        method: str = "citations-table",
+        citable_only: bool = True
     ) -> Dict:
         """
         Calculate impact factor for a journal.
@@ -268,7 +298,9 @@ class ImpactFactorCalculator:
             target_year: Year for which to calculate IF
             window_years: Citation window (2 for 2-year IF, 5 for 5-year IF)
             use_issn: Use ISSN for journal identification
-            method: Citation counting method
+            method: "citations-table" (fast), "is-referenced-by", or "reference-graph"
+            citable_only: If True, only count citable items (research articles with >20 refs)
+                         This matches JCR methodology. Default True.
 
         Returns:
             Dictionary with calculation results
@@ -290,18 +322,15 @@ class ImpactFactorCalculator:
         window_start = target_year - window_years
         window_end = target_year - 1
 
-        logger.info(f"Fetching articles from {window_start} to {window_end}...")
+        logger.info(f"Fetching DOIs from {window_start} to {window_end}...")
         all_dois = []
         articles_by_year = {}
 
         for year in range(window_start, window_end + 1):
-            logger.info(f"  Querying articles for year {year}...")
-            articles = self.get_articles_by_journal_year(
-                journal_identifier, year, use_issn
-            )
-            articles_by_year[year] = len(articles)
-            all_dois.extend([a['doi'] for a in articles])
-            logger.info(f"  Found {len(articles)} articles in {year}")
+            dois = self.get_article_dois(journal_identifier, year, use_issn, citable_only)
+            articles_by_year[year] = len(dois)
+            all_dois.extend(dois)
+            logger.info(f"  {year}: {len(dois)} {'citable items' if citable_only else 'articles'}")
 
         total_articles = len(all_dois)
         logger.info(f"Total articles in window: {total_articles}")
@@ -343,6 +372,7 @@ class ImpactFactorCalculator:
             'total_citations': total_citations,
             'impact_factor': impact_factor,
             'method': method,
+            'citable_only': citable_only,
             'status': 'success'
         }
 

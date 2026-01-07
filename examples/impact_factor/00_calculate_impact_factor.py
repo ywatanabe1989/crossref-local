@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Timestamp: "2026-01-07 22:45:01 (ywatanabe)"
+# File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/examples/impact_factor/00_calculate_impact_factor.py
+
+
 """
 Demo: Impact Factor Calculation
 
@@ -6,8 +11,8 @@ Example usage of the CrossRef Local impact factor calculator.
 Compares calculated IF with OpenAlex IF proxy.
 
 Usage:
-    ./demo.py --journal Nature --year 2023
-    ./demo.py --journal Science --year 2023 --duration 5
+    ./00_calculate_impact_factor.py --journal Nature --year 2023
+    ./00_calculate_impact_factor.py --journal Science --year 2023 --duration 5
 """
 
 import argparse
@@ -15,10 +20,10 @@ import sys
 from pathlib import Path
 
 # Add impact_factor to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "impact_factor"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "impact_factor"))
 from src.calculator import ImpactFactorCalculator
 
-DB_PATH = "/home/ywatanabe/proj/crossref_local/data/crossref.db"
+DB_PATH = "./data/crossref.db"
 
 
 def main():
@@ -30,29 +35,22 @@ Examples:
   %(prog)s --journal Nature --year 2023
   %(prog)s --journal "The Lancet" --year 2023
   %(prog)s --journal Science --year 2023 --duration 5
-        """
+        """,
     )
     parser.add_argument(
-        "--journal",
-        default="Nature",
-        help="Journal name (default: Nature)"
+        "--journal", default="Nature", help="Journal name (default: Nature)"
     )
     parser.add_argument(
-        "--year",
-        type=int,
-        default=2023,
-        help="Target year (default: 2023)"
+        "--year", type=int, default=2023, help="Target year (default: 2023)"
     )
     parser.add_argument(
         "--duration",
         type=int,
         default=2,
-        help="Citation window in years (default: 2)"
+        help="Citation window in years (default: 2)",
     )
     parser.add_argument(
-        "--db",
-        default=DB_PATH,
-        help="Path to CrossRef database"
+        "--db", default=DB_PATH, help="Path to CrossRef database"
     )
     args = parser.parse_args()
 
@@ -97,7 +95,8 @@ Examples:
         target_year=args.year,
         window_years=args.duration,
         use_issn=use_issn,
-        method="is-referenced-by"
+        method="citations-table",  # Fast, year-specific using indexed citations table
+        citable_only=True,  # Only count citable items (research articles) per JCR methodology
     )
 
     print("-" * 60)
@@ -106,21 +105,18 @@ Examples:
         print(f"  ISSN:              {issn}")
     print(f"  Target Year:       {result['target_year']}")
     print(f"  Window:            {result['window_range']}")
-    print(f"  Articles:          {result['total_articles']:,}")
+    print(f"  Citable Items:     {result['total_articles']:,}")
     print(f"  Citations:         {result['total_citations']:,}")
     print("-" * 60)
     print(f"  Calculated IF:     {result['impact_factor']:.2f}")
     if openalex_if:
         print(f"  OpenAlex IF:       {openalex_if:.2f}")
-        if result['impact_factor'] > 0:
-            ratio = openalex_if / result['impact_factor']
-            print(f"  Ratio (OA/Calc):   {ratio:.2f}")
     print("-" * 60)
     print()
 
-    # Show comparison note
-    print("  Note: OpenAlex IF uses 2yr_mean_citedness which correlates")
-    print("  with JCR Impact Factor (Spearman r=0.85)")
+    # Show methodology note
+    print("  Note: Uses JCR methodology - citable items only (>20 refs)")
+    print("  excludes news, editorials, letters, corrections")
     print()
     print("=" * 60)
 
@@ -129,3 +125,5 @@ Examples:
 
 if __name__ == "__main__":
     main()
+
+# EOF

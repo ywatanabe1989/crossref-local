@@ -1,0 +1,110 @@
+[
+  {
+    "journal": "Nature",
+    "issn": "0028-0836",
+    "citable_items": 2133,
+    "citations": 115324,
+    "calc_if": 54.07,
+    "jcr_if": 50.5,
+    "openalex_if": 21.9,
+    "ratio": 1.07,
+    "coverage_pct": 32.2,
+    "match": "good"
+  },
+  {
+    "journal": "Science",
+    "issn": "0036-8075",
+    "citable_items": 1545,
+    "citations": 71329,
+    "calc_if": 46.17,
+    "jcr_if": 44.7,
+    "openalex_if": 24.09,
+    "ratio": 1.03,
+    "coverage_pct": 33.5,
+    "match": "good"
+  },
+  {
+    "journal": "Cell",
+    "issn": "0092-8674",
+    "citable_items": 657,
+    "citations": 35485,
+    "calc_if": 54.01,
+    "jcr_if": 45.5,
+    "openalex_if": 44.97,
+    "ratio": 1.19,
+    "coverage_pct": 30.3,
+    "match": "good"
+  },
+  {
+    "journal": "The Lancet",
+    "issn": "0140-6736",
+    "citable_items": 486,
+    "citations": 1800,
+    "calc_if": 3.7,
+    "jcr_if": 98.4,
+    "openalex_if": 18.85,
+    "ratio": 0.04,
+    "coverage_pct": 1.4,
+    "match": "poor"
+  },
+  {
+    "journal": "New England Journal of Medicine",
+    "issn": "0028-4793",
+    "citable_items": 561,
+    "citations": 1464,
+    "calc_if": 2.61,
+    "jcr_if": 96.2,
+    "openalex_if": 33.84,
+    "ratio": 0.03,
+    "coverage_pct": 0.9,
+    "match": "poor"
+  },
+  {
+    "journal": "JAMA",
+    "issn": "0098-7484",
+    "citable_items": 402,
+    "citations": 18155,
+    "calc_if": 45.16,
+    "jcr_if": 63.1,
+    "openalex_if": 10.14,
+    "ratio": 0.72,
+    "coverage_pct": 34.1,
+    "match": "good"
+  },
+  {
+    "journal": "Nature Medicine",
+    "issn": "1078-8956",
+    "citable_items": 476,
+    "citations": 26720,
+    "calc_if": 56.13,
+    "jcr_if": 58.7,
+    "openalex_if": 30.39,
+    "ratio": 0.96,
+    "coverage_pct": 31.9,
+    "match": "good"
+  },
+  {
+    "journal": "Nature Communications",
+    "issn": "2041-1723",
+    "citable_items": 14357,
+    "citations": 231651,
+    "calc_if": 16.14,
+    "jcr_if": 14.7,
+    "openalex_if": 19.7,
+    "ratio": 1.1,
+    "coverage_pct": 32.6,
+    "match": "good"
+  },
+  {
+    "journal": "PNAS",
+    "issn": "0027-8424",
+    "citable_items": 6873,
+    "citations": 70215,
+    "calc_if": 10.22,
+    "jcr_if": 9.4,
+    "openalex_if": null,
+    "ratio": 1.09,
+    "coverage_pct": 34.2,
+    "match": "good"
+  }
+]

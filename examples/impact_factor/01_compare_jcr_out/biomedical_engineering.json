@@ -1,0 +1,74 @@
+[
+  {
+    "journal": "Nature Biomedical Engineering",
+    "issn": "2157-846X",
+    "citable_items": 231,
+    "citations": 7047,
+    "calc_if": 30.51,
+    "jcr_if": 26.8,
+    "openalex_if": 17.87,
+    "ratio": 1.14,
+    "coverage_pct": 32.5,
+    "match": "good"
+  },
+  {
+    "journal": "Biomaterials",
+    "issn": "0142-9612",
+    "citable_items": 1234,
+    "citations": 16703,
+    "calc_if": 13.54,
+    "jcr_if": 12.8,
+    "openalex_if": 11.05,
+    "ratio": 1.06,
+    "coverage_pct": 33.9,
+    "match": "good"
+  },
+  {
+    "journal": "Journal of Neural Engineering",
+    "issn": "1741-2552",
+    "citable_items": 0,
+    "citations": 0,
+    "calc_if": 0.0,
+    "jcr_if": 3.7,
+    "openalex_if": 4.87,
+    "ratio": null,
+    "coverage_pct": 0.0,
+    "match": "no_jcr"
+  },
+  {
+    "journal": "IEEE Trans Biomedical Engineering",
+    "issn": "0018-9294",
+    "citable_items": 703,
+    "citations": 188,
+    "calc_if": 0.27,
+    "jcr_if": 4.4,
+    "openalex_if": null,
+    "ratio": 0.06,
+    "coverage_pct": 1.7,
+    "match": "poor"
+  },
+  {
+    "journal": "IEEE Trans Neural Syst Rehabil Eng",
+    "issn": "1534-4320",
+    "citable_items": 552,
+    "citations": 179,
+    "calc_if": 0.32,
+    "jcr_if": 4.8,
+    "openalex_if": null,
+    "ratio": 0.07,
+    "coverage_pct": 1.9,
+    "match": "poor"
+  },
+  {
+    "journal": "Biomedical Engineering Online",
+    "issn": "1475-925X",
+    "citable_items": 207,
+    "citations": 752,
+    "calc_if": 3.63,
+    "jcr_if": 2.9,
+    "openalex_if": 5.51,
+    "ratio": 1.25,
+    "coverage_pct": 35.3,
+    "match": "good"
+  }
+]
