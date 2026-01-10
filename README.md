@@ -8,9 +8,10 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 <p align="center">
-  <img src="docs/if_validation.png" alt="Impact Factor Validation" width="500"/>
+  <img src="docs/if_validation.png" alt="Impact Factor Validation" width="400"/>
+  <img src="docs/citation_network.png" alt="Citation Network" width="400"/>
   <br>
-  <em>Calculated IF vs JCR 2024 (Spearman r = 0.74, n = 33)</em>
+  <em>Impact Factor Validation (r=0.74) &nbsp;|&nbsp; Citation Network Visualization</em>
 </p>
 
 <details>
@@ -121,10 +122,6 @@ with ImpactFactorCalculator() as calc:
 
 <details>
 <summary><strong>Citation Network</strong></summary>
-
-<p align="center">
-  <img src="docs/citation_network.png" alt="Citation Network" width="500"/>
-</p>
 
 ```python
 from crossref_local import get_citing, get_cited, CitationNetwork
