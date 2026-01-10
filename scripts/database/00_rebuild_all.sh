@@ -117,7 +117,7 @@ step_works() {
 
     # Create database
     cd "$VENDOR_DIR"
-    source venv/bin/activate 2>/dev/null || source .env/bin/activate
+    source .venv/bin/activate 2>/dev/null || source venv/bin/activate
 
     dois2sqlite create "$DB_PATH"
     dois2sqlite load "$DB_PATH" "$SOURCE_DIR" 2>&1 | tee "$LOG_DIR/step1_works.log"
@@ -147,7 +147,7 @@ step_citations() {
     log "This will take 5-7 days..."
 
     cd "$PROJECT_ROOT"
-    source .env/bin/activate
+    source .venv/bin/activate
 
     python3 "$SCRIPT_DIR/03_rebuild_citations_table.py" 2>&1 | tee "$LOG_DIR/step3_citations.log"
 
@@ -159,7 +159,7 @@ step_journals() {
     log "This will take ~1 hour..."
 
     cd "$PROJECT_ROOT"
-    source .env/bin/activate
+    source .venv/bin/activate
 
     python3 "$SCRIPT_DIR/04a_download_openalex_journals.py" 2>&1 | tee "$LOG_DIR/step4_journals.log"
     python3 "$SCRIPT_DIR/04b_build_issn_table.py" 2>&1 | tee -a "$LOG_DIR/step4_journals.log"
@@ -172,7 +172,7 @@ step_fts() {
     log "This will take 1-2 days..."
 
     cd "$PROJECT_ROOT"
-    source .env/bin/activate
+    source .venv/bin/activate
 
     python3 "$SCRIPT_DIR/05_build_fts5_index.py" 2>&1 | tee "$LOG_DIR/step5_fts.log"
 

@@ -145,4 +145,4 @@ Searching 167M records in milliseconds via FTS5.
 
 ## License
 
-MIT
+AGPL-3.0
