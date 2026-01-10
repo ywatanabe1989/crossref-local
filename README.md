@@ -145,4 +145,10 @@ Searching 167M records in milliseconds via FTS5.
 
 ## License
 
-AGPL-3.0
+---
+
+<p align="center">
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+  <br>
+  AGPL-3.0 · ywatanabe@scitex.ai
+</p>
