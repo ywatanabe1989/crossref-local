@@ -3,7 +3,6 @@
 Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
 
 [![Tests](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ywatanabe1989/crossref-local/develop?labpath=examples%2Fquickstart.ipynb)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
@@ -149,44 +148,6 @@ Searching 167M records in milliseconds via FTS5.
 
 </details>
 
-<details>
-<summary><strong>Testing</strong></summary>
-
-```bash
-make test-db-create  # Download 500 records from CrossRef API
-make test            # Run tests
-```
-
-</details>
-
-<details>
-<summary><strong>Project Structure</strong></summary>
-
-```
-src/crossref_local/
-├── api.py           # search, get, count
-├── aio.py           # Async API
-├── cli.py           # CLI
-├── citations.py     # Citation network
-├── fts.py           # Full-text search
-└── impact_factor/   # IF calculation
-```
-
-</details>
-
-<details>
-<summary><strong>Roadmap</strong></summary>
-
-- [x] Full-text search (167M works)
-- [x] Impact factor calculation
-- [x] Async API
-- [x] Citation network
-- [ ] IF trends over time
-- [ ] LangChain/LlamaIndex
-
-See [ROADMAP.md](ROADMAP.md)
-
-</details>
 
 ---
 

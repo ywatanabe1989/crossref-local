@@ -1,8 +1,0 @@
-#!/bin/bash
-# Download sample database for Binder
-
-echo "Creating sample database for interactive demo..."
-python scripts/create_test_db.py --rows 500
-
-# Set environment variable to use test database
-echo 'export CROSSREF_LOCAL_DB="tests/fixtures/test_crossref.db"' >> ~/.bashrc

@@ -1,2 +1,0 @@
-# Dependencies for Binder notebooks
--e ..
