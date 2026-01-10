@@ -62,10 +62,12 @@ try:
     ax.set_title(f"Citation Network: {len(G.nodes())} papers", fontsize=8)
     ax.axis("off")
 
-    # Save with white background
-    splt.savefig(OUTPUT_DIR / "citation_network.png", dpi=150,
-                 facecolor='white', edgecolor='none')
-    splt.close()
+    # Save with white background - use matplotlib directly for reliable white bg
+    import matplotlib.pyplot as plt
+    plt.savefig(OUTPUT_DIR / "citation_network.png", dpi=150,
+                facecolor='white', edgecolor='white', bbox_inches='tight',
+                pad_inches=0.1)
+    plt.close()
     print(f"Saved: {OUTPUT_DIR}/citation_network.png")
 
 except ImportError as e:
