@@ -42,8 +42,15 @@ def load_latest_results():
 
 def plot_scatter_comparison(data, output_path):
     """Create scatter plot: Calculated IF vs JCR IF."""
-    # Use scitex.plt with 40mm x 28mm (scitex standard)
-    fig, ax = splt.subplots(axes_width_mm=40, axes_height_mm=28)
+    # Use scitex.plt with explicit margins for consistent sizing
+    fig, ax = splt.subplots(
+        axes_width_mm=40,
+        axes_height_mm=28,
+        margin_left_mm=15,
+        margin_right_mm=5,
+        margin_bottom_mm=12,
+        margin_top_mm=8,
+    )
 
     # Extract data
     calc_if = [r["calc_if"] for r in data if r.get("jcr_if")]
