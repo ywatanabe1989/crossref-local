@@ -1,53 +1,51 @@
 #!/usr/bin/env python3
-"""Generate citation network visualization for README."""
+# -*- coding: utf-8 -*-
+# Timestamp: "2026-01-10 20:45:00 (ywatanabe)"
+# File: /home/ywatanabe/proj/crossref_local/examples/citation_network/generate_visualization.py
+
+"""Generate citation network visualization for README.
+
+Usage:
+    python generate_visualization.py
+    python generate_visualization.py --doi 10.1038/nature12373 --depth 1
+"""
 
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
+import scitex as stx
+import scitex.plt as splt
+import networkx as nx
 from crossref_local import CitationNetwork
 
-OUTPUT_DIR = Path(__file__).parent
-DOI = "10.1038/nature12373"
 
-print(f"Building citation network for {DOI}...")
-network = CitationNetwork(DOI, depth=1, max_citing=6, max_cited=4)
-print(network)
-
-# Save HTML
-html_path = OUTPUT_DIR / "citation_network.html"
-network.save_html(str(html_path))
-print(f"Saved: {html_path}")
-
-# Save PNG
-try:
-    import scitex.plt as splt
-    import networkx as nx
-
+def generate_network_plot(network, doi, output_path):
+    """Generate citation network visualization."""
     G = network.to_networkx()
-    fig, ax = splt.subplots(figsize=(14, 12))
 
-    # White background
-    fig.patch.set_facecolor('white')
-    ax.set_facecolor('white')
+    # Use scitex.plt with default 40mm width
+    fig, ax = splt.subplots()
 
     # Layout with more spacing
     pos = nx.spring_layout(G, k=3, iterations=100, seed=42)
 
-    # Sizes
-    sizes = [500 if n == DOI else 200 for n in G.nodes()]
+    # Sizes (smaller nodes)
+    sizes = [200 if n == doi else 80 for n in G.nodes()]
 
     # Colors
-    colors = ['#2ecc71' if n == DOI else '#3498db' for n in G.nodes()]
+    colors = ["#2ecc71" if n == doi else "#3498db" for n in G.nodes()]
 
     # Draw edges
-    nx.draw_networkx_edges(G, pos, alpha=0.4, edge_color='gray',
-                           arrows=True, arrowsize=12, ax=ax)
+    nx.draw_networkx_edges(
+        G, pos, alpha=0.4, edge_color="gray", arrows=True, arrowsize=12, ax=ax
+    )
 
     # Draw nodes
-    nx.draw_networkx_nodes(G, pos, node_size=sizes, node_color=colors,
-                           alpha=0.8, ax=ax)
+    nx.draw_networkx_nodes(
+        G, pos, node_size=sizes, node_color=colors, alpha=0.8, ax=ax
+    )
 
     # Labels - 6pt font for inline text (scitex standard)
     labels = {}
@@ -62,15 +60,44 @@ try:
     ax.set_title(f"Citation Network: {len(G.nodes())} papers", fontsize=8)
     ax.axis("off")
 
-    # Save with white background - use matplotlib directly for reliable white bg
-    import matplotlib.pyplot as plt
-    plt.savefig(OUTPUT_DIR / "citation_network.png", dpi=150,
-                facecolor='white', edgecolor='white', bbox_inches='tight',
-                pad_inches=0.1)
-    plt.close()
-    print(f"Saved: {OUTPUT_DIR}/citation_network.png")
+    # Save with scitex - use white background
+    splt.savefig(output_path, facecolor='white', bbox_inches=None)
+    splt.close()
 
-except ImportError as e:
-    print(f"Error: {e}")
+    return output_path
 
-print(f"\nNodes: {len(network.nodes)}, Edges: {len(network.edges)}")
+
+@stx.session
+def main(
+    doi="10.1038/nature12373",
+    depth=1,
+    max_citing=6,
+    max_cited=4,
+    logger=stx.INJECTED,
+):
+    """Generate citation network visualization for README."""
+    output_dir = Path(__file__).parent
+
+    logger.info(f"Building citation network for {doi}...")
+    network = CitationNetwork(doi, depth=depth, max_citing=max_citing, max_cited=max_cited)
+    logger.info(f"{network}")
+
+    # Save HTML
+    html_path = output_dir / "citation_network.html"
+    network.save_html(str(html_path))
+    logger.info(f"Saved: {html_path}")
+
+    # Save PNG
+    png_path = output_dir / "citation_network.png"
+    generate_network_plot(network, doi, png_path)
+    logger.info(f"Saved: {png_path}")
+
+    logger.info(f"Nodes: {len(network.nodes)}, Edges: {len(network.edges)}")
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()
+
+# EOF

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Timestamp: "2026-01-07 22:43:45 (ywatanabe)"
-# File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/examples/impact_factor/02_compare_jcr_plot.py
-
+# Timestamp: "2026-01-10 20:45:00 (ywatanabe)"
+# File: /home/ywatanabe/proj/crossref_local/examples/impact_factor/02_compare_jcr_plot.py
 
 """
 Plot Impact Factor Comparison: Calculated vs JCR
@@ -10,7 +9,7 @@ Plot Impact Factor Comparison: Calculated vs JCR
 Uses scitex.plt for publication-quality figures.
 
 Usage:
-    python plot_jcr_comparison.py
+    python 02_compare_jcr_plot.py
 """
 
 import json
@@ -43,7 +42,8 @@ def load_latest_results():
 
 def plot_scatter_comparison(data, output_path):
     """Create scatter plot: Calculated IF vs JCR IF."""
-    fig, ax = splt.subplots(figsize=(8, 8))
+    # Use scitex.plt with default 40mm width
+    fig, ax = splt.subplots()
 
     # Extract data
     calc_if = [r["calc_if"] for r in data if r.get("jcr_if")]
@@ -55,9 +55,7 @@ def plot_scatter_comparison(data, output_path):
     r_spearman, p_spearman = stats.spearmanr(calc_if, jcr_if)
 
     # Scatter plot
-    ax.scatter(
-        jcr_if, calc_if  # , s=60, alpha=0.7, c="steelblue", edgecolors="white"
-    )
+    ax.scatter(jcr_if, calc_if)
 
     # Identity line
     max_val = max(max(calc_if), max(jcr_if)) * 1.1
@@ -99,14 +97,11 @@ def plot_scatter_comparison(data, output_path):
         0.95,
         text,
         transform=ax.transAxes,
-        # fontsize=10,
         verticalalignment="top",
-        # bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
     )
 
     ax.legend(loc="lower right")
-    splt.tight_layout()
-    splt.savefig(output_path)
+    splt.savefig(output_path, facecolor='white')
     splt.close()
     print(f"Saved: {output_path}")
 
