@@ -46,6 +46,9 @@ from .config import Config
 # Async API
 from . import aio
 
+# Citation network
+from .citations import get_citing, get_cited, get_citation_count, CitationNetwork
+
 __all__ = [
     # Version
     "__version__",
@@ -67,4 +70,9 @@ __all__ = [
     "Config",
     # Async
     "aio",
+    # Citations
+    "get_citing",
+    "get_cited",
+    "get_citation_count",
+    "CitationNetwork",
 ]
