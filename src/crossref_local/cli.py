@@ -9,29 +9,65 @@ from . import search, get, count, info, __version__
 from .impact_factor import ImpactFactorCalculator
 
 
-@click.group()
+class AliasedGroup(click.Group):
+    """Click group that supports command aliases."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._aliases = {}
+
+    def command(self, *args, aliases=None, **kwargs):
+        """Decorator that registers aliases for commands."""
+        def decorator(f):
+            cmd = super(AliasedGroup, self).command(*args, **kwargs)(f)
+            if aliases:
+                for alias in aliases:
+                    self._aliases[alias] = cmd.name
+            return cmd
+        return decorator
+
+    def get_command(self, ctx, cmd_name):
+        """Resolve aliases to actual commands."""
+        cmd_name = self._aliases.get(cmd_name, cmd_name)
+        return super().get_command(ctx, cmd_name)
+
+    def format_commands(self, ctx, formatter):
+        """Format commands with aliases shown inline."""
+        commands = []
+        for subcommand in self.list_commands(ctx):
+            cmd = self.get_command(ctx, subcommand)
+            if cmd is None or cmd.hidden:
+                continue
+
+            # Find aliases for this command
+            aliases = [a for a, c in self._aliases.items() if c == subcommand]
+            if aliases:
+                name = f"{subcommand} ({', '.join(aliases)})"
+            else:
+                name = subcommand
+
+            help_text = cmd.get_short_help_str(limit=50)
+            commands.append((name, help_text))
+
+        if commands:
+            with formatter.section("Commands"):
+                formatter.write_dl(commands)
+
+
+@click.group(cls=AliasedGroup)
 @click.version_option(version=__version__, prog_name="crossref-local")
 def cli():
     """Local CrossRef database with 167M+ works and full-text search."""
     pass
 
 
-@cli.command()
+@cli.command(aliases=["s"])
 @click.argument("query")
-@click.option("-n", "--limit", default=10, help="Number of results (default: 10)")
+@click.option("-n", "--limit", default=10, help="Number of results")
 @click.option("-o", "--offset", default=0, help="Skip first N results")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def search_cmd(query: str, limit: int, offset: int, as_json: bool):
-    """Search for works by title, abstract, or authors.
-
-    Examples:
-
-        crossref-local search "hippocampal sharp wave ripples"
-
-        crossref-local search "machine learning" -n 20
-
-        crossref-local search "CRISPR" --json
-    """
+    """Search for works by title, abstract, or authors."""
     results = search(query, limit=limit, offset=offset)
 
     if as_json:
@@ -54,21 +90,12 @@ def search_cmd(query: str, limit: int, offset: int, as_json: bool):
             click.echo()
 
 
-@cli.command("get")
+@cli.command("get", aliases=["g"])
 @click.argument("doi")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 @click.option("--citation", is_flag=True, help="Output as citation")
 def get_cmd(doi: str, as_json: bool, citation: bool):
-    """Get a work by DOI.
-
-    Examples:
-
-        crossref-local get 10.1126/science.aax0758
-
-        crossref-local get 10.1038/nature12373 --json
-
-        crossref-local get 10.1126/science.aax0758 --citation
-    """
+    """Get a work by DOI."""
     work = get(doi)
 
     if work is None:
@@ -89,28 +116,18 @@ def get_cmd(doi: str, as_json: bool, citation: bool):
             click.echo(f"Citations: {work.citation_count}")
 
 
-@cli.command()
+@cli.command(aliases=["c"])
 @click.argument("query")
 def count_cmd(query: str):
-    """Count matching works without fetching results.
-
-    Example:
-
-        crossref-local count "machine learning"
-    """
+    """Count matching works."""
     n = count(query)
     click.echo(f"{n:,}")
 
 
-@cli.command()
+@cli.command(aliases=["i"])
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def info_cmd(as_json: bool):
-    """Show database information.
-
-    Example:
-
-        crossref-local info
-    """
+    """Show database information."""
     db_info = info()
 
     if as_json:
@@ -124,22 +141,13 @@ def info_cmd(as_json: bool):
         click.echo(f"Citations: {db_info['citations']:,}")
 
 
-@cli.command("impact-factor")
+@cli.command("impact-factor", aliases=["if"])
 @click.argument("journal")
-@click.option("-y", "--year", default=2023, help="Target year (default: 2023)")
-@click.option("-w", "--window", default=2, help="Citation window in years (default: 2)")
+@click.option("-y", "--year", default=2023, help="Target year")
+@click.option("-w", "--window", default=2, help="Citation window years")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def impact_factor_cmd(journal: str, year: int, window: int, as_json: bool):
-    """Calculate impact factor for a journal.
-
-    Examples:
-
-        crossref-local impact-factor Nature
-
-        crossref-local impact-factor Science -y 2022
-
-        crossref-local impact-factor "Cell" -w 5 --json
-    """
+    """Calculate impact factor for a journal."""
     with ImpactFactorCalculator() as calc:
         result = calc.calculate_impact_factor(
             journal_identifier=journal,
@@ -160,12 +168,7 @@ def impact_factor_cmd(journal: str, year: int, window: int, as_json: bool):
 
 @cli.command()
 def setup():
-    """Check setup status and show configuration guide.
-
-    Example:
-
-        crossref-local setup
-    """
+    """Check setup status and configuration."""
     from .config import Config, DEFAULT_DB_PATHS
     import os
 
@@ -203,7 +206,6 @@ def setup():
         click.echo(f"Database found: {db_found}")
         click.echo()
 
-        # Quick test
         try:
             db_info = info()
             click.echo(f"  Works: {db_info['works']:,}")
@@ -217,25 +219,9 @@ def setup():
     else:
         click.echo("No database found!")
         click.echo()
-        click.echo("Database requirements:")
-        click.echo("  Size: ~1.5 TB")
-        click.echo("  Build time: ~2 weeks")
-        click.echo()
         click.echo("To set up:")
-        click.echo()
-        click.echo("  Option 1: Set path to existing database")
-        click.echo("    export CROSSREF_LOCAL_DB=/path/to/crossref.db")
-        click.echo()
-        click.echo("  Option 2: Build from CrossRef data files")
-        click.echo("    See: make db-build-info")
-
-
-# Aliases for convenience
-cli.add_command(search_cmd, name="s")
-cli.add_command(get_cmd, name="g")
-cli.add_command(count_cmd, name="c")
-cli.add_command(info_cmd, name="i")
-cli.add_command(impact_factor_cmd, name="if")
+        click.echo("  export CROSSREF_LOCAL_DB=/path/to/crossref.db")
+        click.echo("  See: make db-build-info")
 
 
 def main():

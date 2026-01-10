@@ -4,12 +4,15 @@ crossref_local - Local CrossRef database with full-text search.
 A Python package for querying a local mirror of the CrossRef database
 with 167M+ scholarly works, full-text search, and impact factor calculation.
 
-Basic usage:
+Sync usage:
     >>> from crossref_local import search, get
     >>> results = search("hippocampal sharp wave ripples")
-    >>> print(f"Found {results.total} matches")
     >>> work = get("10.1126/science.aax0758")
-    >>> print(work.title)
+
+Async usage:
+    >>> from crossref_local import aio
+    >>> results = await aio.search("machine learning")
+    >>> counts = await aio.count_many(["CRISPR", "neural network"])
 
 Configuration:
     >>> from crossref_local import configure
@@ -40,6 +43,9 @@ from .db import Database, connection
 # Configuration
 from .config import Config
 
+# Async API
+from . import aio
+
 __all__ = [
     # Version
     "__version__",
@@ -59,4 +65,6 @@ __all__ = [
     "connection",
     # Config
     "Config",
+    # Async
+    "aio",
 ]

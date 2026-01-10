@@ -125,3 +125,14 @@ def search_dois(
     )
 
     return [row["doi"] for row in rows]
+
+
+# Thread-safe versions for async API
+def _search_with_db(db: Database, query: str, limit: int, offset: int) -> SearchResult:
+    """Search with explicit database connection (for thread-safe async)."""
+    return search(query, limit, offset, db=db)
+
+
+def _count_with_db(db: Database, query: str) -> int:
+    """Count with explicit database connection (for thread-safe async)."""
+    return count(query, db=db)

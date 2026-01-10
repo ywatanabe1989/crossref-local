@@ -1,3 +1,10 @@
+<!-- ---
+!-- Timestamp: 2026-01-10 19:11:07
+!-- Author: ywatanabe
+!-- File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/README.md
+!-- --- -->
+
+
 # CrossRef Local
 
 Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
@@ -196,3 +203,5 @@ See [ROADMAP.md](ROADMAP.md) for full roadmap.
   <br>
   AGPL-3.0 · ywatanabe@scitex.ai
 </p>
+
+<!-- EOF -->
