@@ -1,16 +1,10 @@
-<!-- ---
-!-- Timestamp: 2026-01-10 19:11:07
-!-- Author: ywatanabe
-!-- File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/README.md
-!-- --- -->
-
-
 # CrossRef Local
 
 Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
 
-![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
-![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
+[![Tests](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 ## Why CrossRef Local?
 
@@ -28,8 +22,9 @@ Perfect for: RAG systems, research assistants, literature review automation.
 ## Features
 
 - **167M+ works** from CrossRef 2025 Public Data File
-- **Full-text search** via FTS5 (search titles, abstracts, authors in milliseconds)
+- **Full-text search** via FTS5 (titles, abstracts, authors in milliseconds)
 - **Impact factor calculation** from citation data
+- **Async API** for concurrent operations
 - **Python API** and **CLI** interface
 
 ## Installation
@@ -38,13 +33,16 @@ Perfect for: RAG systems, research assistants, literature review automation.
 pip install crossref-local
 ```
 
-Or from source:
+<details>
+<summary><strong>From source</strong></summary>
 
 ```bash
 git clone https://github.com/ywatanabe1989/crossref-local
 cd crossref-local
 make install
 ```
+
+</details>
 
 ## Quick Start
 
@@ -69,22 +67,30 @@ n = count("machine learning")  # 477,922 matches
 ### CLI
 
 ```bash
-# Search
 crossref-local search "CRISPR genome editing" -n 5
-
-# Get by DOI
 crossref-local get 10.1038/nature12373
-
-# Calculate impact factor
-crossref-local impact-factor Nature -y 2023
-# Output: Impact Factor: 54.067
-
-# Check setup
-crossref-local setup
+crossref-local impact-factor Nature -y 2023  # IF: 54.067
 ```
 
 <details>
-<summary><strong>Impact Factor Calculation</strong></summary>
+<summary><strong>Async API</strong></summary>
+
+```python
+from crossref_local import aio
+
+async def main():
+    # Concurrent searches
+    counts = await aio.count_many(["CRISPR", "neural network", "climate"])
+    # {'CRISPR': 63989, 'neural network': 579367, 'climate': 843759}
+
+    results = await aio.search("machine learning")
+    work = await aio.get("10.1038/nature12373")
+```
+
+</details>
+
+<details>
+<summary><strong>Impact Factor</strong></summary>
 
 ```python
 from crossref_local.impact_factor import ImpactFactorCalculator
@@ -96,16 +102,55 @@ with ImpactFactorCalculator() as calc:
 
 </details>
 
-## Database Setup
+## Performance
 
-The database is **1.5 TB** and must be built from CrossRef data files (~2 weeks).
+| Query | Matches | Time |
+|-------|---------|------|
+| `hippocampal sharp wave ripples` | 541 | 22ms |
+| `machine learning` | 477,922 | 113ms |
+| `CRISPR genome editing` | 12,170 | 257ms |
+
+Searching 167M records in milliseconds via FTS5.
+
+## Examples
 
 ```bash
-# Check current status
-crossref-local setup
+python examples/quickstart.py    # Interactive demo
+bash examples/cli_examples.sh    # CLI examples
+```
 
-# View build instructions
-make db-build-info
+<details>
+<summary><strong>Sample Output</strong></summary>
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔬 CROSSREF LOCAL - Research Database for the LLM Era
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  📊 167,008,748 scholarly works | 1,788,599,072 citations indexed
+
+  Query                               Matches       Time
+  ------------------------------------------------------
+  machine learning                    477,922      104ms
+  CRISPR cas9                          35,728       35ms
+  neural network                      579,367      138ms
+  ------------------------------------------------------
+  TOTAL                             1,093,017      277ms
+
+  → 1M+ papers indexed in 277ms!
+```
+
+See [examples/quickstart_output.txt](examples/quickstart_output.txt) for full output.
+
+</details>
+
+## Database Setup
+
+The database is **1.5 TB** and must be built from CrossRef data (~2 weeks).
+
+```bash
+crossref-local setup          # Check status
+make db-build-info            # View instructions
 ```
 
 <details>
@@ -113,7 +158,6 @@ make db-build-info
 
 1. Download CrossRef data (~100GB compressed):
    ```bash
-   # Via torrent
    aria2c "https://academictorrents.com/details/..."
    ```
 
@@ -138,11 +182,9 @@ make db-build-info
 <details>
 <summary><strong>Testing</strong></summary>
 
-Tests use a small database downloaded from CrossRef API:
-
 ```bash
-make test-db-create  # Download 500 records, build test DB
-make test            # Run 22 tests (0.05s)
+make test-db-create  # Download 500 records from CrossRef API
+make test            # Run tests
 ```
 
 </details>
@@ -152,37 +194,18 @@ make test            # Run 22 tests (0.05s)
 
 ```
 crossref_local/
-├── src/crossref_local/     # Python package
+├── src/crossref_local/
 │   ├── api.py              # search, get, count, info
+│   ├── aio.py              # Async API
 │   ├── cli.py              # CLI commands
 │   ├── fts.py              # Full-text search
-│   ├── models.py           # Work, SearchResult
 │   └── impact_factor/      # IF calculation
-├── scripts/                # Database build scripts
+├── examples/               # Usage examples
 ├── tests/                  # Test suite
 └── data/                   # Database (gitignored)
 ```
 
 </details>
-
-## Performance
-
-| Query | Matches | Time |
-|-------|---------|------|
-| `hippocampal sharp wave ripples` | 541 | 22ms |
-| `machine learning` | 477,922 | 113ms |
-| `CRISPR genome editing` | 12,170 | 257ms |
-
-Searching 167M records in milliseconds via FTS5.
-
-## Examples
-
-```bash
-python examples/demo_wow.py      # Interactive demo
-bash examples/demo_cli.sh        # CLI examples with output
-```
-
-See also: [examples/demo_wow.ipynb](examples/demo_wow.ipynb) for Jupyter notebook.
 
 <details>
 <summary><strong>Roadmap</strong></summary>
@@ -190,9 +213,9 @@ See also: [examples/demo_wow.ipynb](examples/demo_wow.ipynb) for Jupyter noteboo
 - [ ] Citation network visualization (like Connected Papers)
 - [ ] Impact factor trends over time
 - [ ] LangChain/LlamaIndex integrations
-- [ ] Async API support
+- [x] Async API support
 
-See [ROADMAP.md](ROADMAP.md) for full roadmap.
+See [ROADMAP.md](ROADMAP.md) for details.
 
 </details>
 
@@ -203,5 +226,3 @@ See [ROADMAP.md](ROADMAP.md) for full roadmap.
   <br>
   AGPL-3.0 · ywatanabe@scitex.ai
 </p>
-
-<!-- EOF -->
