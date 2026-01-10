@@ -7,15 +7,14 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
-## Impact Factor Validation
-
 <p align="center">
-  <img src="docs/if_validation.png" alt="Impact Factor Validation" width="600"/>
+  <img src="docs/if_validation.png" alt="Impact Factor Validation" width="500"/>
+  <br>
+  <em>Calculated IF vs JCR 2024 (Spearman r = 0.74, n = 33)</em>
 </p>
 
-Our calculated impact factors correlate with JCR 2024 (Spearman r = 0.74, n = 33 journals).
-
-## Why CrossRef Local?
+<details>
+<summary><strong>Why CrossRef Local?</strong></summary>
 
 **Built for the LLM era** - features that matter for AI research assistants:
 
@@ -28,9 +27,9 @@ Our calculated impact factors correlate with JCR 2024 (Spearman r = 0.74, n = 33
 
 Perfect for: RAG systems, research assistants, literature review automation.
 
-## Quick Start
+</details>
 
-<details open>
+<details>
 <summary><strong>Installation</strong></summary>
 
 ```bash
@@ -45,7 +44,7 @@ cd crossref-local && make install
 
 </details>
 
-<details open>
+<details>
 <summary><strong>Python API</strong></summary>
 
 ```python
@@ -66,7 +65,7 @@ n = count("machine learning")  # 477,922 matches
 
 </details>
 
-<details open>
+<details>
 <summary><strong>CLI</strong></summary>
 
 ```bash
@@ -84,10 +83,7 @@ crossref-local impact-factor Nature -y 2023  # IF: 54.067
 from crossref_local import aio
 
 async def main():
-    # Concurrent searches
     counts = await aio.count_many(["CRISPR", "neural network", "climate"])
-    # {'CRISPR': 63989, 'neural network': 579367, 'climate': 843759}
-
     results = await aio.search("machine learning")
     work = await aio.get("10.1038/nature12373")
 ```
@@ -95,7 +91,7 @@ async def main():
 </details>
 
 <details>
-<summary><strong>Impact Factor Calculation</strong></summary>
+<summary><strong>Impact Factor</strong></summary>
 
 ```python
 from crossref_local.impact_factor import ImpactFactorCalculator
@@ -105,12 +101,12 @@ with ImpactFactorCalculator() as calc:
     print(f"IF: {result['impact_factor']:.3f}")  # 54.067
 ```
 
-| Journal | Category | IF 2023 |
-|---------|----------|---------|
-| Nature | Multidisciplinary | 54.07 |
-| Science | Multidisciplinary | 46.17 |
-| Cell | Biology | 54.01 |
-| PLOS ONE | Open Access | 3.37 |
+| Journal | IF 2023 |
+|---------|---------|
+| Nature | 54.07 |
+| Science | 46.17 |
+| Cell | 54.01 |
+| PLOS ONE | 3.37 |
 
 </details>
 
@@ -120,20 +116,18 @@ with ImpactFactorCalculator() as calc:
 ```python
 from crossref_local import get_citing, get_cited, CitationNetwork
 
-# Get papers citing a DOI
 citing = get_citing("10.1038/nature12373")  # 1539 papers
-
-# Get papers a DOI cites
 cited = get_cited("10.1038/nature12373")
 
-# Build and visualize network (like Connected Papers)
+# Build visualization (like Connected Papers)
 network = CitationNetwork("10.1038/nature12373", depth=2)
 network.save_html("citation_network.html")
 ```
 
 </details>
 
-## Performance
+<details>
+<summary><strong>Performance</strong></summary>
 
 | Query | Matches | Time |
 |-------|---------|------|
@@ -143,56 +137,25 @@ network.save_html("citation_network.html")
 
 Searching 167M records in milliseconds via FTS5.
 
-<details>
-<summary><strong>Sample Output</strong></summary>
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  CROSSREF LOCAL - Research Database for the LLM Era
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  167,008,748 scholarly works | 1,788,599,072 citations indexed
-
-  Query                               Matches       Time
-  ------------------------------------------------------
-  machine learning                    477,922      104ms
-  CRISPR cas9                          35,728       35ms
-  neural network                      579,367      138ms
-  ------------------------------------------------------
-  TOTAL                             1,093,017      277ms
-
-  → 1M+ papers indexed in 277ms!
-```
-
 </details>
 
-## Database Setup
-
-The database is **1.5 TB** and must be built from CrossRef data.
-
 <details>
-<summary><strong>Build Steps</strong></summary>
+<summary><strong>Database Setup (1.5 TB)</strong></summary>
 
-1. Download CrossRef data (~100GB compressed):
-   ```bash
-   aria2c "https://academictorrents.com/details/..."
-   ```
+```bash
+# 1. Download CrossRef data (~100GB compressed)
+aria2c "https://academictorrents.com/details/..."
 
-2. Build SQLite database:
-   ```bash
-   pip install dois2sqlite
-   dois2sqlite build /path/to/crossref-data ./data/crossref.db
-   ```
+# 2. Build SQLite database
+pip install dois2sqlite
+dois2sqlite build /path/to/crossref-data ./data/crossref.db
 
-3. Build FTS5 index:
-   ```bash
-   make fts-build-screen
-   ```
+# 3. Build FTS5 index
+make fts-build-screen
 
-4. Build citations table:
-   ```bash
-   make citations-build-screen
-   ```
+# 4. Build citations table
+make citations-build-screen
+```
 
 </details>
 
@@ -210,17 +173,13 @@ make test            # Run tests
 <summary><strong>Project Structure</strong></summary>
 
 ```
-crossref_local/
-├── src/crossref_local/
-│   ├── api.py              # search, get, count, info
-│   ├── aio.py              # Async API
-│   ├── cli.py              # CLI commands
-│   ├── citations.py        # Citation network
-│   ├── fts.py              # Full-text search
-│   └── impact_factor/      # IF calculation
-├── examples/               # Usage examples
-├── tests/                  # Test suite
-└── data/                   # Database (gitignored)
+src/crossref_local/
+├── api.py           # search, get, count
+├── aio.py           # Async API
+├── cli.py           # CLI
+├── citations.py     # Citation network
+├── fts.py           # Full-text search
+└── impact_factor/   # IF calculation
 ```
 
 </details>
@@ -230,19 +189,19 @@ crossref_local/
 
 - [x] Full-text search (167M works)
 - [x] Impact factor calculation
-- [x] Async API support
-- [x] Citation network visualization
-- [ ] Impact factor trends over time
-- [ ] LangChain/LlamaIndex integrations
+- [x] Async API
+- [x] Citation network
+- [ ] IF trends over time
+- [ ] LangChain/LlamaIndex
 
-See [ROADMAP.md](ROADMAP.md) for details.
+See [ROADMAP.md](ROADMAP.md)
 
 </details>
 
 ---
 
 <p align="center">
-  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+  <a href="https://scitex.ai"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
   <br>
   AGPL-3.0 · ywatanabe@scitex.ai
 </p>
