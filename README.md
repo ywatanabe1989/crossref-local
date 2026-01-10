@@ -63,7 +63,8 @@ crossref-local impact-factor Nature -y 2023
 crossref-local setup
 ```
 
-### Impact Factor Calculation
+<details>
+<summary><strong>Impact Factor Calculation</strong></summary>
 
 ```python
 from crossref_local.impact_factor import ImpactFactorCalculator
@@ -72,6 +73,8 @@ with ImpactFactorCalculator() as calc:
     result = calc.calculate_impact_factor("Nature", target_year=2023)
     print(f"IF: {result['impact_factor']:.3f}")  # 54.067
 ```
+
+</details>
 
 ## Database Setup
 
@@ -85,7 +88,8 @@ crossref-local setup
 make db-build-info
 ```
 
-### Build Steps
+<details>
+<summary><strong>Build Steps</strong></summary>
 
 1. Download CrossRef data (~100GB compressed):
    ```bash
@@ -109,7 +113,10 @@ make db-build-info
    make citations-build-screen
    ```
 
-## Testing
+</details>
+
+<details>
+<summary><strong>Testing</strong></summary>
 
 Tests use a small database downloaded from CrossRef API:
 
@@ -118,7 +125,10 @@ make test-db-create  # Download 500 records, build test DB
 make test            # Run 22 tests (0.05s)
 ```
 
-## Project Structure
+</details>
+
+<details>
+<summary><strong>Project Structure</strong></summary>
 
 ```
 crossref_local/
@@ -133,6 +143,8 @@ crossref_local/
 └── data/                   # Database (gitignored)
 ```
 
+</details>
+
 ## Performance
 
 | Query | Matches | Time |
@@ -142,8 +154,6 @@ crossref_local/
 | `CRISPR genome editing` | 12,170 | 257ms |
 
 Searching 167M records in milliseconds via FTS5.
-
-## License
 
 ---
 
