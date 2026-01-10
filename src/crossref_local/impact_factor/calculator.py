@@ -15,6 +15,7 @@ from collections import defaultdict
 import logging
 
 from .journal_lookup import JournalLookup
+from ..config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -30,20 +31,23 @@ class ImpactFactorCalculator:
     - Journal identification by name or ISSN
     """
 
-    def __init__(self, db_path: str = "/mnt/nas_ug/crossref_local/data/crossref.db"):
+    def __init__(self, db_path: Optional[str] = None):
         """
         Initialize calculator with database connection.
 
         Args:
-            db_path: Path to CrossRef SQLite database
+            db_path: Path to CrossRef SQLite database. Auto-detects if None.
         """
-        self.db_path = Path(db_path)
-        if not self.db_path.exists():
-            raise FileNotFoundError(f"Database not found: {db_path}")
+        if db_path is None:
+            self.db_path = Config.get_db_path()
+        else:
+            self.db_path = Path(db_path)
+            if not self.db_path.exists():
+                raise FileNotFoundError(f"Database not found: {db_path}")
 
         self.conn = None
         self._connect()
-        self._journal_lookup = JournalLookup(str(db_path))
+        self._journal_lookup = JournalLookup(str(self.db_path))
 
     def _connect(self):
         """Establish database connection."""

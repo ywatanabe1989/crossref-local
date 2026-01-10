@@ -677,3 +677,6 @@ flycheck_*.el
 ### Source: /home/ywatanabe/.git-templates/.gitignore-templates/Custom/SLURM.gitignore ###
 slurm_logs
 GITIGNORED/
+# Test fixtures (generated)
+tests/fixtures/*.db
+tests/fixtures/*.json

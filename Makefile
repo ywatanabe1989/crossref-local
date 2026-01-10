@@ -1,22 +1,123 @@
 # -*- mode: makefile-gmake -*-
 # CrossRef Local - Root Makefile
-# Thin dispatcher - delegates to scripts/
 #
-# Usage: make <target>
-#   make status    - Show database status and health
-#   make db-info   - Show database schema and row counts
-#   make help      - Show all available targets
+# Quick Start:
+#   make install   - Install package
+#   make test      - Run tests
+#   make status    - Show database status
 
-.PHONY: help status db-info db-schema db-indices fts-build fts-status \
+.PHONY: help install dev test status db-info db-schema db-indices fts-build fts-status \
         citations-status citations-rebuild check clean
 
 # Paths
 PROJECT_ROOT := $(shell pwd)
 DB_PATH := $(PROJECT_ROOT)/data/crossref.db
 SCRIPTS := $(PROJECT_ROOT)/scripts
+VENV := $(PROJECT_ROOT)/.venv
+PYTHON := $(VENV)/bin/python
+PIP := $(VENV)/bin/pip
 
 # Default target
 .DEFAULT_GOAL := help
+
+##@ Quick Start (New Users Start Here)
+
+install: venv ## Install package (first time setup)
+	@echo "Installing crossref-local..."
+	@$(PIP) install -e . -q
+	@echo ""
+	@echo "✓ Package installed!"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Get database: make db-download  OR  make db-build"
+	@echo "  2. Verify: make status"
+	@echo "  3. Test: crossref-local search 'machine learning'"
+
+venv: ## Create virtual environment
+	@if [ ! -d "$(VENV)" ]; then \
+		echo "Creating virtual environment..."; \
+		python3 -m venv $(VENV); \
+	fi
+
+dev: venv ## Install with dev dependencies
+	@$(PIP) install -e ".[dev]" -q
+	@echo "✓ Dev environment ready"
+
+test: ## Run tests
+	@$(PYTHON) -m pytest tests/ -v
+
+test-quick: ## Run tests (quick, no output)
+	@$(PYTHON) -m pytest tests/ -q
+
+test-db-create: venv ## Download CrossRef samples and create test database
+	@echo "Creating test database from CrossRef API..."
+	@$(PYTHON) scripts/create_test_db.py
+	@echo ""
+	@echo "Test database created. Run: make test"
+
+test-db-status: ## Check test database status
+	@if [ -f "tests/fixtures/test_crossref.db" ]; then \
+		echo "Test database: tests/fixtures/test_crossref.db"; \
+		echo "Size: $$(du -h tests/fixtures/test_crossref.db | cut -f1)"; \
+		$(PYTHON) -c "import sqlite3; c=sqlite3.connect('tests/fixtures/test_crossref.db'); print(f'Works: {c.execute(\"SELECT COUNT(*) FROM works\").fetchone()[0]}')"; \
+	else \
+		echo "Test database not found. Run: make test-db-create"; \
+	fi
+
+##@ Database Setup
+
+db-info-size: ## Show database size requirements
+	@echo "CrossRef Database Size"
+	@echo "======================"
+	@echo ""
+	@echo "  Database file:     ~1.5 TB"
+	@echo "  Source data:       ~100 GB (compressed)"
+	@echo "  Build time:        ~2 weeks"
+	@echo "  Disk space needed: ~2 TB"
+	@echo ""
+	@echo "Due to size, pre-built downloads are not available."
+	@echo "See: make db-build-info"
+
+db-build-info: ## Show how to build database from scratch
+	@echo "Building CrossRef Database from Scratch"
+	@echo "========================================"
+	@echo ""
+	@echo "Prerequisites:"
+	@echo "  - CrossRef data files (~100GB compressed)"
+	@echo "  - ~500GB free disk space"
+	@echo "  - ~2 weeks of processing time"
+	@echo ""
+	@echo "Steps:"
+	@echo "  1. Get CrossRef data: https://www.crossref.org/blog/2023-public-data-file-now-available/"
+	@echo "  2. Install dois2sqlite: pip install dois2sqlite"
+	@echo "  3. Build base DB: dois2sqlite build /path/to/crossref-data ./data/crossref.db"
+	@echo "  4. Build indices: make create-missing-indices"
+	@echo "  5. Build FTS5: make fts-build-screen  (runs in screen, ~60 hours)"
+	@echo "  6. Build citations: make citations-build-screen  (runs in screen, ~days)"
+	@echo ""
+	@echo "For detailed instructions: cat scripts/database/README.md"
+
+fts-build-screen: ## Build FTS5 index in screen session (recommended)
+	@echo "Starting FTS5 build in screen session 'fts-build'..."
+	@screen -dmS fts-build bash -c 'cd $(PROJECT_ROOT) && $(PYTHON) $(SCRIPTS)/database/05_build_fts5_index.py 2>&1 | tee fts_build.log'
+	@echo ""
+	@echo "✓ Started in background!"
+	@echo ""
+	@echo "Commands:"
+	@echo "  screen -r fts-build     # Attach to see progress"
+	@echo "  Ctrl-A D                # Detach from screen"
+	@echo "  tail -f fts_build.log   # Watch log file"
+	@echo "  make fts-status         # Check status"
+
+citations-build-screen: ## Build citations table in screen session
+	@echo "Starting citations build in screen session 'citations-build'..."
+	@screen -dmS citations-build bash -c 'cd $(PROJECT_ROOT) && $(PYTHON) $(SCRIPTS)/database/03_rebuild_citations_table_optimized.py 2>&1 | tee citations_build.log'
+	@echo ""
+	@echo "✓ Started in background!"
+	@echo ""
+	@echo "Commands:"
+	@echo "  screen -r citations-build  # Attach to see progress"
+	@echo "  tail -f citations_build.log"
 
 ##@ General
 
