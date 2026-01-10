@@ -122,6 +122,10 @@ with ImpactFactorCalculator() as calc:
 <details>
 <summary><strong>Citation Network</strong></summary>
 
+<p align="center">
+  <img src="docs/citation_network.png" alt="Citation Network" width="500"/>
+</p>
+
 ```python
 from crossref_local import get_citing, get_cited, CitationNetwork
 
