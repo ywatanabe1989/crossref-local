@@ -5,6 +5,19 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 
+## Why CrossRef Local?
+
+**Built for the LLM era** - features that matter for AI research assistants:
+
+| Feature | Benefit |
+|---------|---------|
+| 📝 **Abstracts** | Full text for semantic understanding |
+| 📊 **Impact Factor** | Filter by journal quality |
+| 🔗 **Citations** | Prioritize influential papers |
+| ⚡ **Speed** | 167M records in ms, no rate limits |
+
+Perfect for: RAG systems, research assistants, literature review automation.
+
 ## Features
 
 - **167M+ works** from CrossRef 2025 Public Data File
@@ -154,6 +167,27 @@ crossref_local/
 | `CRISPR genome editing` | 12,170 | 257ms |
 
 Searching 167M records in milliseconds via FTS5.
+
+## Examples
+
+```bash
+python examples/demo_wow.py      # Interactive demo
+bash examples/demo_cli.sh        # CLI examples with output
+```
+
+See also: [examples/demo_wow.ipynb](examples/demo_wow.ipynb) for Jupyter notebook.
+
+<details>
+<summary><strong>Roadmap</strong></summary>
+
+- [ ] Citation network visualization (like Connected Papers)
+- [ ] Impact factor trends over time
+- [ ] LangChain/LlamaIndex integrations
+- [ ] Async API support
+
+See [ROADMAP.md](ROADMAP.md) for full roadmap.
+
+</details>
 
 ---
 
