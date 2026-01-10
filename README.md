@@ -1,203 +1,148 @@
-<!-- ---
-!-- Timestamp: 2026-01-07 23:02:46
-!-- Author: ywatanabe
-!-- File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/README.md
-!-- --- -->
+# CrossRef Local
 
-# CrossRef Local Database
+Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
 
-Local hosting and analysis tools for CrossRef 2025 Public Data File (167M papers, 1.4TB).
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
+![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 
-<p align="center">
-  <img src="examples/impact_factor/02_compare_jcr_plot_out/scatter_calc_vs_jcr.png" alt="IF Validation" width="500"/>
-</p>
+## Features
 
-## Components
+- **167M+ works** from CrossRef 2025 Public Data File
+- **Full-text search** via FTS5 (search titles, abstracts, authors in milliseconds)
+- **Impact factor calculation** from citation data
+- **Python API** and **CLI** interface
 
-| Directory | Description |
-|-----------|-------------|
-| [`impact_factor/`](./impact_factor/) | Journal impact factor calculator |
-| [`vendor/dois2sqlite/`](./vendor/dois2sqlite/) | JSON to SQLite converter (from CrossRef Labs) |
-| [`vendor/labs-data-file-api/`](./vendor/labs-data-file-api/) | REST API server (from CrossRef Labs) |
-| `data/` | Database storage (gitignored) |
+## Installation
+
+```bash
+pip install crossref-local
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/ywatanabe1989/crossref-local
+cd crossref-local
+make install
+```
 
 ## Quick Start
 
-```bash
-# Calculate Impact Factor
-cd impact_factor
-python cli/calculate_if.py --journal "Nature" --year 2024
+### Python API
 
-# Query API
-curl "http://localhost:3333/api/search/?doi=10.1038/nature12373"
+```python
+from crossref_local import search, get, count
+
+# Full-text search (22ms for 541 matches across 167M records)
+results = search("hippocampal sharp wave ripples")
+for work in results:
+    print(f"{work.title} ({work.year})")
+
+# Get by DOI
+work = get("10.1126/science.aax0758")
+print(work.citation())
+
+# Count matches
+n = count("machine learning")  # 477,922 matches
 ```
 
----
-
-<details>
-<summary><strong>Setup Guide</strong></summary>
-
-### 1. Download CrossRef Data
+### CLI
 
 ```bash
-# Download via torrent (168GB compressed)
-aria2c --continue=true --max-connection-per-server=16 \
-  "https://academictorrents.com/details/e0eda0104902d61c025e27e4846b66491d4c9f98"
+# Search
+crossref-local search "CRISPR genome editing" -n 5
+
+# Get by DOI
+crossref-local get 10.1038/nature12373
+
+# Calculate impact factor
+crossref-local impact-factor Nature -y 2023
+# Output: Impact Factor: 54.067
+
+# Check setup
+crossref-local setup
 ```
 
-### 2. Create Database
+### Impact Factor Calculation
+
+```python
+from crossref_local.impact_factor import ImpactFactorCalculator
+
+with ImpactFactorCalculator() as calc:
+    result = calc.calculate_impact_factor("Nature", target_year=2023)
+    print(f"IF: {result['impact_factor']:.3f}")  # 54.067
+```
+
+## Database Setup
+
+The database is **1.5 TB** and must be built from CrossRef data files (~2 weeks).
 
 ```bash
-cd vendor/dois2sqlite
-python3.11 -m venv .env && source .env/bin/activate
-pip install -e .
+# Check current status
+crossref-local setup
 
-# Create and load database
-dois2sqlite create ./data/crossref.db
-dois2sqlite load "./data/March 2025 Public Data File from Crossref" ./data/crossref.db \
-  --n-jobs 8 --commit-size 100000
-dois2sqlite index ./data/crossref.db
+# View build instructions
+make db-build-info
 ```
 
-### 3. Run API Server
+### Build Steps
+
+1. Download CrossRef data (~100GB compressed):
+   ```bash
+   # Via torrent
+   aria2c "https://academictorrents.com/details/..."
+   ```
+
+2. Build SQLite database:
+   ```bash
+   pip install dois2sqlite
+   dois2sqlite build /path/to/crossref-data ./data/crossref.db
+   ```
+
+3. Build FTS5 index (~60 hours):
+   ```bash
+   make fts-build-screen
+   ```
+
+4. Build citations table (~days):
+   ```bash
+   make citations-build-screen
+   ```
+
+## Testing
+
+Tests use a small database downloaded from CrossRef API:
 
 ```bash
-cd vendor/labs-data-file-api
-python3 -m venv .env && source .env/bin/activate
-pip install -r requirements.txt
-ln -s ../../data/crossref.db crossref.db
-python3 manage.py migrate
-python main.py index-all-with-location --data-directory "../../data/March 2025 Public Data File from Crossref"
-python3 manage.py runserver 0.0.0.0:3333
+make test-db-create  # Download 500 records, build test DB
+make test            # Run 22 tests (0.05s)
 ```
 
-</details>
-
-<details>
-<summary><strong>Impact Factor Calculator</strong></summary>
-
-**Results**: Strong rank correlation (Spearman r = 0.736) with JCR values across 33 journals.
-
-**Important Limitation**: Some publishers (notably Elsevier journals like *The Lancet*, *NEJM*) don't deposit complete reference lists to CrossRef, resulting in low citation coverage (<10%) and unreliable IF calculations. Journals with >10% coverage show excellent agreement (ratio 0.96-1.46).
-
-| Coverage | Journals | Accuracy |
-|----------|----------|----------|
-| >10% | Nature, Science, Cell, most neuroscience | Reliable (within 50% of JCR) |
-| <10% | The Lancet, NEJM, IEEE, eLife | Unreliable (use with caution) |
-
-Run validation: `./examples/impact_factor/run_all_demos.sh` ([sample output](examples/impact_factor/run_all_demos.sh.log))
-
-### Setup (One-Time)
-
-Rebuild citations table for fast IF calculations:
-
-```bash
-cd impact_factor
-screen -S citations-rebuild
-python scripts/database/rebuild_citations_table.py \
-  --db ../data/crossref.db --batch-size 8192
-# Takes 12-48 hours, reduces IF calculation from 5+ min to < 1 sec
-```
-
-### Usage
-
-```bash
-# Single journal
-python cli/calculate_if.py --journal "Nature" --year 2024
-
-# Using ISSN (faster)
-python cli/calculate_if.py --issn "0028-0836" --year 2024
-
-# Batch processing
-echo -e "Nature\nScience\nCell" > journals.txt
-python cli/calculate_if.py --journal-file journals.txt --year 2024 --output results.csv
-
-# 5-year impact factor
-python cli/calculate_if.py --journal "Nature" --year 2024 --window 5
-```
-
-See [impact_factor/docs/](./impact_factor/docs/) for detailed documentation.
-
-</details>
-
-<details>
-<summary><strong>API Endpoints</strong></summary>
-
-### Search by DOI
-
-```bash
-curl "http://localhost:3333/api/search/?doi=10.1001/.387"
-```
-
-### Search by Title
-
-```bash
-curl "http://localhost:3333/api/search/?title=deep%20learning&year=2020"
-```
-
-### Search by Author
-
-```bash
-curl "http://localhost:3333/api/search/?authors=smith&year=2020"
-```
-
-### Combined Search
-
-```bash
-curl "http://localhost:3333/api/search/?title=medicine&year=2020&authors=jones"
-```
-
-</details>
-
-<details>
-<summary><strong>Project Structure</strong></summary>
+## Project Structure
 
 ```
 crossref_local/
-├── README.md                 # This file
-├── impact_factor/            # Impact factor calculator
-│   ├── cli/                  # Command-line tools
-│   ├── src/                  # Core library
-│   ├── scripts/              # Database maintenance
-│   ├── tests/                # Test suite
-│   └── docs/                 # Documentation
-├── vendor/                   # External tools (vendored)
-│   ├── dois2sqlite/          # JSON to SQLite converter
-│   └── labs-data-file-api/   # REST API server
-├── data/                     # Database (gitignored)
-│   └── crossref.db           # 1.4TB SQLite database
-├── docs/                     # Root documentation
-└── legacy/                   # Historical files (gitignored)
+├── src/crossref_local/     # Python package
+│   ├── api.py              # search, get, count, info
+│   ├── cli.py              # CLI commands
+│   ├── fts.py              # Full-text search
+│   ├── models.py           # Work, SearchResult
+│   └── impact_factor/      # IF calculation
+├── scripts/                # Database build scripts
+├── tests/                  # Test suite
+└── data/                   # Database (gitignored)
 ```
 
-</details>
+## Performance
 
-<details>
-<summary><strong>Data Sources</strong></summary>
+| Query | Matches | Time |
+|-------|---------|------|
+| `hippocampal sharp wave ripples` | 541 | 22ms |
+| `machine learning` | 477,922 | 113ms |
+| `CRISPR genome editing` | 12,170 | 257ms |
 
-- **CrossRef Public Data File**: [March 2025 release](https://www.crossref.org/learning/public-data-file/)
-- **Download**: [Academic Torrents](https://academictorrents.com/details/e0eda0104902d61c025e27e4846b66491d4c9f98)
-- **Size**: 168GB compressed, 1.4TB database
-- **Papers**: 167,008,748 records
-
-### Vendored Dependencies
-
-Original repositories (preserved locally in case of upstream changes):
-- [gitlab.com/crossref/labs/dois2sqlite](https://gitlab.com/crossref/labs/dois2sqlite)
-- [gitlab.com/crossref/labs/labs-data-file-api](https://gitlab.com/crossref/labs/labs-data-file-api)
-
-</details>
+Searching 167M records in milliseconds via FTS5.
 
 ## License
 
-For academic and research purposes. CrossRef data usage subject to [CrossRef terms](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-metadata-license-information/).
-
----
-
-<p align="center">
-  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
-  <br>
-  AGPL-3.0 · ywatanabe@scitex.ai
-</p>
-
-<!-- EOF -->
+MIT
