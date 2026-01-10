@@ -42,6 +42,20 @@ git clone https://github.com/ywatanabe1989/crossref-local
 cd crossref-local && make install
 ```
 
+Database setup (1.5 TB, ~2 weeks to build):
+```bash
+# 1. Download CrossRef data (~100GB compressed)
+aria2c "https://academictorrents.com/details/..."
+
+# 2. Build SQLite database (~days)
+pip install dois2sqlite
+dois2sqlite build /path/to/crossref-data ./data/crossref.db
+
+# 3. Build FTS5 index (~60 hours) & citations table (~days)
+make fts-build-screen
+make citations-build-screen
+```
+
 </details>
 
 <details>
@@ -116,7 +130,7 @@ cited = get_cited("10.1038/nature12373")
 
 # Build visualization (like Connected Papers)
 network = CitationNetwork("10.1038/nature12373", depth=2)
-network.save_html("citation_network.html")
+network.save_html("citation_network.html")  # requires: pip install crossref-local[viz]
 ```
 
 </details>
@@ -131,26 +145,6 @@ network.save_html("citation_network.html")
 | `CRISPR genome editing` | 12,170 | 257ms |
 
 Searching 167M records in milliseconds via FTS5.
-
-</details>
-
-<details>
-<summary><strong>Database Setup (1.5 TB)</strong></summary>
-
-```bash
-# 1. Download CrossRef data (~100GB compressed)
-aria2c "https://academictorrents.com/details/..."
-
-# 2. Build SQLite database
-pip install dois2sqlite
-dois2sqlite build /path/to/crossref-data ./data/crossref.db
-
-# 3. Build FTS5 index
-make fts-build-screen
-
-# 4. Build citations table
-make citations-build-screen
-```
 
 </details>
 
