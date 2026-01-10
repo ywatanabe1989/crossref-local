@@ -60,8 +60,8 @@ def generate_network_plot(network, doi, output_path):
     ax.set_title(f"Citation Network: {len(G.nodes())} papers", fontsize=8)
     ax.axis("off")
 
-    # Save with scitex - use white background
-    splt.savefig(output_path, facecolor='white', bbox_inches=None)
+    # Save with scitex - use white background (use fig.savefig for facecolor fix)
+    fig.savefig(output_path, facecolor='white')
     splt.close()
 
     return output_path

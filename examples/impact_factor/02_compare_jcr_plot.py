@@ -101,7 +101,7 @@ def plot_scatter_comparison(data, output_path):
     )
 
     ax.legend(loc="lower right")
-    splt.savefig(output_path, facecolor='white')
+    fig.savefig(output_path, facecolor='white')
     splt.close()
     print(f"Saved: {output_path}")
 
