@@ -7,6 +7,14 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
+## Impact Factor Validation
+
+<p align="center">
+  <img src="docs/if_validation.png" alt="Impact Factor Validation" width="600"/>
+</p>
+
+Our calculated impact factors correlate with JCR 2024 (Spearman r = 0.74, n = 33 journals).
+
 ## Why CrossRef Local?
 
 **Built for the LLM era** - features that matter for AI research assistants:
@@ -20,34 +28,25 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 
 Perfect for: RAG systems, research assistants, literature review automation.
 
-## Features
+## Quick Start
 
-- **167M+ works** from CrossRef 2025 Public Data File
-- **Full-text search** via FTS5 (titles, abstracts, authors in milliseconds)
-- **Impact factor calculation** from citation data
-- **Async API** for concurrent operations
-- **Python API** and **CLI** interface
-
-## Installation
+<details open>
+<summary><strong>Installation</strong></summary>
 
 ```bash
 pip install crossref-local
 ```
 
-<details>
-<summary><strong>From source</strong></summary>
-
+From source:
 ```bash
 git clone https://github.com/ywatanabe1989/crossref-local
-cd crossref-local
-make install
+cd crossref-local && make install
 ```
 
 </details>
 
-## Quick Start
-
-### Python API
+<details open>
+<summary><strong>Python API</strong></summary>
 
 ```python
 from crossref_local import search, get, count
@@ -65,13 +64,18 @@ print(work.citation())
 n = count("machine learning")  # 477,922 matches
 ```
 
-### CLI
+</details>
+
+<details open>
+<summary><strong>CLI</strong></summary>
 
 ```bash
 crossref-local search "CRISPR genome editing" -n 5
 crossref-local get 10.1038/nature12373
 crossref-local impact-factor Nature -y 2023  # IF: 54.067
 ```
+
+</details>
 
 <details>
 <summary><strong>Async API</strong></summary>
@@ -91,7 +95,7 @@ async def main():
 </details>
 
 <details>
-<summary><strong>Impact Factor</strong></summary>
+<summary><strong>Impact Factor Calculation</strong></summary>
 
 ```python
 from crossref_local.impact_factor import ImpactFactorCalculator
@@ -99,6 +103,32 @@ from crossref_local.impact_factor import ImpactFactorCalculator
 with ImpactFactorCalculator() as calc:
     result = calc.calculate_impact_factor("Nature", target_year=2023)
     print(f"IF: {result['impact_factor']:.3f}")  # 54.067
+```
+
+| Journal | Category | IF 2023 |
+|---------|----------|---------|
+| Nature | Multidisciplinary | 54.07 |
+| Science | Multidisciplinary | 46.17 |
+| Cell | Biology | 54.01 |
+| PLOS ONE | Open Access | 3.37 |
+
+</details>
+
+<details>
+<summary><strong>Citation Network</strong></summary>
+
+```python
+from crossref_local import get_citing, get_cited, CitationNetwork
+
+# Get papers citing a DOI
+citing = get_citing("10.1038/nature12373")  # 1539 papers
+
+# Get papers a DOI cites
+cited = get_cited("10.1038/nature12373")
+
+# Build and visualize network (like Connected Papers)
+network = CitationNetwork("10.1038/nature12373", depth=2)
+network.save_html("citation_network.html")
 ```
 
 </details>
@@ -113,22 +143,15 @@ with ImpactFactorCalculator() as calc:
 
 Searching 167M records in milliseconds via FTS5.
 
-## Examples
-
-```bash
-python examples/quickstart.py    # Interactive demo
-bash examples/cli_examples.sh    # CLI examples
-```
-
 <details>
 <summary><strong>Sample Output</strong></summary>
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🔬 CROSSREF LOCAL - Research Database for the LLM Era
+  CROSSREF LOCAL - Research Database for the LLM Era
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  📊 167,008,748 scholarly works | 1,788,599,072 citations indexed
+  167,008,748 scholarly works | 1,788,599,072 citations indexed
 
   Query                               Matches       Time
   ------------------------------------------------------
@@ -141,18 +164,11 @@ bash examples/cli_examples.sh    # CLI examples
   → 1M+ papers indexed in 277ms!
 ```
 
-See [examples/quickstart_output.txt](examples/quickstart_output.txt) for full output.
-
 </details>
 
 ## Database Setup
 
-The database is **1.5 TB** and must be built from CrossRef data (~2 weeks).
-
-```bash
-crossref-local setup          # Check status
-make db-build-info            # View instructions
-```
+The database is **1.5 TB** and must be built from CrossRef data.
 
 <details>
 <summary><strong>Build Steps</strong></summary>
@@ -168,12 +184,12 @@ make db-build-info            # View instructions
    dois2sqlite build /path/to/crossref-data ./data/crossref.db
    ```
 
-3. Build FTS5 index (~60 hours):
+3. Build FTS5 index:
    ```bash
    make fts-build-screen
    ```
 
-4. Build citations table (~days):
+4. Build citations table:
    ```bash
    make citations-build-screen
    ```
@@ -199,6 +215,7 @@ crossref_local/
 │   ├── api.py              # search, get, count, info
 │   ├── aio.py              # Async API
 │   ├── cli.py              # CLI commands
+│   ├── citations.py        # Citation network
 │   ├── fts.py              # Full-text search
 │   └── impact_factor/      # IF calculation
 ├── examples/               # Usage examples
@@ -211,10 +228,12 @@ crossref_local/
 <details>
 <summary><strong>Roadmap</strong></summary>
 
-- [ ] Citation network visualization (like Connected Papers)
+- [x] Full-text search (167M works)
+- [x] Impact factor calculation
+- [x] Async API support
+- [x] Citation network visualization
 - [ ] Impact factor trends over time
 - [ ] LangChain/LlamaIndex integrations
-- [x] Async API support
 
 See [ROADMAP.md](ROADMAP.md) for details.
 
