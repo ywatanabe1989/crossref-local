@@ -7,8 +7,8 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 <p align="center">
-  <img src="docs/if_validation.png" alt="Impact Factor Validation" width="400"/>
-  <img src="docs/citation_network.png" alt="Citation Network" width="400"/>
+  <img src="examples/impact_factor/02_compare_jcr_plot_out/scatter_calc_vs_jcr.png" alt="Impact Factor Validation" width="400"/>
+  <img src="examples/citation_network/citation_network.png" alt="Citation Network" width="400"/>
   <br>
   <em>Impact Factor Validation (r=0.74) &nbsp;|&nbsp; Citation Network Visualization</em>
 </p>

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Timestamp: "2026-01-10 20:45:00 (ywatanabe)"
+# Timestamp: "2026-01-11 (ywatanabe)"
 # File: /home/ywatanabe/proj/crossref_local/examples/citation_network/generate_visualization.py
 
 """Generate citation network visualization for README.
@@ -16,53 +16,51 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 import scitex as stx
-import scitex.plt as splt
-import networkx as nx
+import figrecipe as fr
 from crossref_local import CitationNetwork
 
 
 def generate_network_plot(network, doi, output_path):
-    """Generate citation network visualization."""
+    """Generate citation network visualization using figrecipe."""
     G = network.to_networkx()
 
-    # Use scitex.plt with default 40mm width
-    fig, ax = splt.subplots()
-
-    # Layout with more spacing
-    pos = nx.spring_layout(G, k=3, iterations=100, seed=42)
-
-    # Sizes (smaller nodes)
-    sizes = [200 if n == doi else 80 for n in G.nodes()]
-
-    # Colors
-    colors = ["#2ecc71" if n == doi else "#3498db" for n in G.nodes()]
-
-    # Draw edges
-    nx.draw_networkx_edges(
-        G, pos, alpha=0.4, edge_color="gray", arrows=True, arrowsize=12, ax=ax
-    )
-
-    # Draw nodes
-    nx.draw_networkx_nodes(
-        G, pos, node_size=sizes, node_color=colors, alpha=0.8, ax=ax
-    )
-
-    # Labels - 6pt font for inline text (scitex standard)
-    labels = {}
+    # Add node attributes for styling
     for n in G.nodes():
         node = network.nodes[n]
         title = node.title if node.title else "Unknown"
         short = title[:15] + "..." if len(title) > 15 else title
-        labels[n] = f"{short}\n({node.year})"
+        G.nodes[n]["label"] = f"{short}\n({node.year})"
+        G.nodes[n]["is_root"] = (n == doi)
 
-    nx.draw_networkx_labels(G, pos, labels, font_size=6, ax=ax)
+    # Use figrecipe with 28mm x 28mm (square for network)
+    fig, ax = fr.subplots(axes_width_mm=28, axes_height_mm=28)
+
+    # Draw graph with figrecipe's graph() method
+    ax.graph(
+        G,
+        layout="spring",
+        seed=42,
+        # Node styling - root node larger and green
+        node_size=lambda n, d: 200 if d.get("is_root") else 80,
+        node_color=lambda n, d: "#2ecc71" if d.get("is_root") else "#3498db",
+        node_alpha=0.8,
+        # Edge styling
+        edge_alpha=0.4,
+        edge_color="gray",
+        arrows=True,
+        arrowsize=12,
+        # Labels
+        labels="label",
+        font_size=6,
+        # Layout parameters
+        k=3,
+        iterations=100,
+    )
 
     ax.set_title(f"Citation Network: {len(G.nodes())} papers", fontsize=8)
-    ax.axis("off")
 
-    # Save with scitex - use white background (use fig.savefig for facecolor fix)
-    fig.savefig(output_path, facecolor='white')
-    splt.close()
+    # Save with white background (disable validation for font glyph issues)
+    fr.save(fig, output_path, validate=False)
 
     return output_path
 
@@ -71,8 +69,8 @@ def generate_network_plot(network, doi, output_path):
 def main(
     doi="10.1038/nature12373",
     depth=1,
-    max_citing=6,
-    max_cited=4,
+    max_citing=8,
+    max_cited=6,
     logger=stx.INJECTED,
 ):
     """Generate citation network visualization for README."""
