@@ -32,8 +32,8 @@ def generate_network_plot(network, doi, output_path):
         G.nodes[n]["label"] = f"{short}\n({node.year})"
         G.nodes[n]["is_root"] = (n == doi)
 
-    # Use figrecipe with 28mm x 28mm (square for network)
-    fig, ax = fr.subplots(axes_width_mm=28, axes_height_mm=28)
+    # Use figrecipe with 40mm x 28mm (same as IF validation)
+    fig, ax = fr.subplots(axes_width_mm=40, axes_height_mm=28)
 
     # Draw graph with figrecipe's graph() method
     ax.graph(
