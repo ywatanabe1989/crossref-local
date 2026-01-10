@@ -63,6 +63,15 @@ print(work.citation())
 n = count("machine learning")  # 477,922 matches
 ```
 
+Async API:
+```python
+from crossref_local import aio
+
+async def main():
+    counts = await aio.count_many(["CRISPR", "neural network", "climate"])
+    results = await aio.search("machine learning")
+```
+
 </details>
 
 <details>
@@ -72,20 +81,6 @@ n = count("machine learning")  # 477,922 matches
 crossref-local search "CRISPR genome editing" -n 5
 crossref-local get 10.1038/nature12373
 crossref-local impact-factor Nature -y 2023  # IF: 54.067
-```
-
-</details>
-
-<details>
-<summary><strong>Async API</strong></summary>
-
-```python
-from crossref_local import aio
-
-async def main():
-    counts = await aio.count_many(["CRISPR", "neural network", "climate"])
-    results = await aio.search("machine learning")
-    work = await aio.get("10.1038/nature12373")
 ```
 
 </details>
