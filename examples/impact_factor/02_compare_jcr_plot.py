@@ -16,8 +16,11 @@ import json
 from pathlib import Path
 
 import numpy as np
-import scitex.plt as splt
+import figrecipe as fr
 from scipy import stats
+
+# Load SCITEX style with white background
+fr.load_style("SCITEX", background="white")
 
 # Paths
 INPUT_DIR = Path(__file__).parent / "01_compare_jcr_out"
@@ -42,15 +45,8 @@ def load_latest_results():
 
 def plot_scatter_comparison(data, output_path):
     """Create scatter plot: Calculated IF vs JCR IF."""
-    # Use scitex.plt with explicit margins for consistent sizing
-    fig, ax = splt.subplots(
-        axes_width_mm=40,
-        axes_height_mm=28,
-        margin_left_mm=15,
-        margin_right_mm=5,
-        margin_bottom_mm=12,
-        margin_top_mm=8,
-    )
+    # Use figrecipe defaults
+    fig, ax = fr.subplots()
 
     # Extract data
     calc_if = [r["calc_if"] for r in data if r.get("jcr_if")]
@@ -93,11 +89,11 @@ def plot_scatter_comparison(data, output_path):
 
     ax.set_xlabel("JCR Impact Factor (2024)")
     ax.set_ylabel("Calculated Impact Factor\n(Local CrossRef)")
-    ax.set_title("Impact Factor Validation")
+    ax.set_title("Impact Factor Comparison")
     ax.set_xlim(0, max_val)
     ax.set_ylim(0, max_val)
 
-    # Add correlation text
+    # Add correlation text (6pt per SCITEX annotation style)
     text = f"Pearson r = {r_pearson:.3f}\nSpearman r = {r_spearman:.3f}\nn = {len(calc_if)}"
     ax.text(
         0.05,
@@ -105,11 +101,15 @@ def plot_scatter_comparison(data, output_path):
         text,
         transform=ax.transAxes,
         verticalalignment="top",
+        fontsize=6,
     )
 
     ax.legend(loc="lower right")
-    fig.savefig(output_path, facecolor='white')
-    splt.close()
+
+    # Set panel caption for composition (without panel letter - added during composition)
+    ax.set_caption("Correlation between calculated and JCR Impact Factors")
+
+    fr.save(fig, output_path, validate=False, verbose=False)
     print(f"Saved: {output_path}")
 
 

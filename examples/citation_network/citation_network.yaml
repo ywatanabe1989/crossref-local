@@ -1,0 +1,513 @@
+figrecipe: '1.0'
+id: fig_17fb4fb3
+created: '2026-01-11T12:36:33.053943'
+matplotlib_version: 3.10.8
+figure:
+  figsize:
+    - 2.7559055118110236
+    - 2.1653543307086616
+  dpi: 300
+  layout:
+    left: 0.2857142857142857
+    right: 0.8571428571428572
+    bottom: 0.2727272727272727
+    top: 0.7818181818181819
+    wspace: 0
+    hspace: 0
+  style:
+    axes_width_mm: 40
+    axes_height_mm: 28
+    axes_thickness_mm: 0.2
+    margins_left_mm: 1
+    margins_right_mm: 1
+    margins_bottom_mm: 1
+    margins_top_mm: 1
+    spacing_horizontal_mm: 10
+    spacing_vertical_mm: 15
+    ticks_length_mm: 0.8
+    ticks_thickness_mm: 0.2
+    ticks_direction: "out"
+    ticks_n_ticks_min: 3
+    ticks_n_ticks_max: 4
+    lines_trace_mm: 0.2
+    lines_errorbar_mm: 0.2
+    lines_errorbar_cap_mm: 0.8
+    markers_size_mm: 0.8
+    markers_scatter_mm: 0.8
+    markers_flier_mm: 0.8
+    markers_edge_width_mm:
+    boxplot_line_mm: 0.2
+    boxplot_whisker_mm: 0.2
+    boxplot_cap_mm: 0.2
+    boxplot_median_mm: 0.2
+    boxplot_median_color: "black"
+    boxplot_flier_edge_mm: 0.2
+    violinplot_line_mm: 0.2
+    violinplot_inner: "box"
+    violinplot_box_width_mm: 1.5
+    violinplot_whisker_mm: 0.2
+    violinplot_median_mm: 0.8
+    barplot_edge_mm: 0.2
+    histogram_edge_mm: 0.2
+    pie_text_pt: 6
+    pie_show_axes: false
+    imshow_show_axes: false
+    imshow_show_labels: false
+    fonts_family: "Arial"
+    fonts_axis_label_pt: 7
+    fonts_tick_label_pt: 7
+    fonts_title_pt: 8
+    fonts_suptitle_pt: 9
+    fonts_legend_pt: 6
+    fonts_annotation_pt: 6
+    padding_label_pt: 2.0
+    padding_tick_pt: 2.0
+    padding_title_pt: 4.0
+    output_dpi: 300
+    output_transparent: true
+    output_format: "pdf"
+    theme_mode: "light"
+    theme_colors:
+      figure_bg: "transparent"
+      axes_bg: "transparent"
+      legend_bg: "transparent"
+      text: "black"
+      spine: "black"
+      tick: "black"
+      grid: "#cccccc"
+    color_palette:
+      -   - 0
+          - 128
+          - 192
+      -   - 255
+          - 70
+          - 50
+      -   - 20
+          - 180
+          - 20
+      -   - 230
+          - 160
+          - 20
+      -   - 200
+          - 50
+          - 255
+      -   - 20
+          - 200
+          - 200
+      -   - 228
+          - 94
+          - 50
+      -   - 255
+          - 150
+          - 200
+    behavior_hide_top_spine: true
+    behavior_hide_right_spine: true
+    behavior_grid: false
+    behavior_auto_scale_axes: true
+    behavior_constrained_layout: false
+    margin_left_mm: 1
+    margin_right_mm: 1
+    margin_bottom_mm: 1
+    margin_top_mm: 1
+    space_w_mm: 10
+    space_h_mm: 15
+    tick_length_mm: 0.8
+    tick_thickness_mm: 0.2
+    n_ticks_min: 3
+    n_ticks_max: 4
+    trace_thickness_mm: 0.2
+    marker_size_mm: 0.8
+    font_family: "Arial"
+    axis_font_size_pt: 7
+    tick_font_size_pt: 7
+    title_font_size_pt: 8
+    suptitle_font_size_pt: 9
+    legend_font_size_pt: 6
+    label_pad_pt: 2.0
+    tick_pad_pt: 2.0
+    title_pad_pt: 4.0
+    dpi: 300
+    theme: "light"
+    hide_top_spine: true
+    hide_right_spine: true
+    grid: false
+    auto_scale_axes: true
+    constrained_layout: false
+  crop_info:
+    left: 224
+    upper: 89
+    right: 721
+    lower: 481
+    original_width: 826
+    original_height: 649
+    new_width: 497
+    new_height: 392
+axes:
+  ax_0_0:
+    calls:
+      - id: graph_000
+        function: graph
+        args: []
+        kwargs:
+          graph_data:
+            type: graph
+            directed: true
+            nodes:
+              - doi: 10.1038/nature12373
+                title: Nanometre-scale thermometry in a living cell
+                authors:
+                  - G. Kucsko
+                  - P. C. Maurer
+                  - N. Y. Yao
+                  - M. Kubo
+                  - H. J. Noh
+                  - P. K. Lo
+                  - H. Park
+                  - M. D. Lukin
+                year: 2013
+                journal: Nature
+                citation_count: 1539
+                depth: 0
+                label: "Nanometre-scale...\n(2013)"
+                is_root: true
+                id: 10.1038/nature12373
+                x: 0.022213244954336908
+                y: 0.030225242223624146
+              - doi: 10.1038/srep02668
+                title: Nanodiamond Landmarks for Subcellular Multimodal Optical 
+                  and Electron Imaging
+                authors:
+                  - Mark A. Zurbuchen
+                  - Michael P. Lake
+                  - Sirus A. Kohan
+                  - Belinda Leung
+                  - Louis-S. Bouchard
+                year: 2013
+                journal: Scientific Reports
+                citation_count: 23
+                depth: 1
+                label: "Nanodiamond Lan...\n(2013)"
+                is_root: false
+                id: 10.1038/srep02668
+                x: 0.9527044608974201
+                y: 0.2931195105849904
+              - doi: 10.1088/0953-8984/26/1/015305
+                title: The spin–spin zero-field splitting tensor in the 
+                  projector-augmented-wave method
+                authors:
+                  - Zoltán Bodrog
+                  - Adam Gali
+                year: 2013
+                journal: 'Journal of Physics: Condensed Matter'
+                citation_count: 31
+                depth: 1
+                label: "The spin–spin z...\n(2013)"
+                is_root: false
+                id: 10.1088/0953-8984/26/1/015305
+                x: -0.7126819723500358
+                y: -0.6767053942693921
+              - doi: 10.1073/pnas.1306825110
+                title: Fluorescence thermometry enhanced by the quantum 
+                  coherence of single spins in diamond
+                authors:
+                  - David M. Toyli
+                  - Charles F. de las Casas
+                  - David J. Christle
+                  - Viatcheslav V. Dobrovitski
+                  - David D. Awschalom
+                year: 2013
+                journal: Proceedings of the National Academy of Sciences
+                citation_count: 328
+                depth: 1
+                label: "Fluorescence th...\n(2013)"
+                is_root: false
+                id: 10.1073/pnas.1306825110
+                x: -0.8717641768946909
+                y: 0.541003915794175
+              - doi: 10.1038/nature.2013.13473
+                title: Nanothermometer takes the temperature of living cells
+                authors:
+                  - Davide Castelvecchi
+                year: 2013
+                journal: Nature
+                citation_count: 1
+                depth: 1
+                label: "Nanothermometer...\n(2013)"
+                is_root: false
+                id: 10.1038/nature.2013.13473
+                x: 0.7411170680479239
+                y: 0.6643846274121304
+              - doi: 10.1038/nmat3805
+                title: Observing bulk diamond spin coherence in high-purity 
+                  nanodiamonds
+                authors:
+                  - Helena S. Knowles
+                  - Dhiren M. Kara
+                  - Mete Atatüre
+                year: 2013
+                journal: Nature Materials
+                citation_count: 144
+                depth: 1
+                label: "Observing bulk ...\n(2013)"
+                is_root: false
+                id: 10.1038/nmat3805
+                x: -0.5782605665550679
+                y: 0.8904023857066533
+              - doi: 10.1021/nn403659n
+                title: Imaging of Plasmonic Heating in a Living Organism
+                authors:
+                  - Jon S. Donner
+                  - Sebastian A. Thompson
+                  - César Alonso-Ortega
+                  - Jordi Morales
+                  - Laura G. Rico
+                  - Susana I. C. O Santos
+                  - Romain Quidant
+                year: 2013
+                journal: ACS Nano
+                citation_count: 89
+                depth: 1
+                label: "Imaging of Plas...\n(2013)"
+                is_root: false
+                id: 10.1021/nn403659n
+                x: 1.0
+                y: -0.14065023101497243
+              - doi: 10.1021/nn404421b
+                title: Stimulated Emission Depletion Microscopy Resolves 
+                  Individual Nitrogen Vacancy Centers in Diamond Nanocrystals
+                authors:
+                  - Silvia Arroyo-Camejo
+                  - Marie-Pierre Adam
+                  - Mondher Besbes
+                  - Jean-Paul Hugonin
+                  - Vincent Jacques
+                  - Jean-Jacques Greffet
+                  - Jean-François Roch
+                  - Stefan W. Hell
+                  - François Treussart
+                year: 2013
+                journal: ACS Nano
+                citation_count: 116
+                depth: 1
+                label: "Stimulated Emis...\n(2013)"
+                is_root: false
+                id: 10.1021/nn404421b
+                x: -0.32781737532179817
+                y: -0.8746845755748028
+              - doi: 10.1038/500036b
+                title: Tiny thermometers used in living cells
+                authors:
+                  - Konstantin Sokolov
+                year: 2013
+                journal: Nature
+                citation_count: 15
+                depth: 1
+                label: "Tiny thermomete...\n(2013)"
+                is_root: false
+                id: 10.1038/500036b
+                x: -0.14629540199615002
+                y: 0.9279110365801151
+              - doi: 10.3402/nano.v3i0.11586
+                title: Nanoscale thermal probing
+                authors:
+                  - Yanan Yue
+                  - Xinwei Wang
+                year: 2012
+                journal: Nano Reviews
+                citation_count: 121
+                depth: 1
+                label: "Nanoscale therm...\n(2012)"
+                is_root: false
+                id: 10.3402/nano.v3i0.11586
+                x: 0.46878542586191607
+                y: -0.80833589343289
+              - doi: 10.1038/nature03509
+                title: Dynamics of Drosophila embryonic patterning network 
+                  perturbed in space and time using microfluidics
+                authors:
+                  - Elena M. Lucchetta
+                  - Ji Hwan Lee
+                  - Lydia A. Fu
+                  - Nipam H. Patel
+                  - Rustem F. Ismagilov
+                year: 2005
+                journal: Nature
+                citation_count: 399
+                depth: 1
+                label: "Dynamics of Dro...\n(2005)"
+                is_root: false
+                id: 10.1038/nature03509
+                x: 0.8023148680666188
+                y: -0.5644707836130483
+              - doi: 10.1016/j.cell.2009.11.006
+                title: H2A.Z-Containing Nucleosomes Mediate the Thermosensory 
+                  Response in Arabidopsis
+                authors:
+                  - S. Vinod Kumar
+                  - Philip A. Wigge
+                year: 2010
+                journal: Cell
+                citation_count: 787
+                depth: 1
+                label: "H2A.Z-Containin...\n(2010)"
+                is_root: false
+                id: 10.1016/j.cell.2009.11.006
+                x: -0.8802914483336145
+                y: -0.31247586351060863
+              - doi: 10.1038/nature11804
+                title: Scaling of embryonic patterning based on phase-gradient 
+                  encoding
+                authors:
+                  - Volker M. Lauschke
+                  - Charisios D. Tsiairis
+                  - Paul François
+                  - Alexander Aulehla
+                year: 2012
+                journal: Nature
+                citation_count: 187
+                depth: 1
+                label: "Scaling of embr...\n(2012)"
+                is_root: false
+                id: 10.1038/nature11804
+                x: 0.39346422127720027
+                y: 0.9169813393875235
+              - doi: 10.1038/nmeth.1278
+                title: Infrared laser–mediated gene induction in targeted single
+                  cells in vivo
+                authors:
+                  - Yasuhiro Kamei
+                  - Motoshi Suzuki
+                  - Kenjiro Watanabe
+                  - Kazuhiro Fujimori
+                  - Takashi Kawasaki
+                  - Tomonori Deguchi
+                  - Yoshihiro Yoneda
+                  - Takeshi Todo
+                  - Shin Takagi
+                  - Takashi Funatsu
+                  - Shunsuke Yuba
+                year: 2008
+                journal: Nature Methods
+                citation_count: 167
+                depth: 1
+                label: "Infrared laser–...\n(2008)"
+                is_root: false
+                id: 10.1038/nmeth.1278
+                x: -0.9577145639610691
+                y: 0.09352351600701284
+              - doi: 10.1007/s10549-012-2393-x
+                title: A systematic review of elastography, electrical impedance
+                  scanning, and digital infrared thermography for breast cancer 
+                  screening and diagnosis
+                authors:
+                  - Thomas D. Vreugdenburg
+                  - Cameron D. Willis
+                  - Linda Mundy
+                  - Janet E. Hiller
+                year: 2013
+                journal: Breast Cancer Research and Treatment
+                citation_count: 73
+                depth: 1
+                label: "A systematic re...\n(2013)"
+                is_root: false
+                id: 10.1007/s10549-012-2393-x
+                x: 0.09422621630700997
+                y: -0.98022883228051
+            edges:
+              - source: 10.1038/nature12373
+                target: 10.3402/nano.v3i0.11586
+              - source: 10.1038/nature12373
+                target: 10.1038/nature03509
+              - source: 10.1038/nature12373
+                target: 10.1016/j.cell.2009.11.006
+              - source: 10.1038/nature12373
+                target: 10.1038/nature11804
+              - source: 10.1038/nature12373
+                target: 10.1038/nmeth.1278
+              - source: 10.1038/nature12373
+                target: 10.1007/s10549-012-2393-x
+              - source: 10.1038/srep02668
+                target: 10.1038/nature12373
+              - source: 10.1088/0953-8984/26/1/015305
+                target: 10.1038/nature12373
+              - source: 10.1073/pnas.1306825110
+                target: 10.1038/nature12373
+              - source: 10.1038/nature.2013.13473
+                target: 10.1038/nature12373
+              - source: 10.1038/nmat3805
+                target: 10.1038/nature12373
+              - source: 10.1021/nn403659n
+                target: 10.1038/nature12373
+              - source: 10.1021/nn404421b
+                target: 10.1038/nature12373
+              - source: 10.1038/500036b
+                target: 10.1038/nature12373
+            style:
+              layout: spring
+              node_size:
+                - 300.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+              node_color:
+                - '#2ecc71'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+              node_alpha: 0.8
+              node_shape: o
+              node_edgecolors: white
+              node_linewidths: 0.5
+              edge_width: 1.0
+              edge_color: gray
+              edge_alpha: 0.4
+              edge_style: solid
+              arrowsize: 12
+              arrowstyle: -|>
+              connectionstyle: arc3,rad=0.0
+              labels: label
+              font_size: 6
+              font_color: black
+              font_weight: normal
+              font_family: sans-serif
+              colormap: viridis
+              arrows: true
+              seed: 42
+              preset:
+        timestamp: '2026-01-11T12:36:33.095594'
+    decorations:
+      - id: set_title_000
+        function: set_title
+        args:
+          - name: label
+            data: Citation Network Demo
+        kwargs: {}
+        timestamp: '2026-01-11T12:36:33.103568'
+    bbox:
+      - 0.02414486921529175
+      - 0.022959183673469385
+      - 0.949698189134809
+      - 0.842857142857143
+    caption: Citation network built from local CrossRef database

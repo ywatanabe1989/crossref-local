@@ -19,6 +19,9 @@ import scitex as stx
 import figrecipe as fr
 from crossref_local import CitationNetwork
 
+# Load SCITEX style with white background
+fr.load_style("SCITEX", background="white")
+
 
 def generate_network_plot(network, doi, output_path):
     """Generate citation network visualization using figrecipe."""
@@ -32,15 +35,8 @@ def generate_network_plot(network, doi, output_path):
         G.nodes[n]["label"] = f"{short}\n({node.year})"
         G.nodes[n]["is_root"] = (n == doi)
 
-    # Use figrecipe with explicit margins for consistent sizing
-    fig, ax = fr.subplots(
-        axes_width_mm=40,
-        axes_height_mm=28,
-        margin_left_mm=15,
-        margin_right_mm=5,
-        margin_bottom_mm=12,
-        margin_top_mm=8,
-    )
+    # Use figrecipe defaults
+    fig, ax = fr.subplots()
 
     # Draw graph with figrecipe's graph() method
     ax.graph(
@@ -64,10 +60,13 @@ def generate_network_plot(network, doi, output_path):
         iterations=100,
     )
 
-    ax.set_title(f"Citation Network: {len(G.nodes())} papers", fontsize=8)
+    ax.set_title("Citation Network Demo")
 
-    # Save with white background (disable validation for font glyph issues)
-    fr.save(fig, output_path, validate=False)
+    # Set panel caption for composition (without panel letter - added during composition)
+    ax.set_caption("Citation network built from local CrossRef database")
+
+    # Save using fr.save() for proper mm layout and auto-cropping
+    fr.save(fig, output_path, validate=False, verbose=False)
 
     return output_path
 

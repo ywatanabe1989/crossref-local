@@ -1,0 +1,1279 @@
+figrecipe: '1.0'
+id: fig_a3c0591c
+created: '2026-01-11T12:58:01.976696'
+matplotlib_version: 3.10.8
+figure:
+  figsize:
+    - 4.724409448818898
+    - 2.1653543307086616
+  dpi: 300
+  layout:
+    left: 0.16666666666666666
+    right: 0.9166666666666666
+    bottom: 0.2727272727272727
+    top: 0.7818181818181819
+    wspace: 0.25
+    hspace: 0
+  style:
+    axes_width_mm: 40
+    axes_height_mm: 28
+    axes_thickness_mm: 0.2
+    margins_left_mm: 1
+    margins_right_mm: 1
+    margins_bottom_mm: 1
+    margins_top_mm: 1
+    spacing_horizontal_mm: 10
+    spacing_vertical_mm: 15
+    ticks_length_mm: 0.8
+    ticks_thickness_mm: 0.2
+    ticks_direction: "out"
+    ticks_n_ticks_min: 3
+    ticks_n_ticks_max: 4
+    lines_trace_mm: 0.2
+    lines_errorbar_mm: 0.2
+    lines_errorbar_cap_mm: 0.8
+    markers_size_mm: 0.8
+    markers_scatter_mm: 0.8
+    markers_flier_mm: 0.8
+    markers_edge_width_mm:
+    boxplot_line_mm: 0.2
+    boxplot_whisker_mm: 0.2
+    boxplot_cap_mm: 0.2
+    boxplot_median_mm: 0.2
+    boxplot_median_color: "black"
+    boxplot_flier_edge_mm: 0.2
+    violinplot_line_mm: 0.2
+    violinplot_inner: "box"
+    violinplot_box_width_mm: 1.5
+    violinplot_whisker_mm: 0.2
+    violinplot_median_mm: 0.8
+    barplot_edge_mm: 0.2
+    histogram_edge_mm: 0.2
+    pie_text_pt: 6
+    pie_show_axes: false
+    imshow_show_axes: false
+    imshow_show_labels: false
+    legend_frameon: false
+    legend_loc: "best"
+    fonts_family: "Arial"
+    fonts_axis_label_pt: 7
+    fonts_tick_label_pt: 7
+    fonts_title_pt: 8
+    fonts_suptitle_pt: 9
+    fonts_legend_pt: 6
+    fonts_annotation_pt: 6
+    padding_label_pt: 2.0
+    padding_tick_pt: 2.0
+    padding_title_pt: 4.0
+    output_dpi: 300
+    output_transparent: false
+    output_format: "pdf"
+    theme_mode: "light"
+    theme_colors:
+      figure_bg: white
+      axes_bg: white
+      legend_bg: "transparent"
+      text: "black"
+      spine: "black"
+      tick: "black"
+      grid: "#cccccc"
+    color_palette:
+      -   - 0
+          - 128
+          - 192
+      -   - 255
+          - 70
+          - 50
+      -   - 20
+          - 180
+          - 20
+      -   - 230
+          - 160
+          - 20
+      -   - 200
+          - 50
+          - 255
+      -   - 20
+          - 200
+          - 200
+      -   - 228
+          - 94
+          - 50
+      -   - 255
+          - 150
+          - 200
+    behavior_hide_top_spine: true
+    behavior_hide_right_spine: true
+    behavior_grid: false
+    behavior_auto_scale_axes: true
+    behavior_constrained_layout: false
+    margin_left_mm: 1
+    margin_right_mm: 1
+    margin_bottom_mm: 1
+    margin_top_mm: 1
+    space_w_mm: 10
+    space_h_mm: 15
+    tick_length_mm: 0.8
+    tick_thickness_mm: 0.2
+    n_ticks_min: 3
+    n_ticks_max: 4
+    trace_thickness_mm: 0.2
+    marker_size_mm: 0.8
+    font_family: "Arial"
+    axis_font_size_pt: 7
+    tick_font_size_pt: 7
+    title_font_size_pt: 8
+    suptitle_font_size_pt: 9
+    legend_font_size_pt: 6
+    label_pad_pt: 2.0
+    tick_pad_pt: 2.0
+    title_pad_pt: 4.0
+    dpi: 300
+    theme: "light"
+    hide_top_spine: true
+    hide_right_spine: true
+    grid: false
+    auto_scale_axes: true
+    constrained_layout: false
+  panel_labels:
+    labels:
+      - A
+      - B
+    loc: upper left
+    offset:
+      - -0.1
+      - 1.05
+    fontsize: 8
+    fontweight: bold
+    color: "black"
+    kwargs: {}
+  crop_info:
+    left: 104
+    upper: 81
+    right: 1311
+    lower: 642
+    original_width: 1417
+    original_height: 649
+    new_width: 1207
+    new_height: 561
+axes:
+  ax_0_0:
+    calls:
+      - id: scatter_000
+        function: scatter
+        args:
+          - name: x
+            data:
+              - 28.7
+              - 21.2
+              - 14.7
+              - 14.6
+              - 12.1
+              - 10.6
+              - 9.6
+              - 9.6
+              - 6.7
+              - 4.8
+              - 4.7
+              - 2.9
+              - 2.1
+              - 3.2
+              - 4.4
+              - 6.6
+              - 7.6
+              - 6.4
+              - 26.8
+              - 12.8
+              - 3.7
+              - 4.4
+              - 4.8
+              - 2.9
+              - 50.5
+              - 44.7
+              - 45.5
+              - 98.4
+              - 96.2
+              - 63.1
+              - 58.7
+              - 14.7
+              - 9.4
+          - name: y
+            data:
+              - 36.45
+              - 28.91
+              - 19.09
+              - 17.52
+              - 16.75
+              - 11.54
+              - 10.75
+              - 10.48
+              - 8.19
+              - 7.0
+              - 6.35
+              - 3.41
+              - 2.94
+              - 3.55
+              - 0.15
+              - 7.57
+              - 7.61
+              - 0.16
+              - 30.51
+              - 13.54
+              - 0.0
+              - 0.27
+              - 0.32
+              - 3.63
+              - 54.07
+              - 46.17
+              - 54.01
+              - 3.7
+              - 2.61
+              - 45.16
+              - 56.13
+              - 16.14
+              - 10.22
+        kwargs:
+          color: '#0080c0'
+        timestamp: '2026-01-11T12:57:38.692124'
+      - id: plot_000
+        function: plot
+        args:
+          - name: x
+            data:
+              - 0
+              - 108.24000000000001
+          - name: y
+            data:
+              - 0
+              - 108.24000000000001
+          - name: fmt
+            data: k--
+        kwargs:
+          alpha: 0.5
+          label: y = x
+        timestamp: '2026-01-11T12:57:38.698219'
+      - id: plot_001
+        function: plot
+        args:
+          - name: x
+            data:
+              - 0.0
+              - 1.0933333333333335
+              - 2.186666666666667
+              - 3.2800000000000002
+              - 4.373333333333334
+              - 5.466666666666668
+              - 6.5600000000000005
+              - 7.653333333333334
+              - 8.746666666666668
+              - 9.840000000000002
+              - 10.933333333333335
+              - 12.026666666666669
+              - 13.120000000000001
+              - 14.213333333333335
+              - 15.306666666666668
+              - 16.400000000000002
+              - 17.493333333333336
+              - 18.58666666666667
+              - 19.680000000000003
+              - 20.773333333333337
+              - 21.86666666666667
+              - 22.960000000000004
+              - 24.053333333333338
+              - 25.146666666666672
+              - 26.240000000000002
+              - 27.333333333333336
+              - 28.42666666666667
+              - 29.520000000000003
+              - 30.613333333333337
+              - 31.70666666666667
+              - 32.800000000000004
+              - 33.89333333333334
+              - 34.98666666666667
+              - 36.080000000000005
+              - 37.17333333333334
+              - 38.26666666666667
+              - 39.36000000000001
+              - 40.45333333333334
+              - 41.546666666666674
+              - 42.64000000000001
+              - 43.73333333333334
+              - 44.826666666666675
+              - 45.92000000000001
+              - 47.01333333333334
+              - 48.106666666666676
+              - 49.20000000000001
+              - 50.293333333333344
+              - 51.38666666666668
+              - 52.480000000000004
+              - 53.57333333333334
+              - 54.66666666666667
+              - 55.760000000000005
+              - 56.85333333333334
+              - 57.94666666666667
+              - 59.040000000000006
+              - 60.13333333333334
+              - 61.226666666666674
+              - 62.32000000000001
+              - 63.41333333333334
+              - 64.50666666666667
+              - 65.60000000000001
+              - 66.69333333333334
+              - 67.78666666666668
+              - 68.88000000000001
+              - 69.97333333333334
+              - 71.06666666666668
+              - 72.16000000000001
+              - 73.25333333333334
+              - 74.34666666666668
+              - 75.44000000000001
+              - 76.53333333333335
+              - 77.62666666666668
+              - 78.72000000000001
+              - 79.81333333333335
+              - 80.90666666666668
+              - 82.00000000000001
+              - 83.09333333333335
+              - 84.18666666666668
+              - 85.28000000000002
+              - 86.37333333333335
+              - 87.46666666666668
+              - 88.56000000000002
+              - 89.65333333333335
+              - 90.74666666666668
+              - 91.84000000000002
+              - 92.93333333333335
+              - 94.02666666666669
+              - 95.12000000000002
+              - 96.21333333333335
+              - 97.30666666666669
+              - 98.40000000000002
+              - 99.49333333333335
+              - 100.58666666666669
+              - 101.68000000000002
+              - 102.77333333333335
+              - 103.86666666666669
+              - 104.96000000000001
+              - 106.05333333333334
+              - 107.14666666666668
+              - 108.24000000000001
+            dtype: float64
+            _loaded_array:
+              - 0.0
+              - 1.0933333333333335
+              - 2.186666666666667
+              - 3.2800000000000002
+              - 4.373333333333334
+              - 5.466666666666668
+              - 6.5600000000000005
+              - 7.653333333333334
+              - 8.746666666666668
+              - 9.840000000000002
+              - 10.933333333333335
+              - 12.026666666666669
+              - 13.120000000000001
+              - 14.213333333333335
+              - 15.306666666666668
+              - 16.400000000000002
+              - 17.493333333333336
+              - 18.58666666666667
+              - 19.680000000000003
+              - 20.773333333333337
+              - 21.86666666666667
+              - 22.960000000000004
+              - 24.053333333333338
+              - 25.146666666666672
+              - 26.240000000000002
+              - 27.333333333333336
+              - 28.42666666666667
+              - 29.520000000000003
+              - 30.613333333333337
+              - 31.70666666666667
+              - 32.800000000000004
+              - 33.89333333333334
+              - 34.98666666666667
+              - 36.080000000000005
+              - 37.17333333333334
+              - 38.26666666666667
+              - 39.36000000000001
+              - 40.45333333333334
+              - 41.546666666666674
+              - 42.64000000000001
+              - 43.73333333333334
+              - 44.826666666666675
+              - 45.92000000000001
+              - 47.01333333333334
+              - 48.106666666666676
+              - 49.20000000000001
+              - 50.293333333333344
+              - 51.38666666666668
+              - 52.480000000000004
+              - 53.57333333333334
+              - 54.66666666666667
+              - 55.760000000000005
+              - 56.85333333333334
+              - 57.94666666666667
+              - 59.040000000000006
+              - 60.13333333333334
+              - 61.226666666666674
+              - 62.32000000000001
+              - 63.41333333333334
+              - 64.50666666666667
+              - 65.60000000000001
+              - 66.69333333333334
+              - 67.78666666666668
+              - 68.88000000000001
+              - 69.97333333333334
+              - 71.06666666666668
+              - 72.16000000000001
+              - 73.25333333333334
+              - 74.34666666666668
+              - 75.44000000000001
+              - 76.53333333333335
+              - 77.62666666666668
+              - 78.72000000000001
+              - 79.81333333333335
+              - 80.90666666666668
+              - 82.00000000000001
+              - 83.09333333333335
+              - 84.18666666666668
+              - 85.28000000000002
+              - 86.37333333333335
+              - 87.46666666666668
+              - 88.56000000000002
+              - 89.65333333333335
+              - 90.74666666666668
+              - 91.84000000000002
+              - 92.93333333333335
+              - 94.02666666666669
+              - 95.12000000000002
+              - 96.21333333333335
+              - 97.30666666666669
+              - 98.40000000000002
+              - 99.49333333333335
+              - 100.58666666666669
+              - 101.68000000000002
+              - 102.77333333333335
+              - 103.86666666666669
+              - 104.96000000000001
+              - 106.05333333333334
+              - 107.14666666666668
+              - 108.24000000000001
+          - name: y
+            data:
+              - 9.366298988457103
+              - 9.715454599398226
+              - 10.064610210339348
+              - 10.413765821280471
+              - 10.762921432221592
+              - 11.112077043162715
+              - 11.461232654103839
+              - 11.81038826504496
+              - 12.159543875986083
+              - 12.508699486927206
+              - 12.857855097868327
+              - 13.20701070880945
+              - 13.556166319750574
+              - 13.905321930691695
+              - 14.254477541632816
+              - 14.603633152573941
+              - 14.952788763515063
+              - 15.301944374456184
+              - 15.651099985397309
+              - 16.00025559633843
+              - 16.34941120727955
+              - 16.698566818220677
+              - 17.047722429161798
+              - 17.39687804010292
+              - 17.746033651044044
+              - 18.095189261985162
+              - 18.444344872926287
+              - 18.793500483867412
+              - 19.14265609480853
+              - 19.491811705749654
+              - 19.84096731669078
+              - 20.190122927631897
+              - 20.539278538573022
+              - 20.888434149514147
+              - 21.237589760455265
+              - 21.58674537139639
+              - 21.935900982337515
+              - 22.285056593278632
+              - 22.634212204219757
+              - 22.983367815160882
+              - 23.332523426102
+              - 23.681679037043125
+              - 24.03083464798425
+              - 24.379990258925368
+              - 24.729145869866493
+              - 25.078301480807617
+              - 25.42745709174874
+              - 25.77661270268986
+              - 26.12576831363098
+              - 26.474923924572103
+              - 26.824079535513224
+              - 27.17323514645435
+              - 27.52239075739547
+              - 27.871546368336592
+              - 28.220701979277717
+              - 28.569857590218838
+              - 28.91901320115996
+              - 29.268168812101084
+              - 29.617324423042206
+              - 29.966480033983327
+              - 30.315635644924452
+              - 30.664791255865573
+              - 31.013946866806695
+              - 31.36310247774782
+              - 31.71225808868894
+              - 32.061413699630066
+              - 32.41056931057119
+              - 32.75972492151231
+              - 33.108880532453426
+              - 33.45803614339455
+              - 33.807191754335676
+              - 34.1563473652768
+              - 34.505502976217926
+              - 34.854658587159044
+              - 35.20381419810016
+              - 35.55296980904129
+              - 35.90212541998241
+              - 36.251281030923536
+              - 36.60043664186466
+              - 36.94959225280578
+              - 37.2987478637469
+              - 37.64790347468802
+              - 37.99705908562915
+              - 38.34621469657027
+              - 38.695370307511396
+              - 39.044525918452514
+              - 39.39368152939363
+              - 39.74283714033476
+              - 40.09199275127588
+              - 40.44114836221701
+              - 40.79030397315813
+              - 41.13945958409925
+              - 41.488615195040374
+              - 41.83777080598149
+              - 42.18692641692262
+              - 42.53608202786374
+              - 42.88523763880486
+              - 43.23439324974598
+              - 43.5835488606871
+              - 43.93270447162823
+            dtype: float64
+            _loaded_array:
+              - 9.366298988457103
+              - 9.715454599398226
+              - 10.064610210339348
+              - 10.413765821280471
+              - 10.762921432221592
+              - 11.112077043162715
+              - 11.461232654103839
+              - 11.81038826504496
+              - 12.159543875986083
+              - 12.508699486927206
+              - 12.857855097868327
+              - 13.20701070880945
+              - 13.556166319750574
+              - 13.905321930691695
+              - 14.254477541632816
+              - 14.603633152573941
+              - 14.952788763515063
+              - 15.301944374456184
+              - 15.651099985397309
+              - 16.00025559633843
+              - 16.34941120727955
+              - 16.698566818220677
+              - 17.047722429161798
+              - 17.39687804010292
+              - 17.746033651044044
+              - 18.095189261985162
+              - 18.444344872926287
+              - 18.793500483867412
+              - 19.14265609480853
+              - 19.491811705749654
+              - 19.84096731669078
+              - 20.190122927631897
+              - 20.539278538573022
+              - 20.888434149514147
+              - 21.237589760455265
+              - 21.58674537139639
+              - 21.935900982337515
+              - 22.285056593278632
+              - 22.634212204219757
+              - 22.983367815160882
+              - 23.332523426102
+              - 23.681679037043125
+              - 24.03083464798425
+              - 24.379990258925368
+              - 24.729145869866493
+              - 25.078301480807617
+              - 25.42745709174874
+              - 25.77661270268986
+              - 26.12576831363098
+              - 26.474923924572103
+              - 26.824079535513224
+              - 27.17323514645435
+              - 27.52239075739547
+              - 27.871546368336592
+              - 28.220701979277717
+              - 28.569857590218838
+              - 28.91901320115996
+              - 29.268168812101084
+              - 29.617324423042206
+              - 29.966480033983327
+              - 30.315635644924452
+              - 30.664791255865573
+              - 31.013946866806695
+              - 31.36310247774782
+              - 31.71225808868894
+              - 32.061413699630066
+              - 32.41056931057119
+              - 32.75972492151231
+              - 33.108880532453426
+              - 33.45803614339455
+              - 33.807191754335676
+              - 34.1563473652768
+              - 34.505502976217926
+              - 34.854658587159044
+              - 35.20381419810016
+              - 35.55296980904129
+              - 35.90212541998241
+              - 36.251281030923536
+              - 36.60043664186466
+              - 36.94959225280578
+              - 37.2987478637469
+              - 37.64790347468802
+              - 37.99705908562915
+              - 38.34621469657027
+              - 38.695370307511396
+              - 39.044525918452514
+              - 39.39368152939363
+              - 39.74283714033476
+              - 40.09199275127588
+              - 40.44114836221701
+              - 40.79030397315813
+              - 41.13945958409925
+              - 41.488615195040374
+              - 41.83777080598149
+              - 42.18692641692262
+              - 42.53608202786374
+              - 42.88523763880486
+              - 43.23439324974598
+              - 43.5835488606871
+              - 43.93270447162823
+          - name: fmt
+            data: r-
+        kwargs:
+          alpha: 0.7
+          label: 'Fit: y = 0.32x + 9.37'
+        timestamp: '2026-01-11T12:57:38.698933'
+    decorations:
+      - id: annotate_000
+        function: annotate
+        args:
+          - name: text
+            data: Nature Reviews Neuro
+          - name: xy
+            data:
+              - 28.7
+              - 36.45
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.704382'
+      - id: annotate_001
+        function: annotate
+        args:
+          - name: text
+            data: Nature Neuroscience
+          - name: xy
+            data:
+              - 21.2
+              - 28.91
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.704545'
+      - id: annotate_002
+        function: annotate
+        args:
+          - name: text
+            data: Nature Biomedical En
+          - name: xy
+            data:
+              - 26.8
+              - 30.51
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.704673'
+      - id: annotate_003
+        function: annotate
+        args:
+          - name: text
+            data: Nature
+          - name: xy
+            data:
+              - 50.5
+              - 54.07
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.704784'
+      - id: annotate_004
+        function: annotate
+        args:
+          - name: text
+            data: Science
+          - name: xy
+            data:
+              - 44.7
+              - 46.17
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.704897'
+      - id: annotate_005
+        function: annotate
+        args:
+          - name: text
+            data: Cell
+          - name: xy
+            data:
+              - 45.5
+              - 54.01
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.705002'
+      - id: annotate_006
+        function: annotate
+        args:
+          - name: text
+            data: The Lancet
+          - name: xy
+            data:
+              - 98.4
+              - 3.7
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.705096'
+      - id: annotate_007
+        function: annotate
+        args:
+          - name: text
+            data: 'New England Journal '
+          - name: xy
+            data:
+              - 96.2
+              - 2.61
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.705200'
+      - id: annotate_008
+        function: annotate
+        args:
+          - name: text
+            data: JAMA
+          - name: xy
+            data:
+              - 63.1
+              - 45.16
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.705295'
+      - id: annotate_009
+        function: annotate
+        args:
+          - name: text
+            data: Nature Medicine
+          - name: xy
+            data:
+              - 58.7
+              - 56.13
+        kwargs:
+          fontsize: 6
+          alpha: 0.8
+          xytext:
+            - 5
+            - 5
+          textcoords: offset points
+        timestamp: '2026-01-11T12:57:38.705385'
+      - id: set_xlabel_000
+        function: set_xlabel
+        args:
+          - name: xlabel
+            data: JCR Impact Factor (2024)
+        kwargs: {}
+        timestamp: '2026-01-11T12:57:38.710424'
+      - id: set_ylabel_000
+        function: set_ylabel
+        args:
+          - name: ylabel
+            data: "Calculated Impact Factor\n(Local CrossRef)"
+        kwargs: {}
+        timestamp: '2026-01-11T12:57:38.715589'
+      - id: set_title_000
+        function: set_title
+        args:
+          - name: label
+            data: Impact Factor Comparison
+        kwargs: {}
+        timestamp: '2026-01-11T12:57:38.721874'
+      - id: set_xlim_000
+        function: set_xlim
+        args:
+          - name: left
+            data: 0
+          - name: right
+            data: 108.24000000000001
+        kwargs: {}
+        timestamp: '2026-01-11T12:57:38.727503'
+      - id: set_ylim_000
+        function: set_ylim
+        args:
+          - name: bottom
+            data: 0
+          - name: top
+            data: 108.24000000000001
+        kwargs: {}
+        timestamp: '2026-01-11T12:57:38.732502'
+      - id: text_000
+        function: text
+        args:
+          - name: x
+            data: 0.05
+          - name: y
+            data: 0.95
+          - name: s
+            data: "Pearson r = 0.473\nSpearman r = 0.736\nn = 33"
+        kwargs:
+          transform: axes
+          verticalalignment: top
+          fontsize: 6
+        timestamp: '2026-01-11T12:57:38.737607'
+      - id: legend_000
+        function: legend
+        args: []
+        kwargs:
+          loc: lower right
+        timestamp: '2026-01-11T12:57:38.743910'
+    bbox:
+      - 0.5986605909969621
+      - 0.303030303030303
+      - 0.3913283623308479
+      - 0.5889483065953655
+    caption: Correlation between calculated and JCR Impact Factors
+  ax_0_1:
+    calls:
+      - id: graph_000
+        function: graph
+        args: []
+        kwargs:
+          graph_data:
+            type: graph
+            directed: true
+            nodes:
+              - doi: 10.1038/nature12373
+                title: Nanometre-scale thermometry in a living cell
+                authors:
+                  - G. Kucsko
+                  - P. C. Maurer
+                  - N. Y. Yao
+                  - M. Kubo
+                  - H. J. Noh
+                  - P. K. Lo
+                  - H. Park
+                  - M. D. Lukin
+                year: 2013
+                journal: Nature
+                citation_count: 1539
+                depth: 0
+                label: "Nanometre-scale...\n(2013)"
+                is_root: true
+                id: 10.1038/nature12373
+                x: 0.022213244954336908
+                y: 0.030225242223624146
+              - doi: 10.1038/srep02668
+                title: Nanodiamond Landmarks for Subcellular Multimodal Optical 
+                  and Electron Imaging
+                authors:
+                  - Mark A. Zurbuchen
+                  - Michael P. Lake
+                  - Sirus A. Kohan
+                  - Belinda Leung
+                  - Louis-S. Bouchard
+                year: 2013
+                journal: Scientific Reports
+                citation_count: 23
+                depth: 1
+                label: "Nanodiamond Lan...\n(2013)"
+                is_root: false
+                id: 10.1038/srep02668
+                x: 0.9527044608974201
+                y: 0.2931195105849904
+              - doi: 10.1088/0953-8984/26/1/015305
+                title: The spin–spin zero-field splitting tensor in the 
+                  projector-augmented-wave method
+                authors:
+                  - Zoltán Bodrog
+                  - Adam Gali
+                year: 2013
+                journal: 'Journal of Physics: Condensed Matter'
+                citation_count: 31
+                depth: 1
+                label: "The spin–spin z...\n(2013)"
+                is_root: false
+                id: 10.1088/0953-8984/26/1/015305
+                x: -0.7126819723500358
+                y: -0.6767053942693921
+              - doi: 10.1073/pnas.1306825110
+                title: Fluorescence thermometry enhanced by the quantum 
+                  coherence of single spins in diamond
+                authors:
+                  - David M. Toyli
+                  - Charles F. de las Casas
+                  - David J. Christle
+                  - Viatcheslav V. Dobrovitski
+                  - David D. Awschalom
+                year: 2013
+                journal: Proceedings of the National Academy of Sciences
+                citation_count: 328
+                depth: 1
+                label: "Fluorescence th...\n(2013)"
+                is_root: false
+                id: 10.1073/pnas.1306825110
+                x: -0.8717641768946909
+                y: 0.541003915794175
+              - doi: 10.1038/nature.2013.13473
+                title: Nanothermometer takes the temperature of living cells
+                authors:
+                  - Davide Castelvecchi
+                year: 2013
+                journal: Nature
+                citation_count: 1
+                depth: 1
+                label: "Nanothermometer...\n(2013)"
+                is_root: false
+                id: 10.1038/nature.2013.13473
+                x: 0.7411170680479239
+                y: 0.6643846274121304
+              - doi: 10.1038/nmat3805
+                title: Observing bulk diamond spin coherence in high-purity 
+                  nanodiamonds
+                authors:
+                  - Helena S. Knowles
+                  - Dhiren M. Kara
+                  - Mete Atatüre
+                year: 2013
+                journal: Nature Materials
+                citation_count: 144
+                depth: 1
+                label: "Observing bulk ...\n(2013)"
+                is_root: false
+                id: 10.1038/nmat3805
+                x: -0.5782605665550679
+                y: 0.8904023857066533
+              - doi: 10.1021/nn403659n
+                title: Imaging of Plasmonic Heating in a Living Organism
+                authors:
+                  - Jon S. Donner
+                  - Sebastian A. Thompson
+                  - César Alonso-Ortega
+                  - Jordi Morales
+                  - Laura G. Rico
+                  - Susana I. C. O Santos
+                  - Romain Quidant
+                year: 2013
+                journal: ACS Nano
+                citation_count: 89
+                depth: 1
+                label: "Imaging of Plas...\n(2013)"
+                is_root: false
+                id: 10.1021/nn403659n
+                x: 1.0
+                y: -0.14065023101497243
+              - doi: 10.1021/nn404421b
+                title: Stimulated Emission Depletion Microscopy Resolves 
+                  Individual Nitrogen Vacancy Centers in Diamond Nanocrystals
+                authors:
+                  - Silvia Arroyo-Camejo
+                  - Marie-Pierre Adam
+                  - Mondher Besbes
+                  - Jean-Paul Hugonin
+                  - Vincent Jacques
+                  - Jean-Jacques Greffet
+                  - Jean-François Roch
+                  - Stefan W. Hell
+                  - François Treussart
+                year: 2013
+                journal: ACS Nano
+                citation_count: 116
+                depth: 1
+                label: "Stimulated Emis...\n(2013)"
+                is_root: false
+                id: 10.1021/nn404421b
+                x: -0.32781737532179817
+                y: -0.8746845755748028
+              - doi: 10.1038/500036b
+                title: Tiny thermometers used in living cells
+                authors:
+                  - Konstantin Sokolov
+                year: 2013
+                journal: Nature
+                citation_count: 15
+                depth: 1
+                label: "Tiny thermomete...\n(2013)"
+                is_root: false
+                id: 10.1038/500036b
+                x: -0.14629540199615002
+                y: 0.9279110365801151
+              - doi: 10.3402/nano.v3i0.11586
+                title: Nanoscale thermal probing
+                authors:
+                  - Yanan Yue
+                  - Xinwei Wang
+                year: 2012
+                journal: Nano Reviews
+                citation_count: 121
+                depth: 1
+                label: "Nanoscale therm...\n(2012)"
+                is_root: false
+                id: 10.3402/nano.v3i0.11586
+                x: 0.46878542586191607
+                y: -0.80833589343289
+              - doi: 10.1038/nature03509
+                title: Dynamics of Drosophila embryonic patterning network 
+                  perturbed in space and time using microfluidics
+                authors:
+                  - Elena M. Lucchetta
+                  - Ji Hwan Lee
+                  - Lydia A. Fu
+                  - Nipam H. Patel
+                  - Rustem F. Ismagilov
+                year: 2005
+                journal: Nature
+                citation_count: 399
+                depth: 1
+                label: "Dynamics of Dro...\n(2005)"
+                is_root: false
+                id: 10.1038/nature03509
+                x: 0.8023148680666188
+                y: -0.5644707836130483
+              - doi: 10.1016/j.cell.2009.11.006
+                title: H2A.Z-Containing Nucleosomes Mediate the Thermosensory 
+                  Response in Arabidopsis
+                authors:
+                  - S. Vinod Kumar
+                  - Philip A. Wigge
+                year: 2010
+                journal: Cell
+                citation_count: 787
+                depth: 1
+                label: "H2A.Z-Containin...\n(2010)"
+                is_root: false
+                id: 10.1016/j.cell.2009.11.006
+                x: -0.8802914483336145
+                y: -0.31247586351060863
+              - doi: 10.1038/nature11804
+                title: Scaling of embryonic patterning based on phase-gradient 
+                  encoding
+                authors:
+                  - Volker M. Lauschke
+                  - Charisios D. Tsiairis
+                  - Paul François
+                  - Alexander Aulehla
+                year: 2012
+                journal: Nature
+                citation_count: 187
+                depth: 1
+                label: "Scaling of embr...\n(2012)"
+                is_root: false
+                id: 10.1038/nature11804
+                x: 0.39346422127720027
+                y: 0.9169813393875235
+              - doi: 10.1038/nmeth.1278
+                title: Infrared laser–mediated gene induction in targeted single
+                  cells in vivo
+                authors:
+                  - Yasuhiro Kamei
+                  - Motoshi Suzuki
+                  - Kenjiro Watanabe
+                  - Kazuhiro Fujimori
+                  - Takashi Kawasaki
+                  - Tomonori Deguchi
+                  - Yoshihiro Yoneda
+                  - Takeshi Todo
+                  - Shin Takagi
+                  - Takashi Funatsu
+                  - Shunsuke Yuba
+                year: 2008
+                journal: Nature Methods
+                citation_count: 167
+                depth: 1
+                label: "Infrared laser–...\n(2008)"
+                is_root: false
+                id: 10.1038/nmeth.1278
+                x: -0.9577145639610691
+                y: 0.09352351600701284
+              - doi: 10.1007/s10549-012-2393-x
+                title: A systematic review of elastography, electrical impedance
+                  scanning, and digital infrared thermography for breast cancer 
+                  screening and diagnosis
+                authors:
+                  - Thomas D. Vreugdenburg
+                  - Cameron D. Willis
+                  - Linda Mundy
+                  - Janet E. Hiller
+                year: 2013
+                journal: Breast Cancer Research and Treatment
+                citation_count: 73
+                depth: 1
+                label: "A systematic re...\n(2013)"
+                is_root: false
+                id: 10.1007/s10549-012-2393-x
+                x: 0.09422621630700997
+                y: -0.98022883228051
+            edges:
+              - source: 10.1038/nature12373
+                target: 10.3402/nano.v3i0.11586
+              - source: 10.1038/nature12373
+                target: 10.1038/nature03509
+              - source: 10.1038/nature12373
+                target: 10.1016/j.cell.2009.11.006
+              - source: 10.1038/nature12373
+                target: 10.1038/nature11804
+              - source: 10.1038/nature12373
+                target: 10.1038/nmeth.1278
+              - source: 10.1038/nature12373
+                target: 10.1007/s10549-012-2393-x
+              - source: 10.1038/srep02668
+                target: 10.1038/nature12373
+              - source: 10.1088/0953-8984/26/1/015305
+                target: 10.1038/nature12373
+              - source: 10.1073/pnas.1306825110
+                target: 10.1038/nature12373
+              - source: 10.1038/nature.2013.13473
+                target: 10.1038/nature12373
+              - source: 10.1038/nmat3805
+                target: 10.1038/nature12373
+              - source: 10.1021/nn403659n
+                target: 10.1038/nature12373
+              - source: 10.1021/nn404421b
+                target: 10.1038/nature12373
+              - source: 10.1038/500036b
+                target: 10.1038/nature12373
+            style:
+              layout: spring
+              node_size:
+                - 300.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+                - 20.0
+              node_color:
+                - '#2ecc71'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+                - '#3498db'
+              node_alpha: 0.8
+              node_shape: o
+              node_edgecolors: white
+              node_linewidths: 0.5
+              edge_width: 1.0
+              edge_color: gray
+              edge_alpha: 0.4
+              edge_style: solid
+              arrowsize: 12
+              arrowstyle: -|>
+              connectionstyle: arc3,rad=0.0
+              labels: label
+              font_size: 6
+              font_color: black
+              font_weight: normal
+              font_family: sans-serif
+              colormap: viridis
+              arrows: true
+              seed: 42
+              preset:
+        timestamp: '2026-01-11T12:36:33.095594'
+    decorations:
+      - id: set_title_000
+        function: set_title
+        args:
+          - name: label
+            data: Citation Network Demo
+        kwargs: {}
+        timestamp: '2026-01-11T12:36:33.103568'
+    bbox:
+      - 0.02414486921529175
+      - 0.022959183673469385
+      - 0.949698189134809
+      - 0.842857142857143
+    caption: Citation network built from local CrossRef database
+metadata:
+  caption: Figure 1. CrossRef Local validation and demonstration. (A) 
+    Correlation between calculated and JCR Impact Factors (B) Citation network 
+    built from local CrossRef database

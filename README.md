@@ -7,10 +7,7 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 <p align="center">
-  <img src="examples/impact_factor/02_compare_jcr_plot_out/scatter_calc_vs_jcr.png" alt="Impact Factor Validation" width="400"/>
-  <img src="examples/citation_network/citation_network.png" alt="Citation Network" width="400"/>
-  <br>
-  <em>Impact Factor Validation (r=0.74) &nbsp;|&nbsp; Citation Network Visualization</em>
+  <img src="examples/readme_figure.png" alt="CrossRef Local Demo" width="800"/>
 </p>
 
 <details>
@@ -97,6 +94,20 @@ crossref-local get 10.1038/nature12373
 crossref-local impact-factor Nature -y 2023  # IF: 54.067
 ```
 
+With abstracts (`-a` flag):
+```
+$ crossref-local search "CRISPR" -n 1 -a
+
+Found 87,473 matches in 18.2ms
+
+1. RS-1 enhances CRISPR/Cas9- and TALEN-mediated knock-in efficiency (2016)
+   DOI: 10.1038/ncomms10548
+   Journal: Nature Communications
+   Abstract: Zinc-finger nuclease, transcription activator-like effector nuclease
+   and CRISPR/Cas9 are becoming major tools for genome editing. Importantly,
+   knock-in in several non-rodent species has been finally achieved...
+```
+
 </details>
 
 <details>
@@ -156,3 +167,5 @@ Searching 167M records in milliseconds via FTS5.
   <br>
   AGPL-3.0 · ywatanabe@scitex.ai
 </p>
+
+<!-- EOF -->

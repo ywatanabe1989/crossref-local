@@ -2,11 +2,25 @@
 
 import click
 import json
+import re
 import sys
 from typing import Optional
 
 from . import search, get, count, info, __version__
+
+
 from .impact_factor import ImpactFactorCalculator
+
+
+def _strip_xml_tags(text: str) -> str:
+    """Strip XML/JATS tags from abstract text."""
+    if not text:
+        return text
+    # Remove XML tags
+    text = re.sub(r"<[^>]+>", " ", text)
+    # Collapse multiple spaces
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 
 class AliasedGroup(click.Group):
@@ -54,19 +68,23 @@ class AliasedGroup(click.Group):
                 formatter.write_dl(commands)
 
 
-@click.group(cls=AliasedGroup)
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
+
+@click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__, prog_name="crossref-local")
 def cli():
     """Local CrossRef database with 167M+ works and full-text search."""
     pass
 
 
-@cli.command(aliases=["s"])
+@cli.command(aliases=["s"], context_settings=CONTEXT_SETTINGS)
 @click.argument("query")
 @click.option("-n", "--limit", default=10, help="Number of results")
 @click.option("-o", "--offset", default=0, help="Skip first N results")
+@click.option("-a", "--with-abstracts", is_flag=True, help="Show abstracts")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(query: str, limit: int, offset: int, as_json: bool):
+def search_cmd(query: str, limit: int, offset: int, with_abstracts: bool, as_json: bool):
     """Search for works by title, abstract, or authors."""
     results = search(query, limit=limit, offset=offset)
 
@@ -81,16 +99,22 @@ def search_cmd(query: str, limit: int, offset: int, as_json: bool):
     else:
         click.echo(f"Found {results.total:,} matches in {results.elapsed_ms:.1f}ms\n")
         for i, work in enumerate(results.works, start=offset + 1):
-            title = work.title or "Untitled"
+            title = _strip_xml_tags(work.title) if work.title else "Untitled"
             year = f"({work.year})" if work.year else ""
             click.echo(f"{i}. {title} {year}")
             click.echo(f"   DOI: {work.doi}")
             if work.journal:
                 click.echo(f"   Journal: {work.journal}")
+            if with_abstracts and work.abstract:
+                # Strip XML tags and truncate
+                abstract = _strip_xml_tags(work.abstract)
+                if len(abstract) > 500:
+                    abstract = abstract[:500] + "..."
+                click.echo(f"   Abstract: {abstract}")
             click.echo()
 
 
-@cli.command("get", aliases=["g"])
+@cli.command("get", aliases=["g"], context_settings=CONTEXT_SETTINGS)
 @click.argument("doi")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 @click.option("--citation", is_flag=True, help="Output as citation")
@@ -116,7 +140,7 @@ def get_cmd(doi: str, as_json: bool, citation: bool):
             click.echo(f"Citations: {work.citation_count}")
 
 
-@cli.command(aliases=["c"])
+@cli.command(aliases=["c"], context_settings=CONTEXT_SETTINGS)
 @click.argument("query")
 def count_cmd(query: str):
     """Count matching works."""
@@ -124,7 +148,7 @@ def count_cmd(query: str):
     click.echo(f"{n:,}")
 
 
-@cli.command(aliases=["i"])
+@cli.command(aliases=["i"], context_settings=CONTEXT_SETTINGS)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def info_cmd(as_json: bool):
     """Show database information."""
@@ -141,7 +165,7 @@ def info_cmd(as_json: bool):
         click.echo(f"Citations: {db_info['citations']:,}")
 
 
-@cli.command("impact-factor", aliases=["if"])
+@cli.command("impact-factor", aliases=["if"], context_settings=CONTEXT_SETTINGS)
 @click.argument("journal")
 @click.option("-y", "--year", default=2023, help="Target year")
 @click.option("-w", "--window", default=2, help="Citation window years")
@@ -166,7 +190,7 @@ def impact_factor_cmd(journal: str, year: int, window: int, as_json: bool):
         click.echo(f"Impact Factor: {result['impact_factor']:.3f}")
 
 
-@cli.command()
+@cli.command(context_settings=CONTEXT_SETTINGS)
 def setup():
     """Check setup status and configuration."""
     from .config import Config, DEFAULT_DB_PATHS
