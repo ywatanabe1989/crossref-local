@@ -67,12 +67,15 @@ class RemoteClient:
     def info(self) -> Dict:
         """Get database/API information."""
         root = self._request("/")
-        stats = self._request("/api/stats/")
+        info_data = self._request("/info")
         return {
             "api_url": self.base_url,
             "api_version": root.get("version", "unknown"),
             "status": root.get("status", "unknown"),
-            **stats,
+            "mode": "remote",
+            "works": info_data.get("total_papers", 0) if info_data else 0,
+            "fts_indexed": info_data.get("fts_indexed", 0) if info_data else 0,
+            "citations": info_data.get("citations", 0) if info_data else 0,
         }
 
     def search(
@@ -83,6 +86,7 @@ class RemoteClient:
         authors: Optional[str] = None,
         year: Optional[int] = None,
         limit: int = 10,
+        offset: int = 0,
     ) -> SearchResult:
         """
         Search for papers.
@@ -94,22 +98,21 @@ class RemoteClient:
             authors: Search by author name
             year: Filter by publication year
             limit: Maximum results (default: 10, max: 100)
+            offset: Skip first N results for pagination
 
         Returns:
             SearchResult with matching works
         """
-        # Map generic query to title search if no specific field given
-        search_title = title or query
+        # Use new /works endpoint with FTS5 search
+        search_query = query or title
 
         params = {
-            "doi": doi,
-            "title": search_title,
-            "authors": authors,
-            "year": year,
+            "q": search_query,
             "limit": min(limit, 100),
+            "offset": offset,
         }
 
-        data = self._request("/api/search/", params)
+        data = self._request("/works", params)
 
         if not data:
             return SearchResult(works=[], total=0, query=query or "", elapsed_ms=0.0)
@@ -147,8 +150,23 @@ class RemoteClient:
         Returns:
             Work object or None if not found
         """
-        result = self.search(doi=doi, limit=1)
-        return result.works[0] if result.works else None
+        # Use /works/{doi} endpoint directly
+        data = self._request(f"/works/{doi}")
+        if not data or "error" in data:
+            return None
+
+        return Work(
+            doi=data.get("doi", doi),
+            title=data.get("title", ""),
+            authors=data.get("authors", []),
+            year=data.get("year"),
+            journal=data.get("journal"),
+            volume=data.get("volume"),
+            issue=data.get("issue"),
+            page=data.get("page"),
+            abstract=data.get("abstract"),
+            citation_count=data.get("citation_count"),
+        )
 
     def get_many(self, dois: List[str]) -> List[Work]:
         """
@@ -165,7 +183,7 @@ class RemoteClient:
             data = {"dois": dois}
             req_data = json.dumps(data).encode("utf-8")
             req = urllib.request.Request(
-                f"{self.base_url}/api/batch/", data=req_data, method="POST"
+                f"{self.base_url}/works/batch", data=req_data, method="POST"
             )
             req.add_header("Content-Type", "application/json")
             req.add_header("Accept", "application/json")
