@@ -106,7 +106,7 @@ def cli(ctx, remote: bool, api_url: str):
         Config.set_mode("remote")
 
 
-@cli.command(aliases=["s"], context_settings=CONTEXT_SETTINGS)
+@cli.command("search", aliases=["s"], context_settings=CONTEXT_SETTINGS)
 @click.argument("query")
 @click.option("-n", "--limit", default=10, help="Number of results")
 @click.option("-o", "--offset", default=0, help="Skip first N results")
@@ -170,7 +170,7 @@ def get_cmd(doi: str, as_json: bool, citation: bool):
             click.echo(f"Citations: {work.citation_count}")
 
 
-@cli.command(aliases=["c"], context_settings=CONTEXT_SETTINGS)
+@cli.command("count", aliases=["c"], context_settings=CONTEXT_SETTINGS)
 @click.argument("query")
 def count_cmd(query: str):
     """Count matching works."""
@@ -178,7 +178,7 @@ def count_cmd(query: str):
     click.echo(f"{n:,}")
 
 
-@cli.command(aliases=["i"], context_settings=CONTEXT_SETTINGS)
+@cli.command("info", aliases=["i"], context_settings=CONTEXT_SETTINGS)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def info_cmd(as_json: bool):
     """Show database/API information."""
@@ -322,6 +322,90 @@ def setup():
         click.echo("  2. Remote API (via SSH tunnel):")
         click.echo("     ssh -L 3333:127.0.0.1:3333 your-nas")
         click.echo("     crossref-local --remote search 'query'")
+
+
+@cli.command(context_settings=CONTEXT_SETTINGS)
+@click.option(
+    "-t",
+    "--transport",
+    type=click.Choice(["stdio", "sse", "http"]),
+    default="stdio",
+    help="Transport protocol (stdio for Claude Desktop)",
+)
+@click.option("--host", default="localhost", help="Host for HTTP/SSE transport")
+@click.option("--port", default=8082, type=int, help="Port for HTTP/SSE transport")
+def serve(transport: str, host: str, port: int):
+    """Run MCP server for Claude integration.
+
+    \b
+    Claude Desktop configuration (claude_desktop_config.json):
+      {
+        "mcpServers": {
+          "crossref": {
+            "command": "crossref-local",
+            "args": ["serve"]
+          }
+        }
+      }
+
+    \b
+    Or with explicit path:
+      {
+        "mcpServers": {
+          "crossref": {
+            "command": "python",
+            "args": ["-m", "crossref_local.mcp_server"]
+          }
+        }
+      }
+    """
+    try:
+        from .mcp_server import run_server
+    except ImportError:
+        click.echo(
+            "MCP server requires fastmcp. Install with:\n"
+            "  pip install crossref-local[mcp]",
+            err=True,
+        )
+        sys.exit(1)
+
+    run_server(transport=transport, host=host, port=port)
+
+
+@cli.command(context_settings=CONTEXT_SETTINGS)
+@click.option("--host", default="0.0.0.0", help="Host to bind")
+@click.option("--port", default=3333, type=int, help="Port to listen on")
+def api(host: str, port: int):
+    """Run HTTP API server with FTS5 search.
+
+    \b
+    This runs a FastAPI server that provides proper full-text search
+    using FTS5 index across all 167M+ papers.
+
+    \b
+    Example:
+      crossref-local api                  # Run on 0.0.0.0:3333
+      crossref-local api --port 8080      # Custom port
+
+    \b
+    Then from a client:
+      curl "http://localhost:3333/search?q=CRISPR&limit=10"
+      curl "http://localhost:3333/get/10.1038/nature12373"
+    """
+    try:
+        from .server import run_server
+    except ImportError:
+        click.echo(
+            "API server requires fastapi and uvicorn. Install with:\n"
+            "  pip install fastapi uvicorn",
+            err=True,
+        )
+        sys.exit(1)
+
+    click.echo(f"Starting CrossRef Local API server on {host}:{port}")
+    click.echo(f"Search endpoint: http://{host}:{port}/search?q=<query>")
+    click.echo(f"Docs: http://{host}:{port}/docs")
+    run_server(host=host, port=port)
 
 
 def main():
