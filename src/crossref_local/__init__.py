@@ -20,19 +20,15 @@ Async usage:
 Configuration
 -------------
 
-Local mode (direct database access):
+DB mode (direct database access):
     >>> from crossref_local import configure
     >>> configure("/path/to/crossref.db")
     Or set CROSSREF_LOCAL_DB environment variable.
 
-Remote mode (API access via HTTP):
-    >>> from crossref_local import configure_remote
-    >>> configure_remote("http://localhost:3333")
-    Or set CROSSREF_LOCAL_API environment variable.
-
-    Typical setup with SSH tunnel:
-    $ ssh -L 3333:127.0.0.1:3333 nas  # In terminal
-    >>> configure_remote()  # Uses default localhost:3333
+HTTP mode (API access via HTTP):
+    >>> from crossref_local import configure_http
+    >>> configure_http("http://localhost:8333")
+    Or set CROSSREF_LOCAL_API_URL environment variable.
 
 Public API
 ----------
@@ -72,7 +68,8 @@ from .api import (
     get_many,
     exists,
     configure,
-    configure_remote,
+    configure_http,
+    configure_remote,  # Backward compatibility alias
     get_mode,
     info,
 )
@@ -99,7 +96,8 @@ __all__ = [
     "exists",
     # Configuration
     "configure",
-    "configure_remote",
+    "configure_http",
+    "configure_remote",  # Backward compatibility alias
     "get_mode",
     "info",
     # Data models

@@ -6,16 +6,13 @@ from typing import Optional
 
 # Default database locations (checked in order)
 DEFAULT_DB_PATHS = [
-    Path("/home/ywatanabe/proj/crossref-local/data/crossref.db"),
-    Path("/home/ywatanabe/proj/crossref_local/data/crossref.db"),
-    Path("/mnt/nas_ug/crossref_local/data/crossref.db"),
-    Path.home() / ".crossref_local" / "crossref.db",
     Path.cwd() / "data" / "crossref.db",
+    Path.home() / ".crossref_local" / "crossref.db",
 ]
 
 # Default remote API URL (via SSH tunnel)
 DEFAULT_API_URLS = [
-    "http://localhost:3333",  # SSH tunnel to NAS
+    "http://localhost:8333",  # SSH tunnel to NAS
 ]
 DEFAULT_API_URL = DEFAULT_API_URLS[0]
 
@@ -58,7 +55,7 @@ class Config:
 
     _db_path: Optional[Path] = None
     _api_url: Optional[str] = None
-    _mode: str = "auto"  # "auto", "local", or "remote"
+    _mode: str = "auto"  # "auto", "db", or "http"
 
     @classmethod
     def get_mode(cls) -> str:
@@ -66,36 +63,36 @@ class Config:
         Get current mode.
 
         Returns:
-            "local" if using direct database access
-            "remote" if using HTTP API
+            "db" if using direct database access
+            "http" if using HTTP API
         """
         if cls._mode == "auto":
             # Check environment variable
             env_mode = os.environ.get("CROSSREF_LOCAL_MODE", "").lower()
-            if env_mode in ("remote", "api"):
-                return "remote"
-            if env_mode == "local":
-                return "local"
+            if env_mode in ("http", "remote", "api"):
+                return "http"
+            if env_mode in ("db", "local"):
+                return "db"
 
             # Check if API URL is set
-            if cls._api_url or os.environ.get("CROSSREF_LOCAL_API"):
-                return "remote"
+            if cls._api_url or os.environ.get("CROSSREF_LOCAL_API_URL"):
+                return "http"
 
             # Check if local database exists
             try:
                 get_db_path()
-                return "local"
+                return "db"
             except FileNotFoundError:
-                # No local DB, try remote
-                return "remote"
+                # No local DB, try http
+                return "http"
 
         return cls._mode
 
     @classmethod
     def set_mode(cls, mode: str) -> None:
-        """Set mode explicitly: 'local', 'remote', or 'auto'."""
-        if mode not in ("auto", "local", "remote"):
-            raise ValueError(f"Invalid mode: {mode}. Use 'auto', 'local', or 'remote'")
+        """Set mode explicitly: 'db', 'http', or 'auto'."""
+        if mode not in ("auto", "db", "http"):
+            raise ValueError(f"Invalid mode: {mode}. Use 'auto', 'db', or 'http'")
         cls._mode = mode
 
     @classmethod
@@ -112,7 +109,7 @@ class Config:
         if not path.exists():
             raise FileNotFoundError(f"Database not found: {path}")
         cls._db_path = path
-        cls._mode = "local"
+        cls._mode = "db"
 
     @classmethod
     def get_api_url(cls, auto_detect: bool = True) -> str:
@@ -128,7 +125,7 @@ class Config:
         if cls._api_url:
             return cls._api_url
 
-        env_url = os.environ.get("CROSSREF_LOCAL_API")
+        env_url = os.environ.get("CROSSREF_LOCAL_API_URL")
         if env_url:
             return env_url
 
@@ -159,9 +156,9 @@ class Config:
 
     @classmethod
     def set_api_url(cls, url: str) -> None:
-        """Set API URL for remote mode."""
+        """Set API URL for http mode."""
         cls._api_url = url.rstrip("/")
-        cls._mode = "remote"
+        cls._mode = "http"
 
     @classmethod
     def reset(cls) -> None:

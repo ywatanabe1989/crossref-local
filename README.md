@@ -90,9 +90,8 @@ async def main():
 
 ```bash
 crossref-local search "CRISPR genome editing" -n 5
-crossref-local get 10.1038/nature12373
-crossref-local impact-factor Nature -y 2023  # IF: 54.067
-crossref-local info  # Database stats
+crossref-local search-by-doi 10.1038/nature12373
+crossref-local status  # Configuration and database stats
 ```
 
 With abstracts (`-a` flag):
@@ -115,53 +114,53 @@ Found 4 matches in 128.4ms
 
 Start the FastAPI server:
 ```bash
-crossref-local api --host 0.0.0.0 --port 3333
+crossref-local run-server-http --host 0.0.0.0 --port 8333
 ```
 
 Endpoints:
 ```bash
 # Search works (FTS5)
-curl "http://localhost:3333/works?q=CRISPR&limit=10"
+curl "http://localhost:8333/works?q=CRISPR&limit=10"
 
 # Get by DOI
-curl "http://localhost:3333/works/10.1038/nature12373"
+curl "http://localhost:8333/works/10.1038/nature12373"
 
 # Batch DOI lookup
-curl -X POST "http://localhost:3333/works/batch" \
+curl -X POST "http://localhost:8333/works/batch" \
   -H "Content-Type: application/json" \
   -d '{"dois": ["10.1038/nature12373", "10.1126/science.aax0758"]}'
 
 # Database info
-curl "http://localhost:3333/info"
+curl "http://localhost:8333/info"
 ```
 
-Remote access via SSH tunnel:
+HTTP mode (connect to running server):
 ```bash
-# On local machine
-ssh -L 3333:127.0.0.1:3333 nas
-
 # Python client
-from crossref_local import configure_remote
-configure_remote("http://localhost:3333")
+from crossref_local import configure_http
+configure_http("http://localhost:8333")
+
+# Or via CLI
+crossref-local --http search "CRISPR"
 ```
 
 </details>
 
 <details>
-<summary><strong>MCP Server (Claude Desktop)</strong></summary>
+<summary><strong>MCP Server</strong></summary>
 
-Run as MCP server for Claude Desktop integration:
+Run as MCP (Model Context Protocol) server:
 ```bash
-crossref-local serve
+crossref-local run-server-mcp
 ```
 
-Add to Claude Desktop config (`~/.config/claude/claude_desktop_config.json`):
+Example MCP client configuration:
 ```json
 {
   "mcpServers": {
     "crossref-local": {
       "command": "crossref-local",
-      "args": ["serve"],
+      "args": ["run-server-mcp"],
       "env": {
         "CROSSREF_LOCAL_DB": "/path/to/crossref.db"
       }
@@ -174,8 +173,6 @@ Available tools:
 - `search_works` - Full-text search across 167M+ papers
 - `get_work` - Get paper by DOI
 - `count_works` - Count matching papers
-- `database_info` - Database statistics
-- `calculate_impact_factor` - Journal impact factor
 
 </details>
 

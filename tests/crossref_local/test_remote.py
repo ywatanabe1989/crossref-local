@@ -31,22 +31,22 @@ class TestRemoteClientInit:
 
     def test_client_creation(self):
         """RemoteClient can be created."""
-        client = RemoteClient("http://localhost:3333")
-        assert client.base_url == "http://localhost:3333"
+        client = RemoteClient("http://localhost:8333")
+        assert client.base_url == "http://localhost:8333"
 
     def test_client_strips_trailing_slash(self):
         """RemoteClient strips trailing slash from URL."""
-        client = RemoteClient("http://localhost:3333/")
-        assert client.base_url == "http://localhost:3333"
+        client = RemoteClient("http://localhost:8333/")
+        assert client.base_url == "http://localhost:8333"
 
     def test_client_custom_timeout(self):
         """RemoteClient accepts custom timeout."""
-        client = RemoteClient("http://localhost:3333", timeout=60)
+        client = RemoteClient("http://localhost:8333", timeout=60)
         assert client.timeout == 60
 
     def test_client_default_timeout(self):
         """RemoteClient has default timeout."""
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         assert client.timeout == 30
 
 
@@ -60,7 +60,7 @@ class TestRemoteClientHealth:
             "status": "healthy",
             "database_connected": True,
         })
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         result = client.health()
         assert isinstance(result, dict)
         assert result["status"] == "healthy"
@@ -79,7 +79,7 @@ class TestRemoteClientInfo:
         ]
         mock_urlopen.side_effect = responses
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         result = client.info()
 
         assert isinstance(result, dict)
@@ -104,7 +104,7 @@ class TestRemoteClientSearch:
             ]
         })
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         result = client.search(query="machine learning", limit=10)
 
         assert isinstance(result, SearchResult)
@@ -130,7 +130,7 @@ class TestRemoteClientSearch:
             ]
         })
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         result = client.search(query="test")
 
         assert len(result.works) == 1
@@ -149,7 +149,7 @@ class TestRemoteClientSearch:
             "results": []
         })
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         result = client.search(query="xyznonexistent")
 
         assert result.total == 0
@@ -169,7 +169,7 @@ class TestRemoteClientGet:
             "year": 2023,
         })
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         work = client.get("10.1234/test")
 
         assert isinstance(work, Work)
@@ -180,14 +180,14 @@ class TestRemoteClientGet:
         """get() returns None for nonexistent DOI."""
         import urllib.error
         mock_urlopen.side_effect = urllib.error.HTTPError(
-            url="http://localhost:3333/works/10.0000/nonexistent",
+            url="http://localhost:8333/works/10.0000/nonexistent",
             code=404,
             msg="Not Found",
             hdrs={},
             fp=None,
         )
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         work = client.get("10.0000/nonexistent")
 
         assert work is None
@@ -208,7 +208,7 @@ class TestRemoteClientGetMany:
             ]
         })
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         works = client.get_many(["10.1234/test1", "10.1234/test2"])
 
         assert isinstance(works, list)
@@ -225,7 +225,7 @@ class TestRemoteClientGetMany:
             "results": []
         })
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         works = client.get_many([])
 
         assert works == []
@@ -242,7 +242,7 @@ class TestRemoteClientExists:
             "title": "Test",
         })
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         assert client.exists("10.1234/test") is True
 
     @patch("urllib.request.urlopen")
@@ -250,14 +250,14 @@ class TestRemoteClientExists:
         """exists() returns False for nonexistent DOI."""
         import urllib.error
         mock_urlopen.side_effect = urllib.error.HTTPError(
-            url="http://localhost:3333/works/10.0000/nonexistent",
+            url="http://localhost:8333/works/10.0000/nonexistent",
             code=404,
             msg="Not Found",
             hdrs={},
             fp=None,
         )
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         assert client.exists("10.0000/nonexistent") is False
 
 
@@ -270,7 +270,7 @@ class TestRemoteClientConnectionErrors:
         import urllib.error
         mock_urlopen.side_effect = urllib.error.URLError("Connection refused")
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         with pytest.raises(ConnectionError):
             client.health()
 
@@ -279,14 +279,14 @@ class TestRemoteClientConnectionErrors:
         """HTTP errors (non-404) raise ConnectionError."""
         import urllib.error
         mock_urlopen.side_effect = urllib.error.HTTPError(
-            url="http://localhost:3333/health",
+            url="http://localhost:8333/health",
             code=500,
             msg="Internal Server Error",
             hdrs={},
             fp=None,
         )
 
-        client = RemoteClient("http://localhost:3333")
+        client = RemoteClient("http://localhost:8333")
         with pytest.raises(ConnectionError):
             client.health()
 
@@ -297,27 +297,27 @@ class TestSingletonClient:
     def test_get_client_returns_client(self):
         """get_client() returns RemoteClient."""
         reset_client()
-        client = get_client("http://localhost:3333")
+        client = get_client("http://localhost:8333")
         assert isinstance(client, RemoteClient)
 
     def test_get_client_singleton(self):
         """get_client() returns same instance."""
         reset_client()
-        client1 = get_client("http://localhost:3333")
-        client2 = get_client("http://localhost:3333")
+        client1 = get_client("http://localhost:8333")
+        client2 = get_client("http://localhost:8333")
         assert client1 is client2
 
     def test_get_client_new_url(self):
         """get_client() creates new instance for different URL."""
         reset_client()
-        client1 = get_client("http://localhost:3333")
+        client1 = get_client("http://localhost:8333")
         client2 = get_client("http://localhost:8080")
         assert client1 is not client2
 
     def test_reset_client(self):
         """reset_client() clears singleton."""
         reset_client()
-        client1 = get_client("http://localhost:3333")
+        client1 = get_client("http://localhost:8333")
         reset_client()
-        client2 = get_client("http://localhost:3333")
+        client2 = get_client("http://localhost:8333")
         assert client1 is not client2

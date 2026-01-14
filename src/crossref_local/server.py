@@ -4,11 +4,11 @@ This server provides proper full-text search using FTS5 index,
 unlike the Django API which only scans a limited subset.
 
 Usage:
-    crossref-local api                    # Run on default port 3333
+    crossref-local api                    # Run on default port 8333
     crossref-local api --port 8080        # Custom port
 
     # Or directly:
-    uvicorn crossref_local.server:app --host 0.0.0.0 --port 3333
+    uvicorn crossref_local.server:app --host 0.0.0.0 --port 8333
 """
 
 import time
@@ -18,14 +18,14 @@ from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import fts
+from . import fts, __version__
 from .db import get_db
 from .models import Work
 
 app = FastAPI(
     title="CrossRef Local API",
     description="Fast full-text search across 167M+ scholarly works",
-    version="1.1.0",
+    version=__version__,
 )
 
 # CORS middleware
@@ -61,7 +61,7 @@ class SearchResponse(BaseModel):
 
 class InfoResponse(BaseModel):
     name: str = "CrossRef Local API"
-    version: str = "1.1.0"
+    version: str = __version__
     status: str = "running"
     mode: str = "local"
     total_papers: int
@@ -75,7 +75,7 @@ def root():
     """API root with endpoint information."""
     return {
         "name": "CrossRef Local API",
-        "version": "1.1.0",
+        "version": __version__,
         "status": "running",
         "endpoints": {
             "health": "/health",
@@ -341,7 +341,7 @@ def api_stats_compat():
     }
 
 
-def run_server(host: str = "0.0.0.0", port: int = 3333):
+def run_server(host: str = "0.0.0.0", port: int = 8333):
     """Run the FastAPI server."""
     import uvicorn
 

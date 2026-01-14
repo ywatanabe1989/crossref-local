@@ -9,10 +9,6 @@ from typing import Optional
 
 from . import search, get, info, __version__
 
-from .impact_factor import ImpactFactorCalculator
-
-# Suppress noisy warnings from impact_factor module in CLI
-logging.getLogger("crossref_local.impact_factor").setLevel(logging.ERROR)
 
 
 def _strip_xml_tags(text: str) -> str:
@@ -79,27 +75,26 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__, prog_name="crossref-local")
 @click.option(
-    "--remote", "-r", is_flag=True, help="Use remote API instead of local database"
+    "--http", is_flag=True, help="Use HTTP API instead of direct database"
 )
 @click.option(
     "--api-url",
-    envvar="CROSSREF_LOCAL_API",
-    help="API URL for remote mode (default: auto-detect)",
+    envvar="CROSSREF_LOCAL_API_URL",
+    help="API URL for http mode (default: auto-detect)",
 )
 @click.pass_context
-def cli(ctx, remote: bool, api_url: str):
+def cli(ctx, http: bool, api_url: str):
     """Local CrossRef database with 167M+ works and full-text search.
 
-    Supports both local database access and remote API mode.
+    Supports both direct database access (db mode) and HTTP API (http mode).
 
     \b
-    Local mode (default if database found):
+    DB mode (default if database found):
       crossref-local search "machine learning"
 
     \b
-    Remote mode (via SSH tunnel):
-      ssh -L 3333:127.0.0.1:3333 your-server  # First, create tunnel
-      crossref-local --remote search "machine learning"
+    HTTP mode (connect to API server):
+      crossref-local --http search "machine learning"
     """
     from .config import Config
 
@@ -107,8 +102,8 @@ def cli(ctx, remote: bool, api_url: str):
 
     if api_url:
         Config.set_api_url(api_url)
-    elif remote:
-        Config.set_mode("remote")
+    elif http:
+        Config.set_mode("http")
 
 
 def _get_if_fast(db, issn: str, cache: dict) -> Optional[float]:
@@ -151,7 +146,7 @@ def search_cmd(
         results = search(query, limit=limit, offset=offset)
     except ConnectionError as e:
         click.echo(f"Error: {e}", err=True)
-        click.echo("\nRun 'crossref-local setup' to check configuration.", err=True)
+        click.echo("\nRun 'crossref-local status' to check configuration.", err=True)
         sys.exit(1)
 
     # Cache for fast IF lookups
@@ -195,17 +190,17 @@ def search_cmd(
             click.echo()
 
 
-@cli.command("get", context_settings=CONTEXT_SETTINGS)
+@cli.command("search-by-doi", context_settings=CONTEXT_SETTINGS)
 @click.argument("doi")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 @click.option("--citation", is_flag=True, help="Output as citation")
-def get_cmd(doi: str, as_json: bool, citation: bool):
-    """Get a work by DOI."""
+def search_by_doi_cmd(doi: str, as_json: bool, citation: bool):
+    """Search for a work by DOI."""
     try:
         work = get(doi)
     except ConnectionError as e:
         click.echo(f"Error: {e}", err=True)
-        click.echo("\nRun 'crossref-local setup' to check configuration.", err=True)
+        click.echo("\nRun 'crossref-local status' to check configuration.", err=True)
         sys.exit(1)
 
     if work is None:
@@ -226,89 +221,42 @@ def get_cmd(doi: str, as_json: bool, citation: bool):
             click.echo(f"Citations: {work.citation_count}")
 
 
-@cli.command("info", context_settings=CONTEXT_SETTINGS)
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def info_cmd(as_json: bool):
-    """Show database/API information."""
-    try:
-        db_info = info()
-    except ConnectionError as e:
-        click.echo(f"Error: {e}", err=True)
-        click.echo("\nRun 'crossref-local setup' to check configuration.", err=True)
-        sys.exit(1)
-
-    if as_json:
-        click.echo(json.dumps(db_info, indent=2))
-    else:
-        mode = db_info.get("mode", "local")
-        if mode == "remote":
-            click.echo("CrossRef Local API (Remote)")
-            click.echo("-" * 40)
-            click.echo(f"API URL: {db_info.get('api_url', 'unknown')}")
-            click.echo(f"Status: {db_info.get('status', 'unknown')}")
-        else:
-            click.echo("CrossRef Local Database")
-            click.echo("-" * 40)
-            click.echo(f"Database: {db_info.get('db_path', 'unknown')}")
-            click.echo(f"Works: {db_info.get('works', 0):,}")
-            click.echo(f"FTS indexed: {db_info.get('fts_indexed', 0):,}")
-            click.echo(f"Citations: {db_info.get('citations', 0):,}")
-
-
-@cli.command("impact-factor", context_settings=CONTEXT_SETTINGS)
-@click.argument("journal")
-@click.option("-y", "--year", default=2023, help="Target year")
-@click.option("-w", "--window", default=2, help="Citation window years")
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def impact_factor_cmd(journal: str, year: int, window: int, as_json: bool):
-    """Calculate impact factor for a journal."""
-    with ImpactFactorCalculator() as calc:
-        result = calc.calculate_impact_factor(
-            journal_identifier=journal,
-            target_year=year,
-            window_years=window,
-        )
-
-    if as_json:
-        click.echo(json.dumps(result, indent=2))
-    else:
-        click.echo(f"Journal: {result['journal']}")
-        click.echo(f"Year: {result['target_year']}")
-        click.echo(f"Window: {result['window_range']}")
-        click.echo(f"Articles: {result['total_articles']:,}")
-        click.echo(f"Citations: {result['total_citations']:,}")
-        click.echo(f"Impact Factor: {result['impact_factor']:.3f}")
 
 
 @cli.command(context_settings=CONTEXT_SETTINGS)
-def setup():
-    """Check setup status and configuration."""
+def status():
+    """Show status and configuration."""
     from .config import DEFAULT_DB_PATHS, DEFAULT_API_URLS
     import os
 
-    click.echo("CrossRef Local - Setup Status")
+    click.echo("CrossRef Local - Status")
     click.echo("=" * 50)
     click.echo()
 
     # Check environment variables
     click.echo("Environment Variables:")
-    env_db = os.environ.get("CROSSREF_LOCAL_DB")
-    env_api = os.environ.get("CROSSREF_LOCAL_API")
-    env_mode = os.environ.get("CROSSREF_LOCAL_MODE")
+    click.echo()
 
-    if env_db:
-        status = "OK" if os.path.exists(env_db) else "NOT FOUND"
-        click.echo(f"  CROSSREF_LOCAL_DB: {env_db} ({status})")
-    else:
-        click.echo("  CROSSREF_LOCAL_DB: (not set)")
+    env_vars = [
+        ("CROSSREF_LOCAL_DB", "Path to SQLite database file", os.environ.get("CROSSREF_LOCAL_DB")),
+        ("CROSSREF_LOCAL_API_URL", "HTTP API URL (e.g., http://localhost:8333)", os.environ.get("CROSSREF_LOCAL_API_URL")),
+        ("CROSSREF_LOCAL_MODE", "Force mode: 'db', 'http', or 'auto'", os.environ.get("CROSSREF_LOCAL_MODE")),
+        ("CROSSREF_LOCAL_HOST", "Host for run-server-http (default: 0.0.0.0)", os.environ.get("CROSSREF_LOCAL_HOST")),
+        ("CROSSREF_LOCAL_PORT", "Port for run-server-http (default: 8333)", os.environ.get("CROSSREF_LOCAL_PORT")),
+    ]
 
-    if env_api:
-        click.echo(f"  CROSSREF_LOCAL_API: {env_api}")
-    else:
-        click.echo("  CROSSREF_LOCAL_API: (not set)")
-
-    if env_mode:
-        click.echo(f"  CROSSREF_LOCAL_MODE: {env_mode}")
+    for var_name, description, value in env_vars:
+        if value:
+            if var_name == "CROSSREF_LOCAL_DB":
+                status = " (OK)" if os.path.exists(value) else " (NOT FOUND)"
+            else:
+                status = ""
+            click.echo(f"  {var_name}={value}{status}")
+            click.echo(f"      | {description}")
+        else:
+            click.echo(f"  {var_name} (not set)")
+            click.echo(f"      | {description}")
+        click.echo()
 
     click.echo()
 
@@ -325,17 +273,31 @@ def setup():
 
     click.echo()
 
-    # Check remote API endpoints
-    click.echo("Remote API Endpoints:")
+    # Check API servers
+    click.echo("API Servers:")
     api_found = None
+    api_compatible = False
     for url in DEFAULT_API_URLS:
         try:
             import urllib.request
+            import json as json_module
 
-            req = urllib.request.Request(f"{url}/health", method="GET")
+            # Check root endpoint for version
+            req = urllib.request.Request(f"{url}/", method="GET")
+            req.add_header("Accept", "application/json")
             with urllib.request.urlopen(req, timeout=3) as resp:
                 if resp.status == 200:
-                    click.echo(f"  [OK] {url}")
+                    data = json_module.loads(resp.read().decode())
+                    server_version = data.get("version", "unknown")
+
+                    # Check version compatibility
+                    if server_version == __version__:
+                        click.echo(f"  [OK] {url} (v{server_version})")
+                        api_compatible = True
+                    else:
+                        click.echo(f"  [WARN] {url} (v{server_version} != v{__version__})")
+                        click.echo(f"         Server version mismatch - may be incompatible")
+
                     if api_found is None:
                         api_found = url
                 else:
@@ -358,56 +320,44 @@ def setup():
         click.echo("Ready! Try:")
         click.echo('  crossref-local search "machine learning"')
     elif api_found:
-        click.echo(f"Remote API available: {api_found}")
+        click.echo(f"HTTP API available: {api_found}")
         click.echo()
         click.echo("Ready! Try:")
-        click.echo('  crossref-local --remote search "machine learning"')
+        click.echo('  crossref-local --http search "machine learning"')
         click.echo()
         click.echo("Or set environment:")
-        click.echo("  export CROSSREF_LOCAL_MODE=remote")
+        click.echo("  export CROSSREF_LOCAL_MODE=http")
     else:
-        click.echo("No database or API found!")
+        click.echo("No database or API server found!")
         click.echo()
         click.echo("Options:")
-        click.echo("  1. Local database:")
+        click.echo("  1. Direct database access (db mode):")
         click.echo("     export CROSSREF_LOCAL_DB=/path/to/crossref.db")
         click.echo()
-        click.echo("  2. Remote API (via SSH tunnel):")
-        click.echo("     ssh -L 3333:127.0.0.1:3333 your-server")
-        click.echo("     crossref-local --remote search 'query'")
+        click.echo("  2. HTTP API (connect to server):")
+        click.echo("     crossref-local --http search 'query'")
 
 
-@cli.command("serve-mcp", context_settings=CONTEXT_SETTINGS)
+@cli.command("run-server-mcp", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "-t",
     "--transport",
     type=click.Choice(["stdio", "sse", "http"]),
     default="stdio",
-    help="Transport protocol (stdio for Claude Desktop)",
+    help="Transport protocol",
 )
-@click.option("--host", default="localhost", help="Host for HTTP/SSE transport")
-@click.option("--port", default=8082, type=int, help="Port for HTTP/SSE transport")
+@click.option("--host", default="localhost", envvar="CROSSREF_LOCAL_MCP_HOST", help="Host for HTTP/SSE transport")
+@click.option("--port", default=8082, type=int, envvar="CROSSREF_LOCAL_MCP_PORT", help="Port for HTTP/SSE transport")
 def serve_mcp(transport: str, host: str, port: int):
-    """Run MCP server for Claude integration.
+    """Run MCP (Model Context Protocol) server.
 
     \b
-    Claude Desktop configuration (claude_desktop_config.json):
+    Example MCP client configuration:
       {
         "mcpServers": {
           "crossref": {
             "command": "crossref-local",
-            "args": ["serve"]
-          }
-        }
-      }
-
-    \b
-    Or with explicit path:
-      {
-        "mcpServers": {
-          "crossref": {
-            "command": "python",
-            "args": ["-m", "crossref_local.mcp_server"]
+            "args": ["run-server-mcp"]
           }
         }
       }
@@ -425,11 +375,11 @@ def serve_mcp(transport: str, host: str, port: int):
     run_server(transport=transport, host=host, port=port)
 
 
-@cli.command("serve-http", context_settings=CONTEXT_SETTINGS)
-@click.option("--host", default="0.0.0.0", help="Host to bind")
-@click.option("--port", default=3333, type=int, help="Port to listen on")
+@cli.command("run-server-http", context_settings=CONTEXT_SETTINGS)
+@click.option("--host", default="0.0.0.0", envvar="CROSSREF_LOCAL_HOST", help="Host to bind")
+@click.option("--port", default=8333, type=int, envvar="CROSSREF_LOCAL_PORT", help="Port to listen on")
 def serve_http(host: str, port: int):
-    """Run HTTP API server for remote clients.
+    """Run HTTP API server.
 
     \b
     This runs a FastAPI server that provides proper full-text search
@@ -437,13 +387,13 @@ def serve_http(host: str, port: int):
 
     \b
     Example:
-      crossref-local api                  # Run on 0.0.0.0:3333
-      crossref-local api --port 8080      # Custom port
+      crossref-local run-server-http                  # Run on 0.0.0.0:8333
+      crossref-local run-server-http --port 8080      # Custom port
 
     \b
-    Then from a client:
-      curl "http://localhost:3333/search?q=CRISPR&limit=10"
-      curl "http://localhost:3333/get/10.1038/nature12373"
+    Then connect with http mode:
+      crossref-local --http search "CRISPR"
+      curl "http://localhost:8333/works?q=CRISPR&limit=10"
     """
     try:
         from .server import run_server

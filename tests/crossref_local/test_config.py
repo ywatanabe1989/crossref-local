@@ -83,16 +83,16 @@ class TestConfig:
         Config.reset()
         assert Config._db_path is None
 
-    def test_set_mode_to_remote(self):
-        """Config.set_mode('remote') switches to remote mode."""
-        Config.set_mode("remote")
-        assert Config.get_mode() == "remote"
+    def test_set_mode_to_http(self):
+        """Config.set_mode("http") switches to http mode."""
+        Config.set_mode("http")
+        assert Config.get_mode() == "http"
 
     def test_set_api_url(self):
         """Config.set_api_url() sets the API URL."""
-        Config.set_api_url("http://example.com:3333")
-        assert Config.get_api_url() == "http://example.com:3333"
-        assert Config.get_mode() == "remote"
+        Config.set_api_url("http://example.com:8333")
+        assert Config.get_api_url() == "http://example.com:8333"
+        assert Config.get_mode() == "http"
 
 
 class TestDefaultPaths:
