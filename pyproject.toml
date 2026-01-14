@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "crossref-local"
-version = "0.3.0"
+version = "0.3.1"
 description = "Local CrossRef database with 167M+ works and full-text search"
 readme = "README.md"
 license = "AGPL-3.0"
@@ -47,9 +47,20 @@ viz = [
     "networkx>=3.0",
     "matplotlib>=3.7",
 ]
+mcp = [
+    "fastmcp>=0.4",
+]
+api = [
+    "fastapi>=0.100",
+    "uvicorn>=0.20",
+]
+all = [
+    "crossref-local[dev,viz,mcp,api]",
+]
 
 [project.scripts]
 crossref-local = "crossref_local.cli:main"
+crossref-local-mcp = "crossref_local.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/crossref_local"

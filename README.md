@@ -92,6 +92,7 @@ async def main():
 crossref-local search "CRISPR genome editing" -n 5
 crossref-local get 10.1038/nature12373
 crossref-local impact-factor Nature -y 2023  # IF: 54.067
+crossref-local info  # Database stats
 ```
 
 With abstracts (`-a` flag):
@@ -104,9 +105,77 @@ Found 4 matches in 128.4ms
    DOI: 10.1038/ncomms10548
    Journal: Nature Communications
    Abstract: Zinc-finger nuclease, transcription activator-like effector nuclease
-   and CRISPR/Cas9 are becoming major tools for genome editing. Importantly,
-   knock-in in several non-rodent species has been finally achieved...
+   and CRISPR/Cas9 are becoming major tools for genome editing...
 ```
+
+</details>
+
+<details>
+<summary><strong>HTTP API</strong></summary>
+
+Start the FastAPI server:
+```bash
+crossref-local api --host 0.0.0.0 --port 3333
+```
+
+Endpoints:
+```bash
+# Search works (FTS5)
+curl "http://localhost:3333/works?q=CRISPR&limit=10"
+
+# Get by DOI
+curl "http://localhost:3333/works/10.1038/nature12373"
+
+# Batch DOI lookup
+curl -X POST "http://localhost:3333/works/batch" \
+  -H "Content-Type: application/json" \
+  -d '{"dois": ["10.1038/nature12373", "10.1126/science.aax0758"]}'
+
+# Database info
+curl "http://localhost:3333/info"
+```
+
+Remote access via SSH tunnel:
+```bash
+# On local machine
+ssh -L 3333:127.0.0.1:3333 nas
+
+# Python client
+from crossref_local import configure_remote
+configure_remote("http://localhost:3333")
+```
+
+</details>
+
+<details>
+<summary><strong>MCP Server (Claude Desktop)</strong></summary>
+
+Run as MCP server for Claude Desktop integration:
+```bash
+crossref-local serve
+```
+
+Add to Claude Desktop config (`~/.config/claude/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "crossref-local": {
+      "command": "crossref-local",
+      "args": ["serve"],
+      "env": {
+        "CROSSREF_LOCAL_DB": "/path/to/crossref.db"
+      }
+    }
+  }
+}
+```
+
+Available tools:
+- `search_works` - Full-text search across 167M+ papers
+- `get_work` - Get paper by DOI
+- `count_works` - Count matching papers
+- `database_info` - Database statistics
+- `calculate_impact_factor` - Journal impact factor
 
 </details>
 

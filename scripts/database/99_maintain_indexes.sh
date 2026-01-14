@@ -1,27 +1,68 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
-# Timestamp: "2025-10-12 02:59:59 (ywatanabe)"
-# File: ./impact_factor/scripts/maintain_indexes.sh
+# File: scripts/database/99_maintain_indexes.sh
+# Description: Check and create missing database indexes
 
-ORIG_DIR="$(pwd)"
-THIS_DIR="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
-LOG_PATH="$THIS_DIR/.$(basename $0).log"
-echo > "$LOG_PATH"
+set -euo pipefail
 
-BLACK='\033[0;30m'
-LIGHT_GRAY='\033[0;37m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+LOG_PATH="${PROJECT_ROOT}/logs/maintain_indexes_$(date +%Y%m%d).log"
+
+# Colors
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+LIGHT_GRAY='\033[0;37m'
+NC='\033[0m'
 
 echo_info() { echo -e "${LIGHT_GRAY}$1${NC}"; }
 echo_success() { echo -e "${GREEN}$1${NC}"; }
 echo_warning() { echo -e "${YELLOW}$1${NC}"; }
 echo_error() { echo -e "${RED}$1${NC}"; }
-# ---------------------------------------
 
-DB_PATH="${1:-./data/crossref.db}"
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [DB_PATH]
+
+Check and create missing database indexes for crossref.db.
+
+ARGUMENTS:
+    DB_PATH    Path to database (default: \$CROSSREF_LOCAL_DB or data/crossref.db)
+
+OPTIONS:
+    -c, --check-only   Only check indexes, don't create missing ones
+    -h, --help         Show this help message
+
+EXAMPLES:
+    $(basename "$0")                    # Check/create on default database
+    $(basename "$0") /path/to/db        # Custom database path
+    $(basename "$0") --check-only       # Only check, don't modify
+
+NOTE:
+    Index creation can take hours for large databases.
+    Recommended to run in screen session for long operations.
+EOF
+}
+
+# Parse arguments
+CHECK_ONLY=0
+DB_PATH=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -c|--check-only) CHECK_ONLY=1; shift ;;
+        -h|--help) usage; exit 0 ;;
+        -*) echo_error "Unknown option: $1"; usage; exit 1 ;;
+        *) DB_PATH="$1"; shift ;;
+    esac
+done
+
+# Set default DB path
+DB_PATH="${DB_PATH:-${CROSSREF_LOCAL_DB:-${PROJECT_ROOT}/data/crossref.db}}"
+
+mkdir -p "$(dirname "$LOG_PATH")"
+echo > "$LOG_PATH"
 
 echo_info "=========================================="
 echo_info "CrossRef Database Index Maintenance"
