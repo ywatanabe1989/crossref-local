@@ -7,7 +7,7 @@ import re
 import sys
 from typing import Optional
 
-from . import search, get, count, info, __version__
+from . import search, get, info, __version__
 
 from .impact_factor import ImpactFactorCalculator
 
@@ -98,7 +98,7 @@ def cli(ctx, remote: bool, api_url: str):
 
     \b
     Remote mode (via SSH tunnel):
-      ssh -L 3333:127.0.0.1:3333 nas  # First, create tunnel
+      ssh -L 3333:127.0.0.1:3333 your-server  # First, create tunnel
       crossref-local --remote search "machine learning"
     """
     from .config import Config
@@ -117,24 +117,42 @@ def _get_if_fast(db, issn: str, cache: dict) -> Optional[float]:
         return cache[issn]
     row = db.fetchone(
         "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?",
-        (f"%{issn}%",)
+        (f"%{issn}%",),
     )
     cache[issn] = row["two_year_mean_citedness"] if row else None
     return cache[issn]
 
 
-@cli.command("search", aliases=["s"], context_settings=CONTEXT_SETTINGS)
+@cli.command("search", context_settings=CONTEXT_SETTINGS)
 @click.argument("query")
-@click.option("-n", "--number", "limit", default=10, show_default=True, help="Number of results")
+@click.option(
+    "-n", "--number", "limit", default=10, show_default=True, help="Number of results"
+)
 @click.option("-o", "--offset", default=0, help="Skip first N results")
 @click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
 @click.option("-A", "--authors", is_flag=True, help="Show authors")
-@click.option("-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor")
+@click.option(
+    "-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor"
+)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(query: str, limit: int, offset: int, abstracts: bool, authors: bool, with_if: bool, as_json: bool):
+def search_cmd(
+    query: str,
+    limit: int,
+    offset: int,
+    abstracts: bool,
+    authors: bool,
+    with_if: bool,
+    as_json: bool,
+):
     """Search for works by title, abstract, or authors."""
     from .db import get_db
-    results = search(query, limit=limit, offset=offset)
+
+    try:
+        results = search(query, limit=limit, offset=offset)
+    except ConnectionError as e:
+        click.echo(f"Error: {e}", err=True)
+        click.echo("\nRun 'crossref-local setup' to check configuration.", err=True)
+        sys.exit(1)
 
     # Cache for fast IF lookups
     if_cache = {}
@@ -177,13 +195,18 @@ def search_cmd(query: str, limit: int, offset: int, abstracts: bool, authors: bo
             click.echo()
 
 
-@cli.command("get", aliases=["g"], context_settings=CONTEXT_SETTINGS)
+@cli.command("get", context_settings=CONTEXT_SETTINGS)
 @click.argument("doi")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 @click.option("--citation", is_flag=True, help="Output as citation")
 def get_cmd(doi: str, as_json: bool, citation: bool):
     """Get a work by DOI."""
-    work = get(doi)
+    try:
+        work = get(doi)
+    except ConnectionError as e:
+        click.echo(f"Error: {e}", err=True)
+        click.echo("\nRun 'crossref-local setup' to check configuration.", err=True)
+        sys.exit(1)
 
     if work is None:
         click.echo(f"DOI not found: {doi}", err=True)
@@ -203,19 +226,16 @@ def get_cmd(doi: str, as_json: bool, citation: bool):
             click.echo(f"Citations: {work.citation_count}")
 
 
-@cli.command("count", aliases=["c"], context_settings=CONTEXT_SETTINGS)
-@click.argument("query")
-def count_cmd(query: str):
-    """Count matching works."""
-    n = count(query)
-    click.echo(f"{n:,}")
-
-
-@cli.command("info", aliases=["i"], context_settings=CONTEXT_SETTINGS)
+@cli.command("info", context_settings=CONTEXT_SETTINGS)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def info_cmd(as_json: bool):
     """Show database/API information."""
-    db_info = info()
+    try:
+        db_info = info()
+    except ConnectionError as e:
+        click.echo(f"Error: {e}", err=True)
+        click.echo("\nRun 'crossref-local setup' to check configuration.", err=True)
+        sys.exit(1)
 
     if as_json:
         click.echo(json.dumps(db_info, indent=2))
@@ -235,7 +255,7 @@ def info_cmd(as_json: bool):
             click.echo(f"Citations: {db_info.get('citations', 0):,}")
 
 
-@cli.command("impact-factor", aliases=["if"], context_settings=CONTEXT_SETTINGS)
+@cli.command("impact-factor", context_settings=CONTEXT_SETTINGS)
 @click.argument("journal")
 @click.option("-y", "--year", default=2023, help="Target year")
 @click.option("-w", "--window", default=2, help="Citation window years")
@@ -353,11 +373,11 @@ def setup():
         click.echo("     export CROSSREF_LOCAL_DB=/path/to/crossref.db")
         click.echo()
         click.echo("  2. Remote API (via SSH tunnel):")
-        click.echo("     ssh -L 3333:127.0.0.1:3333 your-nas")
+        click.echo("     ssh -L 3333:127.0.0.1:3333 your-server")
         click.echo("     crossref-local --remote search 'query'")
 
 
-@cli.command(context_settings=CONTEXT_SETTINGS)
+@cli.command("serve-mcp", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "-t",
     "--transport",
@@ -367,7 +387,7 @@ def setup():
 )
 @click.option("--host", default="localhost", help="Host for HTTP/SSE transport")
 @click.option("--port", default=8082, type=int, help="Port for HTTP/SSE transport")
-def serve(transport: str, host: str, port: int):
+def serve_mcp(transport: str, host: str, port: int):
     """Run MCP server for Claude integration.
 
     \b
@@ -405,11 +425,11 @@ def serve(transport: str, host: str, port: int):
     run_server(transport=transport, host=host, port=port)
 
 
-@cli.command(context_settings=CONTEXT_SETTINGS)
+@cli.command("serve-http", context_settings=CONTEXT_SETTINGS)
 @click.option("--host", default="0.0.0.0", help="Host to bind")
 @click.option("--port", default=3333, type=int, help="Port to listen on")
-def api(host: str, port: int):
-    """Run HTTP API server with FTS5 search.
+def serve_http(host: str, port: int):
+    """Run HTTP API server for remote clients.
 
     \b
     This runs a FastAPI server that provides proper full-text search
