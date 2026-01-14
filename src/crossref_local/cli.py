@@ -2,14 +2,16 @@
 
 import click
 import json
+import logging
 import re
 import sys
-from typing import Optional
 
 from . import search, get, count, info, __version__
 
-
 from .impact_factor import ImpactFactorCalculator
+
+# Suppress noisy warnings from impact_factor module in CLI
+logging.getLogger("crossref_local.impact_factor").setLevel(logging.ERROR)
 
 
 def _strip_xml_tags(text: str) -> str:
@@ -32,12 +34,14 @@ class AliasedGroup(click.Group):
 
     def command(self, *args, aliases=None, **kwargs):
         """Decorator that registers aliases for commands."""
+
         def decorator(f):
             cmd = super(AliasedGroup, self).command(*args, **kwargs)(f)
             if aliases:
                 for alias in aliases:
                     self._aliases[alias] = cmd.name
             return cmd
+
         return decorator
 
     def get_command(self, ctx, cmd_name):
@@ -73,20 +77,67 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__, prog_name="crossref-local")
-def cli():
-    """Local CrossRef database with 167M+ works and full-text search."""
-    pass
+@click.option(
+    "--remote", "-r", is_flag=True, help="Use remote API instead of local database"
+)
+@click.option(
+    "--api-url",
+    envvar="CROSSREF_LOCAL_API",
+    help="API URL for remote mode (default: auto-detect)",
+)
+@click.pass_context
+def cli(ctx, remote: bool, api_url: str):
+    """Local CrossRef database with 167M+ works and full-text search.
+
+    Supports both local database access and remote API mode.
+
+    \b
+    Local mode (default if database found):
+      crossref-local search "machine learning"
+
+    \b
+    Remote mode (via SSH tunnel):
+      ssh -L 3333:127.0.0.1:3333 nas  # First, create tunnel
+      crossref-local --remote search "machine learning"
+    """
+    from .config import Config
+
+    ctx.ensure_object(dict)
+
+    if api_url:
+        Config.set_api_url(api_url)
+    elif remote:
+        Config.set_mode("remote")
+
+
+def _get_if_fast(db, issn: str, cache: dict) -> Optional[float]:
+    """Fast IF lookup from pre-computed OpenAlex data."""
+    if issn in cache:
+        return cache[issn]
+    row = db.fetchone(
+        "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?",
+        (f"%{issn}%",)
+    )
+    cache[issn] = row["two_year_mean_citedness"] if row else None
+    return cache[issn]
 
 
 @cli.command(aliases=["s"], context_settings=CONTEXT_SETTINGS)
 @click.argument("query")
-@click.option("-n", "--limit", default=10, help="Number of results")
+@click.option("-n", "--number", "limit", default=10, show_default=True, help="Number of results")
 @click.option("-o", "--offset", default=0, help="Skip first N results")
-@click.option("-a", "--with-abstracts", is_flag=True, help="Show abstracts")
+@click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
+@click.option("-A", "--authors", is_flag=True, help="Show authors")
+@click.option("-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(query: str, limit: int, offset: int, with_abstracts: bool, as_json: bool):
+def search_cmd(query: str, limit: int, offset: int, abstracts: bool, authors: bool, with_if: bool, as_json: bool):
     """Search for works by title, abstract, or authors."""
+    from .db import get_db
     results = search(query, limit=limit, offset=offset)
+
+    # Cache for fast IF lookups
+    if_cache = {}
+    db = get_db() if with_if else None
 
     if as_json:
         output = {
@@ -103,9 +154,20 @@ def search_cmd(query: str, limit: int, offset: int, with_abstracts: bool, as_jso
             year = f"({work.year})" if work.year else ""
             click.echo(f"{i}. {title} {year}")
             click.echo(f"   DOI: {work.doi}")
+            if authors and work.authors:
+                authors_str = ", ".join(work.authors[:5])
+                if len(work.authors) > 5:
+                    authors_str += f" et al. ({len(work.authors)} total)"
+                click.echo(f"   Authors: {authors_str}")
             if work.journal:
-                click.echo(f"   Journal: {work.journal}")
-            if with_abstracts and work.abstract:
+                journal_line = f"   Journal: {work.journal}"
+                # Fast IF lookup from pre-computed table
+                if with_if and work.issn:
+                    impact_factor = _get_if_fast(db, work.issn, if_cache)
+                    if impact_factor is not None:
+                        journal_line += f" (IF: {impact_factor:.2f}, OpenAlex)"
+                click.echo(journal_line)
+            if abstracts and work.abstract:
                 # Strip XML tags and truncate
                 abstract = _strip_xml_tags(work.abstract)
                 if len(abstract) > 500:
@@ -151,18 +213,25 @@ def count_cmd(query: str):
 @cli.command(aliases=["i"], context_settings=CONTEXT_SETTINGS)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def info_cmd(as_json: bool):
-    """Show database information."""
+    """Show database/API information."""
     db_info = info()
 
     if as_json:
         click.echo(json.dumps(db_info, indent=2))
     else:
-        click.echo("CrossRef Local Database")
-        click.echo("-" * 40)
-        click.echo(f"Database: {db_info['db_path']}")
-        click.echo(f"Works: {db_info['works']:,}")
-        click.echo(f"FTS indexed: {db_info['fts_indexed']:,}")
-        click.echo(f"Citations: {db_info['citations']:,}")
+        mode = db_info.get("mode", "local")
+        if mode == "remote":
+            click.echo("CrossRef Local API (Remote)")
+            click.echo("-" * 40)
+            click.echo(f"API URL: {db_info.get('api_url', 'unknown')}")
+            click.echo(f"Status: {db_info.get('status', 'unknown')}")
+        else:
+            click.echo("CrossRef Local Database")
+            click.echo("-" * 40)
+            click.echo(f"Database: {db_info.get('db_path', 'unknown')}")
+            click.echo(f"Works: {db_info.get('works', 0):,}")
+            click.echo(f"FTS indexed: {db_info.get('fts_indexed', 0):,}")
+            click.echo(f"Citations: {db_info.get('citations', 0):,}")
 
 
 @cli.command("impact-factor", aliases=["if"], context_settings=CONTEXT_SETTINGS)
@@ -193,28 +262,37 @@ def impact_factor_cmd(journal: str, year: int, window: int, as_json: bool):
 @cli.command(context_settings=CONTEXT_SETTINGS)
 def setup():
     """Check setup status and configuration."""
-    from .config import Config, DEFAULT_DB_PATHS
+    from .config import DEFAULT_DB_PATHS, DEFAULT_API_URLS
     import os
 
     click.echo("CrossRef Local - Setup Status")
     click.echo("=" * 50)
     click.echo()
 
-    # Check environment variable
+    # Check environment variables
+    click.echo("Environment Variables:")
     env_db = os.environ.get("CROSSREF_LOCAL_DB")
+    env_api = os.environ.get("CROSSREF_LOCAL_API")
+    env_mode = os.environ.get("CROSSREF_LOCAL_MODE")
+
     if env_db:
-        click.echo(f"CROSSREF_LOCAL_DB: {env_db}")
-        if os.path.exists(env_db):
-            click.echo("  Status: OK")
-        else:
-            click.echo("  Status: NOT FOUND")
+        status = "OK" if os.path.exists(env_db) else "NOT FOUND"
+        click.echo(f"  CROSSREF_LOCAL_DB: {env_db} ({status})")
     else:
-        click.echo("CROSSREF_LOCAL_DB: (not set)")
+        click.echo("  CROSSREF_LOCAL_DB: (not set)")
+
+    if env_api:
+        click.echo(f"  CROSSREF_LOCAL_API: {env_api}")
+    else:
+        click.echo("  CROSSREF_LOCAL_API: (not set)")
+
+    if env_mode:
+        click.echo(f"  CROSSREF_LOCAL_MODE: {env_mode}")
 
     click.echo()
 
-    # Check default paths
-    click.echo("Checking default database locations:")
+    # Check default database paths
+    click.echo("Local Database Locations:")
     db_found = None
     for path in DEFAULT_DB_PATHS:
         if path.exists():
@@ -226,26 +304,56 @@ def setup():
 
     click.echo()
 
-    if db_found:
-        click.echo(f"Database found: {db_found}")
-        click.echo()
+    # Check remote API endpoints
+    click.echo("Remote API Endpoints:")
+    api_found = None
+    for url in DEFAULT_API_URLS:
+        try:
+            import urllib.request
 
+            req = urllib.request.Request(f"{url}/health", method="GET")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                if resp.status == 200:
+                    click.echo(f"  [OK] {url}")
+                    if api_found is None:
+                        api_found = url
+                else:
+                    click.echo(f"  [ ] {url}")
+        except Exception:
+            click.echo(f"  [ ] {url}")
+
+    click.echo()
+
+    # Summary and recommendations
+    if db_found:
+        click.echo(f"Local database: {db_found}")
         try:
             db_info = info()
-            click.echo(f"  Works: {db_info['works']:,}")
-            click.echo(f"  FTS indexed: {db_info['fts_indexed']:,}")
-            click.echo(f"  Citations: {db_info['citations']:,}")
-            click.echo()
-            click.echo("Setup complete! Try:")
-            click.echo('  crossref-local search "machine learning"')
+            click.echo(f"  Works: {db_info.get('works', 0):,}")
+            click.echo(f"  FTS indexed: {db_info.get('fts_indexed', 0):,}")
         except Exception as e:
-            click.echo(f"  Error reading database: {e}", err=True)
-    else:
-        click.echo("No database found!")
+            click.echo(f"  Error: {e}", err=True)
         click.echo()
-        click.echo("To set up:")
-        click.echo("  export CROSSREF_LOCAL_DB=/path/to/crossref.db")
-        click.echo("  See: make db-build-info")
+        click.echo("Ready! Try:")
+        click.echo('  crossref-local search "machine learning"')
+    elif api_found:
+        click.echo(f"Remote API available: {api_found}")
+        click.echo()
+        click.echo("Ready! Try:")
+        click.echo('  crossref-local --remote search "machine learning"')
+        click.echo()
+        click.echo("Or set environment:")
+        click.echo("  export CROSSREF_LOCAL_MODE=remote")
+    else:
+        click.echo("No database or API found!")
+        click.echo()
+        click.echo("Options:")
+        click.echo("  1. Local database:")
+        click.echo("     export CROSSREF_LOCAL_DB=/path/to/crossref.db")
+        click.echo()
+        click.echo("  2. Remote API (via SSH tunnel):")
+        click.echo("     ssh -L 3333:127.0.0.1:3333 your-nas")
+        click.echo("     crossref-local --remote search 'query'")
 
 
 def main():

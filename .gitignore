@@ -680,3 +680,4 @@ GITIGNORED/
 # Test fixtures (generated)
 tests/fixtures/*.db
 tests/fixtures/*.json
+_.venv/

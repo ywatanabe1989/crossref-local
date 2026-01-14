@@ -96,9 +96,9 @@ crossref-local impact-factor Nature -y 2023  # IF: 54.067
 
 With abstracts (`-a` flag):
 ```
-$ crossref-local search "CRISPR" -n 1 -a
+$ crossref-local search "RS-1 enhances CRISPR" -n 1 -a
 
-Found 87,473 matches in 18.2ms
+Found 4 matches in 128.4ms
 
 1. RS-1 enhances CRISPR/Cas9- and TALEN-mediated knock-in efficiency (2016)
    DOI: 10.1038/ncomms10548
@@ -156,6 +156,27 @@ network.save_html("citation_network.html")  # requires: pip install crossref-loc
 | `CRISPR genome editing` | 12,170 | 257ms |
 
 Searching 167M records in milliseconds via FTS5.
+
+</details>
+
+<details>
+<summary><strong>Related Projects</strong></summary>
+
+**[openalex-local](https://github.com/ywatanabe1989/openalex-local)** - Sister project with OpenAlex data:
+
+| Feature | crossref-local | openalex-local |
+|---------|----------------|----------------|
+| Works | 167M | 284M |
+| Abstracts | ~21% | ~45-60% |
+| Update frequency | Real-time | Monthly |
+| DOI authority | ✓ (source) | Uses CrossRef |
+| Citations | Raw references | Linked works |
+| Concepts/Topics | ❌ | ✓ |
+| Author IDs | ❌ | ✓ |
+| Best for | DOI lookup, raw refs | Semantic search |
+
+**When to use CrossRef**: Real-time DOI updates, raw reference parsing, authoritative metadata.
+**When to use OpenAlex**: Semantic search, citation analysis, topic discovery.
 
 </details>
 
