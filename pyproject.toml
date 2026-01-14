@@ -41,6 +41,7 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
 ]
 viz = [
     "pyvis>=0.3",
@@ -72,3 +73,4 @@ packages = ["src/crossref_local"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+asyncio_mode = "auto"
