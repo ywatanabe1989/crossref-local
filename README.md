@@ -167,7 +167,7 @@ Searching 167M records in milliseconds via FTS5.
 | Feature | crossref-local | openalex-local |
 |---------|----------------|----------------|
 | Works | 167M | 284M |
-| Abstracts | ~22% | ~70%+ |
+| Abstracts | ~21% | ~45-60% |
 | Update frequency | Real-time | Monthly |
 | DOI authority | ✓ (source) | Uses CrossRef |
 | Citations | Raw references | Linked works |
