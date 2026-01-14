@@ -80,9 +80,9 @@ def root():
         "endpoints": {
             "health": "/health",
             "info": "/info",
-            "search": "/search",
-            "get": "/get/{doi}",
-            "batch": "/batch",
+            "search": "/works?q=<query>",
+            "get_by_doi": "/works/{doi}",
+            "batch": "/works/batch",
         },
     }
 
@@ -126,22 +126,22 @@ def info():
     )
 
 
-@app.get("/search", response_model=SearchResponse)
-def search(
+@app.get("/works", response_model=SearchResponse)
+def search_works(
     q: str = Query(..., description="Search query (FTS5 syntax supported)"),
     limit: int = Query(10, ge=1, le=100, description="Max results"),
     offset: int = Query(0, ge=0, description="Skip first N results"),
 ):
     """
-    Full-text search across papers.
+    Full-text search across works.
 
     Uses FTS5 index for fast searching across titles, abstracts, and authors.
     Supports FTS5 query syntax like AND, OR, NOT, "exact phrases".
 
     Examples:
-        /search?q=machine learning
-        /search?q="neural network" AND hippocampus
-        /search?q=CRISPR&limit=20
+        /works?q=machine learning
+        /works?q="neural network" AND hippocampus
+        /works?q=CRISPR&limit=20
     """
     start = time.perf_counter()
 
@@ -176,14 +176,14 @@ def search(
     )
 
 
-@app.get("/get/{doi:path}", response_model=Optional[WorkResponse])
-def get_by_doi(doi: str):
+@app.get("/works/{doi:path}", response_model=Optional[WorkResponse])
+def get_work(doi: str):
     """
-    Get paper metadata by DOI.
+    Get work metadata by DOI.
 
     Examples:
-        /get/10.1038/nature12373
-        /get/10.1016/j.cell.2020.01.001
+        /works/10.1038/nature12373
+        /works/10.1016/j.cell.2020.01.001
     """
     db = get_db()
     metadata = db.get_metadata(doi)
@@ -218,10 +218,10 @@ class BatchResponse(BaseModel):
     results: List[WorkResponse]
 
 
-@app.post("/batch", response_model=BatchResponse)
-def batch_get(request: BatchRequest):
+@app.post("/works/batch", response_model=BatchResponse)
+def get_works_batch(request: BatchRequest):
     """
-    Get multiple papers by DOI.
+    Get multiple works by DOI.
 
     Request body: {"dois": ["10.1038/...", "10.1016/..."]}
     """
@@ -265,7 +265,7 @@ def api_search_compat(
     if doi:
         # DOI lookup
         try:
-            work = get_by_doi(doi)
+            work = get_work(doi)
             return {
                 "query": {"doi": doi},
                 "results": [work.model_dump()],
@@ -280,7 +280,7 @@ def api_search_compat(
             status_code=400, detail="Specify q, title, or doi parameter"
         )
 
-    result = search(q=query, limit=limit)
+    result = search_works(q=query, limit=limit)
     return {
         "query": {
             "title": query,
