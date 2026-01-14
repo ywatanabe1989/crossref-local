@@ -1,10 +1,39 @@
 """Full-text search using FTS5."""
 
+import re
 import time
 from typing import List, Optional
 
 from .db import Database, get_db
 from .models import Work, SearchResult
+
+
+def _sanitize_query(query: str) -> str:
+    """
+    Sanitize query for FTS5.
+
+    Handles special characters that FTS5 interprets as operators:
+    - Hyphens in words like "RS-1" or "CRISPR-Cas9"
+    - Other special characters
+
+    If query contains problematic characters, wrap each term in quotes.
+    """
+    # If already quoted, return as-is
+    if query.startswith('"') and query.endswith('"'):
+        return query
+
+    # Check for problematic patterns (hyphenated words, special chars)
+    # But allow explicit FTS5 operators: AND, OR, NOT, NEAR
+    has_hyphenated_word = re.search(r'\w+-\w+', query)
+    has_special = re.search(r'[/\\@#$%^&]', query)
+
+    if has_hyphenated_word or has_special:
+        # Quote each word to treat as literal
+        words = query.split()
+        quoted = ' '.join(f'"{w}"' for w in words)
+        return quoted
+
+    return query
 
 
 def search(
@@ -38,10 +67,13 @@ def search(
 
     start = time.perf_counter()
 
+    # Sanitize query for FTS5
+    safe_query = _sanitize_query(query)
+
     # Get total count
     count_row = db.fetchone(
         "SELECT COUNT(*) as total FROM works_fts WHERE works_fts MATCH ?",
-        (query,)
+        (safe_query,)
     )
     total = count_row["total"] if count_row else 0
 
@@ -54,7 +86,7 @@ def search(
         WHERE works_fts MATCH ?
         LIMIT ? OFFSET ?
         """,
-        (query, limit, offset)
+        (safe_query, limit, offset)
     )
 
     elapsed_ms = (time.perf_counter() - start) * 1000
@@ -87,9 +119,10 @@ def count(query: str, db: Optional[Database] = None) -> int:
     if db is None:
         db = get_db()
 
+    safe_query = _sanitize_query(query)
     row = db.fetchone(
         "SELECT COUNT(*) as total FROM works_fts WHERE works_fts MATCH ?",
-        (query,)
+        (safe_query,)
     )
     return row["total"] if row else 0
 
@@ -113,6 +146,7 @@ def search_dois(
     if db is None:
         db = get_db()
 
+    safe_query = _sanitize_query(query)
     rows = db.fetchall(
         """
         SELECT w.doi
@@ -121,7 +155,7 @@ def search_dois(
         WHERE works_fts MATCH ?
         LIMIT ?
         """,
-        (query, limit)
+        (safe_query, limit)
     )
 
     return [row["doi"] for row in rows]

@@ -7,7 +7,7 @@
 #   make status    - Show database status
 
 .PHONY: help install dev test status db-info db-schema db-indices fts-build fts-status \
-        citations-status citations-rebuild check clean
+        citations-status citations-rebuild check clean nfs-setup nfs-status nfs-stop
 
 # Paths
 PROJECT_ROOT := $(shell pwd)
@@ -149,6 +149,9 @@ status: ## Show overall system status (run this first!)
 		echo "    Hint: Check data symlink or run 'make download'"; \
 	fi
 	@echo ""
+	@echo "=== NFS Server ==="
+	@$(SCRIPTS)/nfs/check.sh
+	@echo ""
 	@echo "=== Running Processes ==="
 	@ps aux | grep -E "(rebuild_citations|build_fts|sqlite3)" | grep -v grep | head -5 || echo "  No database processes running"
 	@echo ""
@@ -162,6 +165,7 @@ status: ## Show overall system status (run this first!)
 	fi
 	@echo ""
 	@echo "For detailed database info: make db-info"
+	@echo "For NFS details: make nfs-status"
 
 db-info: ## Show database tables, indices, and row counts
 	@$(SCRIPTS)/database/99_db_info.sh
@@ -252,3 +256,14 @@ create-missing-indices: ## Create any missing indices
 
 maintain-indices: ## Analyze and optimize indices
 	@$(SCRIPTS)/database/99_maintain_indexes.sh
+
+##@ NFS Server
+
+nfs-setup: ## Setup NFS server to share database (requires .env with SUDO_PASSWORD)
+	@$(SCRIPTS)/nfs/setup_nfs.sh
+
+nfs-status: ## Show NFS server status and exports
+	@$(SCRIPTS)/nfs/status.sh
+
+nfs-stop: ## Stop NFS server
+	@$(SCRIPTS)/nfs/stop.sh
