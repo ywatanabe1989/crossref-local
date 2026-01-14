@@ -1,153 +1,132 @@
-<!-- ---
-!-- Timestamp: 2025-10-13 08:18:39
-!-- Author: ywatanabe
-!-- File: /home/ywatanabe/proj/scitex_repo/src/scitex/scholar/crossref_local/impact_factor/scripts/README.md
-!-- --- -->
-
 # Scripts Directory
 
-Helper scripts for the Impact Factor Calculator.
+Helper scripts for CrossRef Local database management and deployment.
 
-## Database Maintenance
+## Directory Structure
 
-### `maintain_indexes.sh`
+```
+scripts/
+├── database/         # Database maintenance scripts
+│   ├── 00_rebuild_all.sh
+│   ├── 02_create_missing_indexes.sh
+│   ├── 99_db_info.sh
+│   ├── 99_maintain_indexes.sh
+│   └── 99_switch_to_optimized.sh
+└── deployment/       # Container deployment
+    ├── install_apptainer.sh
+    ├── build_apptainer.sh
+    ├── run_apptainer.sh
+    └── run_docker.sh
+```
 
-Creates and maintains database indexes for optimal query performance.
+## Database Scripts
 
-**Usage:**
+### `database/00_rebuild_all.sh`
+
+Full database rebuild from Crossref Public Data File.
+
 ```bash
-# Check existing indexes
-./scripts/maintain_indexes.sh
-
-# Or specify database path
-./scripts/maintain_indexes.sh /path/to/crossref.db
+./scripts/database/00_rebuild_all.sh --help
+./scripts/database/00_rebuild_all.sh all       # Full rebuild (~10-14 days)
+./scripts/database/00_rebuild_all.sh fts       # Rebuild FTS index only
 ```
 
-**What it does:**
-1. Checks which indexes exist
-2. Reports missing indexes
-3. Asks permission before creating indexes
-4. Creates indexes with progress logging
-5. Updates database statistics (ANALYZE)
-6. Reports timing information
+### `database/02_create_missing_indexes.sh`
 
-**Indexes created:**
-- `idx_container_title` - For journal name lookups
-- `idx_issn` - For ISSN-based searches
-- `idx_published_year` - For year-based filtering
-- `idx_doi_lookup` - For DOI searches
-- `idx_type` - For article type filtering
+Create missing indexes on citations table.
 
-**Performance impact:**
-- Initial creation: Hours (for 1.1TB database)
-- Query speedup: 10-100x faster
-- Recommended: Run once, huge benefit
-
-**Example output:**
-```
-==========================================
-CrossRef Database Index Maintenance
-==========================================
-
-Database: /mnt/nas_ug/crossref_local/data/crossref.db
-Database size: 1.1T
-
-Checking existing indexes...
-
-✓ idx_container_title exists
-✓ idx_issn exists
-✗ idx_published_year missing
-✗ idx_doi_lookup missing
-✗ idx_type missing
-
-==========================================
-Missing 3 index(es)
-==========================================
-
-Creating indexes will take a LONG time (potentially hours)
-Database size: 1.1T
-But queries will be MUCH faster afterward
-
-Do you want to create missing indexes? [y/N]
-```
-
-**Running in background:**
 ```bash
-# Run in background and log output
-nohup ./scripts/maintain_indexes.sh > index_creation.log 2>&1 &
-
-# Monitor progress
-tail -f index_creation.log
+./scripts/database/02_create_missing_indexes.sh --help
+./scripts/database/02_create_missing_indexes.sh           # Default database
+./scripts/database/02_create_missing_indexes.sh --dry-run # Preview changes
 ```
 
-## Container Scripts
+### `database/99_db_info.sh`
 
-### `build_apptainer.sh`
+Display database schema, tables, indices, and row counts.
 
-Builds Apptainer/Singularity container image.
-
-**Usage:**
 ```bash
-./scripts/build_apptainer.sh
+./scripts/database/99_db_info.sh --help
+./scripts/database/99_db_info.sh           # Quick summary
+./scripts/database/99_db_info.sh --full    # Full schema dump
+./scripts/database/99_db_info.sh --tables  # Tables and counts only
 ```
 
-### `run_apptainer.sh`
+### `database/99_maintain_indexes.sh`
 
-Runs calculations using Apptainer container.
+Check and create missing database indexes.
 
-**Usage:**
 ```bash
-./scripts/run_apptainer.sh --journal "Nature" --year 2023
+./scripts/database/99_maintain_indexes.sh --help
+./scripts/database/99_maintain_indexes.sh              # Check/create indexes
+./scripts/database/99_maintain_indexes.sh --check-only # Only check, don't modify
 ```
 
-### `run_docker.sh`
+## Deployment Scripts
 
-Runs calculations using Docker container.
+### `deployment/install_apptainer.sh`
 
-**Usage:**
+Install Apptainer container runtime.
+
 ```bash
-./scripts/run_docker.sh --journal "Nature" --year 2023
+./scripts/deployment/install_apptainer.sh --help
+./scripts/deployment/install_apptainer.sh           # Install default version
+./scripts/deployment/install_apptainer.sh -v 1.2.5  # Specific version
 ```
 
-### `install_apptainer.sh`
+### `deployment/build_apptainer.sh`
 
-Installs Apptainer (also available at `~/.dotfiles/.bin/installers/install_apptainer.sh`).
+Build Apptainer/Singularity container image.
 
-**Usage:**
 ```bash
-./scripts/install_apptainer.sh
+./scripts/deployment/build_apptainer.sh --help
+./scripts/deployment/build_apptainer.sh         # Build with defaults
+./scripts/deployment/build_apptainer.sh --force # Force rebuild
 ```
 
-## Tips
+### `deployment/run_apptainer.sh`
+
+Run crossref-local with Apptainer container.
+
+```bash
+./scripts/deployment/run_apptainer.sh --help
+./scripts/deployment/run_apptainer.sh              # Start API server
+./scripts/deployment/run_apptainer.sh search CRISPR # Run search
+./scripts/deployment/run_apptainer.sh shell        # Interactive shell
+```
+
+### `deployment/run_docker.sh`
+
+Run crossref-local with Docker container.
+
+```bash
+./scripts/deployment/run_docker.sh --help
+./scripts/deployment/run_docker.sh              # Start API server
+./scripts/deployment/run_docker.sh search CRISPR # Run search
+./scripts/deployment/run_docker.sh shell        # Interactive shell
+```
+
+## Quick Reference
 
 **First-time setup:**
 ```bash
-# 1. Create indexes (do this first, only once)
-./scripts/maintain_indexes.sh
+# 1. Check/create indexes (do once, takes hours)
+./scripts/database/99_maintain_indexes.sh
 
-# 2. Run test to verify everything works
-cd ..
-python test_calculator.py
+# 2. Check database info
+./scripts/database/99_db_info.sh
 
-# 3. Try a calculation
-python calculate_if.py --journal "Nature" --year 2023
+# 3. Run tests
+make test
 ```
 
-**Checking index status:**
+**Long-running operations:**
 ```bash
-sqlite3 /mnt/nas_ug/crossref_local/data/crossref.db \
-  "SELECT name FROM sqlite_master WHERE type='index' ORDER BY name;"
-```
-
-**Removing an index (if needed):**
-```bash
-sqlite3 /mnt/nas_ug/crossref_local/data/crossref.db \
-  "DROP INDEX IF EXISTS idx_container_title;"
-```
-
-**Database statistics:**
-```bash
-sqlite3 /mnt/nas_ug/crossref_local/data/crossref.db "ANALYZE;"
+# Use screen for operations that take hours/days
+screen -S rebuild
+./scripts/database/00_rebuild_all.sh fts
+# Ctrl-A D to detach
+screen -r rebuild  # Reattach
 ```
 
 <!-- EOF -->
