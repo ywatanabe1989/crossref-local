@@ -30,6 +30,10 @@ HTTP mode (API access via HTTP):
     >>> configure_http("http://localhost:8333")
     Or set CROSSREF_LOCAL_API_URL environment variable.
 
+    Typical setup with SSH tunnel:
+    $ ssh -L 8333:127.0.0.1:8333 your-server  # In terminal
+    >>> configure_http()  # Uses default localhost:8333
+
 Public API
 ----------
 

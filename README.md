@@ -1,3 +1,9 @@
+<!-- ---
+!-- Timestamp: 2026-01-14 22:10:27
+!-- Author: ywatanabe
+!-- File: /home/ywatanabe/proj/crossref-local/README.md
+!-- --- -->
+
 # CrossRef Local
 
 Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
@@ -136,6 +142,9 @@ curl "http://localhost:8333/info"
 
 HTTP mode (connect to running server):
 ```bash
+# On local machine (if server is remote)
+ssh -L 8333:127.0.0.1:8333 your-server
+
 # Python client
 from crossref_local import configure_http
 configure_http("http://localhost:8333")
@@ -154,7 +163,7 @@ Run as MCP (Model Context Protocol) server:
 crossref-local run-server-mcp
 ```
 
-Example MCP client configuration:
+Local MCP client configuration:
 ```json
 {
   "mcpServers": {
@@ -169,10 +178,22 @@ Example MCP client configuration:
 }
 ```
 
+Remote MCP via SSH (access database on another machine):
+```json
+{
+  "mcpServers": {
+    "crossref-local": {
+      "command": "ssh",
+      "args": ["your-server", "CROSSREF_LOCAL_DB=/path/to/crossref.db crossref-local run-server-mcp"]
+    }
+  }
+}
+```
+
 Available tools:
-- `search_works` - Full-text search across 167M+ papers
-- `get_work` - Get paper by DOI
-- `count_works` - Count matching papers
+- `search` - Full-text search across 167M+ papers
+- `search_by_doi` - Get paper by DOI
+- `status` - Database statistics
 
 </details>
 

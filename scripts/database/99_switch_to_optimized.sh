@@ -92,7 +92,7 @@ if [ -z "$STY" ]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Starting in screen..."
-        screen -S citations-rebuild-opt -dm bash -c "cd /home/ywatanabe/proj/crossref_local/impact_factor/scripts/database && bash switch_to_optimized.sh --no-screen"
+        screen -S citations-rebuild-opt -dm bash -c "cd ./impact_factor/scripts/database && bash switch_to_optimized.sh --no-screen"
         echo "✓ Started in screen session 'citations-rebuild-opt'"
         echo "  Attach with: screen -r citations-rebuild-opt"
         exit 0
@@ -100,12 +100,12 @@ if [ -z "$STY" ]; then
 fi
 
 # Change to script directory
-cd /home/ywatanabe/proj/crossref_local/impact_factor/scripts/database
+cd ./impact_factor/scripts/database
 
 # Show what we're about to do
 echo "About to run:"
 echo "  Script: rebuild_citations_table_optimized.py"
-echo "  Database: /home/ywatanabe/proj/crossref_local/data/crossref.db"
+echo "  Database: ./data/crossref.db"
 echo "  Batch size: 8192 papers"
 echo "  Commit interval: 100000 papers"
 echo "  Resume: YES"
@@ -131,7 +131,7 @@ echo "Starting optimized rebuild..."
 echo
 
 python rebuild_citations_table_optimized.py \
-  --db /home/ywatanabe/proj/crossref_local/data/crossref.db \
+  --db ./data/crossref.db \
   --batch-size 8192 \
   --commit-interval 100000 \
   --resume

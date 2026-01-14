@@ -8,7 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 IMAGE="${PROJECT_ROOT}/containers/crossref_local.sif"
-DATA_DIR="${CROSSREF_LOCAL_DATA:-/mnt/nas_ug/crossref_local/data}"
+DATA_DIR="${CROSSREF_LOCAL_DATA:-/path/to/crossref_local/data}"
 OUTPUT_DIR="${PROJECT_ROOT}/output"
 
 # Colors

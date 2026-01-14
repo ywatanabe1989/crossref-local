@@ -161,6 +161,9 @@ def configure_http(api_url: str = "http://localhost:8333") -> None:
     Example:
         >>> from crossref_local import configure_http
         >>> configure_http("http://localhost:8333")
+        >>> # Or via SSH tunnel:
+        >>> # ssh -L 8333:127.0.0.1:8333 your-server
+        >>> configure_http()  # Uses default localhost:8333
     """
     Config.set_api_url(api_url)
 

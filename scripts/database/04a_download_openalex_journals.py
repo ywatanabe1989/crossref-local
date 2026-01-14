@@ -208,7 +208,7 @@ def main():
     args = parser.parse_args()
 
     if not args.db and not args.output:
-        args.db = "/home/ywatanabe/proj/crossref_local/data/crossref.db"
+        args.db = "./data/crossref.db"
 
     logger.info("Downloading journals from OpenAlex...")
     start = time.time()

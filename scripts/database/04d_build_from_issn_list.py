@@ -148,8 +148,8 @@ def build_from_issn_list(db_path: str, issn_file: str, batch_size: int = 1000) -
 
 def main():
     parser = argparse.ArgumentParser(description="Build journal table from ISSN list")
-    parser.add_argument("--db", default="/home/ywatanabe/proj/crossref_local/data/crossref.db")
-    parser.add_argument("--issn-file", default="/home/ywatanabe/proj/crossref_local/data/external/issn.tsv")
+    parser.add_argument("--db", default="./data/crossref.db")
+    parser.add_argument("--issn-file", default="./data/external/issn.tsv")
     parser.add_argument("--batch-size", type=int, default=1000)
     args = parser.parse_args()
 

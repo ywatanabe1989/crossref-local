@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 IMAGE_NAME="crossref-local"
 CONTAINER_NAME="crossref-local"
-DATA_PATH="${CROSSREF_LOCAL_DATA:-/mnt/nas_ug/crossref_local/data}"
+DATA_PATH="${CROSSREF_LOCAL_DATA:-/path/to/crossref_local/data}"
 PORT="${CROSSREF_LOCAL_PORT:-3333}"
 
 # Colors
@@ -43,7 +43,7 @@ EXAMPLES:
     $(basename "$0") shell                  # Interactive shell
 
 ENVIRONMENT:
-    CROSSREF_LOCAL_DATA   Data directory (default: /mnt/nas_ug/crossref_local/data)
+    CROSSREF_LOCAL_DATA   Data directory (default: /path/to/crossref_local/data)
     CROSSREF_LOCAL_PORT   API port (default: 3333)
 EOF
 }

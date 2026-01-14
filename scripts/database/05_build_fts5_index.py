@@ -33,7 +33,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DEFAULT_DB_PATH = "/home/ywatanabe/proj/crossref_local/data/crossref.db"
+DEFAULT_DB_PATH = "./data/crossref.db"
 BATCH_SIZE = 50000
 
 

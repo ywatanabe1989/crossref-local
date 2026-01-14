@@ -130,7 +130,7 @@ def main():
     )
     parser.add_argument(
         "--db",
-        default="/home/ywatanabe/proj/crossref_local/data/crossref.db",
+        default="./data/crossref.db",
         help="Path to CrossRef database"
     )
     parser.add_argument(

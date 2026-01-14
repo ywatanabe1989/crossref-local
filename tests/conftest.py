@@ -8,6 +8,18 @@ from pathlib import Path
 TEST_DB_PATH = Path(__file__).parent / "fixtures" / "test_crossref.db"
 
 
+def _check_remote_api():
+    """Check if remote API is available."""
+    try:
+        import urllib.request
+
+        req = urllib.request.Request("http://localhost:3333/health", method="GET")
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
 def pytest_configure(config):
     """Configure pytest to use test database if available."""
     if TEST_DB_PATH.exists():
@@ -16,16 +28,19 @@ def pytest_configure(config):
     else:
         # Check if real database is available
         from crossref_local.config import DEFAULT_DB_PATHS
+
         for path in DEFAULT_DB_PATHS:
             if path.exists():
                 print(f"\nUsing real database: {path}")
                 break
         else:
-            pytest.exit(
-                "No database found!\n"
-                "Run: python scripts/create_test_db.py\n"
-                "Or: make test-db-create"
-            )
+            # Check if remote API is available (allows running mocked tests)
+            if _check_remote_api():
+                os.environ["CROSSREF_LOCAL_MODE"] = "remote"
+                print("\nNo local database, using remote API mode")
+            else:
+                # Allow mocked tests to run without database
+                print("\nNo database found - only mocked tests will work")
 
 
 @pytest.fixture
