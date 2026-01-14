@@ -2,12 +2,16 @@
 
 import click
 import json
+import logging
 import re
 import sys
 
 from . import search, get, count, info, __version__
 
 from .impact_factor import ImpactFactorCalculator
+
+# Suppress noisy warnings from impact_factor module in CLI
+logging.getLogger("crossref_local.impact_factor").setLevel(logging.ERROR)
 
 
 def _strip_xml_tags(text: str) -> str:
@@ -106,17 +110,34 @@ def cli(ctx, remote: bool, api_url: str):
         Config.set_mode("remote")
 
 
+def _get_if_fast(db, issn: str, cache: dict) -> Optional[float]:
+    """Fast IF lookup from pre-computed OpenAlex data."""
+    if issn in cache:
+        return cache[issn]
+    row = db.fetchone(
+        "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?",
+        (f"%{issn}%",)
+    )
+    cache[issn] = row["two_year_mean_citedness"] if row else None
+    return cache[issn]
+
+
 @cli.command(aliases=["s"], context_settings=CONTEXT_SETTINGS)
 @click.argument("query")
-@click.option("-n", "--limit", default=10, help="Number of results")
+@click.option("-n", "--number", "limit", default=10, show_default=True, help="Number of results")
 @click.option("-o", "--offset", default=0, help="Skip first N results")
-@click.option("-a", "--with-abstracts", is_flag=True, help="Show abstracts")
+@click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
+@click.option("-A", "--authors", is_flag=True, help="Show authors")
+@click.option("-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(
-    query: str, limit: int, offset: int, with_abstracts: bool, as_json: bool
-):
+def search_cmd(query: str, limit: int, offset: int, abstracts: bool, authors: bool, with_if: bool, as_json: bool):
     """Search for works by title, abstract, or authors."""
+    from .db import get_db
     results = search(query, limit=limit, offset=offset)
+
+    # Cache for fast IF lookups
+    if_cache = {}
+    db = get_db() if with_if else None
 
     if as_json:
         output = {
@@ -133,9 +154,20 @@ def search_cmd(
             year = f"({work.year})" if work.year else ""
             click.echo(f"{i}. {title} {year}")
             click.echo(f"   DOI: {work.doi}")
+            if authors and work.authors:
+                authors_str = ", ".join(work.authors[:5])
+                if len(work.authors) > 5:
+                    authors_str += f" et al. ({len(work.authors)} total)"
+                click.echo(f"   Authors: {authors_str}")
             if work.journal:
-                click.echo(f"   Journal: {work.journal}")
-            if with_abstracts and work.abstract:
+                journal_line = f"   Journal: {work.journal}"
+                # Fast IF lookup from pre-computed table
+                if with_if and work.issn:
+                    impact_factor = _get_if_fast(db, work.issn, if_cache)
+                    if impact_factor is not None:
+                        journal_line += f" (IF: {impact_factor:.2f}, OpenAlex)"
+                click.echo(journal_line)
+            if abstracts and work.abstract:
                 # Strip XML tags and truncate
                 abstract = _strip_xml_tags(work.abstract)
                 if len(abstract) > 500:

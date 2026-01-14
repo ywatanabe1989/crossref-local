@@ -6,6 +6,7 @@ from typing import Optional
 
 # Default database locations (checked in order)
 DEFAULT_DB_PATHS = [
+    Path("/home/ywatanabe/proj/crossref-local/data/crossref.db"),
     Path("/home/ywatanabe/proj/crossref_local/data/crossref.db"),
     Path("/mnt/nas_ug/crossref_local/data/crossref.db"),
     Path.home() / ".crossref_local" / "crossref.db",
