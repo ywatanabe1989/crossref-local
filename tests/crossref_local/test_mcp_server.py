@@ -22,60 +22,42 @@ class TestMCPServerSetup:
         """Expected tools are registered."""
         tools = list(mcp._tool_manager._tools.keys())
         expected = [
-            "search_works",
-            "get_work",
-            "count_works",
-            "database_info",
-            "calculate_impact_factor",
+            "search",
+            "search_by_doi",
+            "status",
         ]
         for tool_name in expected:
             assert tool_name in tools, f"Missing tool: {tool_name}"
 
 
-class TestSearchWorksTool:
-    """Tests for search_works MCP tool."""
+class TestSearchTool:
+    """Tests for search MCP tool."""
 
-    def test_search_works_tool_exists(self):
-        """search_works tool is registered."""
-        assert "search_works" in mcp._tool_manager._tools
+    def test_search_tool_exists(self):
+        """search tool is registered."""
+        assert "search" in mcp._tool_manager._tools
 
-    def test_search_works_has_description(self):
-        """search_works tool has description."""
-        tool = mcp._tool_manager._tools["search_works"]
+    def test_search_has_description(self):
+        """search tool has description."""
+        tool = mcp._tool_manager._tools["search"]
         assert tool.description is not None
         assert len(tool.description) > 0
 
 
-class TestGetWorkTool:
-    """Tests for get_work MCP tool."""
+class TestSearchByDoiTool:
+    """Tests for search_by_doi MCP tool."""
 
-    def test_get_work_tool_exists(self):
-        """get_work tool is registered."""
-        assert "get_work" in mcp._tool_manager._tools
-
-
-class TestCountWorksTool:
-    """Tests for count_works MCP tool."""
-
-    def test_count_works_tool_exists(self):
-        """count_works tool is registered."""
-        assert "count_works" in mcp._tool_manager._tools
+    def test_search_by_doi_tool_exists(self):
+        """search_by_doi tool is registered."""
+        assert "search_by_doi" in mcp._tool_manager._tools
 
 
-class TestDatabaseInfoTool:
-    """Tests for database_info MCP tool."""
+class TestStatusTool:
+    """Tests for status MCP tool."""
 
-    def test_database_info_tool_exists(self):
-        """database_info tool is registered."""
-        assert "database_info" in mcp._tool_manager._tools
-
-
-class TestCalculateImpactFactorTool:
-    """Tests for calculate_impact_factor MCP tool."""
-
-    def test_calculate_impact_factor_tool_exists(self):
-        """calculate_impact_factor tool is registered."""
-        assert "calculate_impact_factor" in mcp._tool_manager._tools
+    def test_status_tool_exists(self):
+        """status tool is registered."""
+        assert "status" in mcp._tool_manager._tools
 
 
 class TestRunServer:

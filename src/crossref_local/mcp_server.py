@@ -14,20 +14,18 @@ from typing import Optional
 
 from fastmcp import FastMCP
 
-from . import search, get, count, info, __version__
-from .impact_factor import ImpactFactorCalculator
+from . import search as _search, get as _get, info as _info, __version__
 
 # Initialize MCP server
 mcp = FastMCP(
     name="crossref-local",
     instructions="Local CrossRef database with 167M+ works and full-text search. "
-    "Use search_works to find papers, get_work for DOI lookup, count_works for counts, "
-    "database_info for stats, and calculate_impact_factor for journal metrics.",
+    "Use search to find papers, search_by_doi for DOI lookup, and status for stats.",
 )
 
 
 @mcp.tool()
-def search_works(
+def search(
     query: str,
     limit: int = 10,
     offset: int = 0,
@@ -48,11 +46,11 @@ def search_works(
         JSON string with search results including total count and matching works.
 
     Examples:
-        search_works("machine learning")
-        search_works("CRISPR", limit=20)
-        search_works("neural network AND memory", with_abstracts=True)
+        search("machine learning")
+        search("CRISPR", limit=20)
+        search("neural network AND memory", with_abstracts=True)
     """
-    results = search(query, limit=min(limit, 100), offset=offset)
+    results = _search(query, limit=min(limit, 100), offset=offset)
 
     works_data = []
     for work in results.works:
@@ -80,7 +78,7 @@ def search_works(
 
 
 @mcp.tool()
-def get_work(doi: str, as_citation: bool = False) -> str:
+def search_by_doi(doi: str, as_citation: bool = False) -> str:
     """Get detailed information about a work by DOI.
 
     Args:
@@ -91,10 +89,10 @@ def get_work(doi: str, as_citation: bool = False) -> str:
         JSON string with work metadata, or formatted citation string.
 
     Examples:
-        get_work("10.1038/nature12373")
-        get_work("10.1126/science.aax0758", as_citation=True)
+        search_by_doi("10.1038/nature12373")
+        search_by_doi("10.1126/science.aax0758", as_citation=True)
     """
-    work = get(doi)
+    work = _get(doi)
 
     if work is None:
         return json.dumps({"error": f"DOI not found: {doi}"})
@@ -106,69 +104,14 @@ def get_work(doi: str, as_citation: bool = False) -> str:
 
 
 @mcp.tool()
-def count_works(query: str) -> str:
-    """Count matching works without fetching results.
-
-    Faster than search when you only need the count.
-
-    Args:
-        query: FTS5 search query
-
-    Returns:
-        JSON string with count.
-
-    Examples:
-        count_works("CRISPR")
-        count_works("machine learning AND deep")
-    """
-    n = count(query)
-    return json.dumps({"query": query, "count": n})
-
-
-@mcp.tool()
-def database_info() -> str:
+def status() -> str:
     """Get database statistics and status.
 
     Returns:
         JSON string with database path, work count, FTS index count, and citation count.
     """
-    db_info = info()
+    db_info = _info()
     return json.dumps(db_info, indent=2)
-
-
-@mcp.tool()
-def calculate_impact_factor(
-    journal: str,
-    year: int = 2023,
-    window: int = 2,
-) -> str:
-    """Calculate impact factor for a journal.
-
-    Impact factor = citations in target year / articles in window years.
-
-    Args:
-        journal: Journal name or ISSN (e.g., "Nature", "Science", "0028-0836")
-        year: Target year for citation count (default: 2023)
-        window: Number of years for article window (default: 2 for standard IF)
-
-    Returns:
-        JSON string with journal name, article count, citation count, and impact factor.
-
-    Examples:
-        calculate_impact_factor("Nature")
-        calculate_impact_factor("Science", year=2022)
-        calculate_impact_factor("Cell", window=5)  # 5-year impact factor
-    """
-    try:
-        with ImpactFactorCalculator() as calc:
-            result = calc.calculate_impact_factor(
-                journal_identifier=journal,
-                target_year=year,
-                window_years=window,
-            )
-        return json.dumps(result, indent=2)
-    except Exception as e:
-        return json.dumps({"error": str(e)})
 
 
 def run_server(
