@@ -5,6 +5,7 @@ import json
 import logging
 import re
 import sys
+from typing import Optional
 
 from . import search, get, count, info, __version__
 
