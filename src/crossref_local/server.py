@@ -280,7 +280,8 @@ def api_search_compat(
             status_code=400, detail="Specify q, title, or doi parameter"
         )
 
-    result = search_works(q=query, limit=limit)
+    # Call fts.search directly (not the endpoint function)
+    results = fts.search(query, limit=limit, offset=0)
     return {
         "query": {
             "title": query,
@@ -289,9 +290,24 @@ def api_search_compat(
             "authors": None,
             "limit": limit,
         },
-        "results": [r.model_dump() for r in result.results],
-        "total": result.total,
-        "returned": result.returned,
+        "results": [
+            WorkResponse(
+                doi=w.doi,
+                title=w.title,
+                authors=w.authors,
+                year=w.year,
+                journal=w.journal,
+                issn=w.issn,
+                volume=w.volume,
+                issue=w.issue,
+                page=w.page,
+                abstract=w.abstract,
+                citation_count=w.citation_count,
+            ).model_dump()
+            for w in results.works
+        ],
+        "total": results.total,
+        "returned": len(results.works),
     }
 
 
