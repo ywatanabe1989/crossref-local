@@ -1,7 +1,46 @@
 #!/bin/bash
-# Quick switcher from old to optimized rebuild script
+# -*- coding: utf-8 -*-
+# File: scripts/database/99_switch_to_optimized.sh
+# Description: Switch to optimized citations rebuild script
 
-set -e
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Switch from standard to optimized citations rebuild script.
+Stops any running rebuild process and starts the optimized version.
+
+OPTIONS:
+    --no-screen    Don't start in screen session
+    --no-prompt    Don't prompt before starting
+    -h, --help     Show this help message
+
+EXAMPLES:
+    $(basename "$0")               # Interactive mode
+    $(basename "$0") --no-prompt   # Non-interactive
+
+NOTE:
+    Optimized version is ~7-10x faster than standard rebuild.
+    Expected: ~3-4 days vs ~29 days for full rebuild.
+EOF
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --no-screen|--no-prompt) shift ;;  # Handled later
+        *) echo -e "${RED}Unknown option: $1${NC}"; usage; exit 1 ;;
+    esac
+done
 
 echo "=========================================="
 echo "Switch to Optimized Citations Rebuild"
