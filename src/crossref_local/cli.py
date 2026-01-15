@@ -2,13 +2,15 @@
 
 import click
 import json
-import logging
 import re
 import sys
 from typing import Optional
 
+from rich.console import Console
+
 from . import search, get, info, __version__
 
+console = Console()
 
 
 def _strip_xml_tags(text: str) -> str:
@@ -72,15 +74,47 @@ class AliasedGroup(click.Group):
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 
+def _print_recursive_help(ctx, param, value):
+    """Callback for --help-recursive flag."""
+    if not value or ctx.resilient_parsing:
+        return
+
+    def _print_command_help(cmd, prefix: str, parent_ctx):
+        """Recursively print help for a command and its subcommands."""
+        console.print(f"\n[bold cyan]━━━ {prefix} ━━━[/bold cyan]")
+        sub_ctx = click.Context(cmd, info_name=prefix.split()[-1], parent=parent_ctx)
+        console.print(cmd.get_help(sub_ctx))
+
+        if isinstance(cmd, click.Group):
+            for sub_name, sub_cmd in sorted(cmd.commands.items()):
+                _print_command_help(sub_cmd, f"{prefix} {sub_name}", sub_ctx)
+
+    # Print main help
+    console.print("[bold cyan]━━━ crossref-local ━━━[/bold cyan]")
+    console.print(ctx.get_help())
+
+    # Print all subcommands recursively
+    for name, cmd in sorted(cli.commands.items()):
+        _print_command_help(cmd, f"crossref-local {name}", ctx)
+
+    ctx.exit(0)
+
+
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__, prog_name="crossref-local")
-@click.option(
-    "--http", is_flag=True, help="Use HTTP API instead of direct database"
-)
+@click.option("--http", is_flag=True, help="Use HTTP API instead of direct database")
 @click.option(
     "--api-url",
     envvar="CROSSREF_LOCAL_API_URL",
     help="API URL for http mode (default: auto-detect)",
+)
+@click.option(
+    "--help-recursive",
+    is_flag=True,
+    is_eager=True,
+    expose_value=False,
+    callback=_print_recursive_help,
+    help="Show help for all commands recursively.",
 )
 @click.pass_context
 def cli(ctx, http: bool, api_url: str):
@@ -221,8 +255,6 @@ def search_by_doi_cmd(doi: str, as_json: bool, citation: bool):
             click.echo(f"Citations: {work.citation_count}")
 
 
-
-
 @cli.command(context_settings=CONTEXT_SETTINGS)
 def status():
     """Show status and configuration."""
@@ -238,11 +270,31 @@ def status():
     click.echo()
 
     env_vars = [
-        ("CROSSREF_LOCAL_DB", "Path to SQLite database file", os.environ.get("CROSSREF_LOCAL_DB")),
-        ("CROSSREF_LOCAL_API_URL", "HTTP API URL (e.g., http://localhost:8333)", os.environ.get("CROSSREF_LOCAL_API_URL")),
-        ("CROSSREF_LOCAL_MODE", "Force mode: 'db', 'http', or 'auto'", os.environ.get("CROSSREF_LOCAL_MODE")),
-        ("CROSSREF_LOCAL_HOST", "Host for run-server-http (default: 0.0.0.0)", os.environ.get("CROSSREF_LOCAL_HOST")),
-        ("CROSSREF_LOCAL_PORT", "Port for run-server-http (default: 8333)", os.environ.get("CROSSREF_LOCAL_PORT")),
+        (
+            "CROSSREF_LOCAL_DB",
+            "Path to SQLite database file",
+            os.environ.get("CROSSREF_LOCAL_DB"),
+        ),
+        (
+            "CROSSREF_LOCAL_API_URL",
+            "HTTP API URL (e.g., http://localhost:8333)",
+            os.environ.get("CROSSREF_LOCAL_API_URL"),
+        ),
+        (
+            "CROSSREF_LOCAL_MODE",
+            "Force mode: 'db', 'http', or 'auto'",
+            os.environ.get("CROSSREF_LOCAL_MODE"),
+        ),
+        (
+            "CROSSREF_LOCAL_HOST",
+            "Host for run-server-http (default: 0.0.0.0)",
+            os.environ.get("CROSSREF_LOCAL_HOST"),
+        ),
+        (
+            "CROSSREF_LOCAL_PORT",
+            "Port for run-server-http (default: 8333)",
+            os.environ.get("CROSSREF_LOCAL_PORT"),
+        ),
     ]
 
     for var_name, description, value in env_vars:
@@ -295,8 +347,12 @@ def status():
                         click.echo(f"  [OK] {url} (v{server_version})")
                         api_compatible = True
                     else:
-                        click.echo(f"  [WARN] {url} (v{server_version} != v{__version__})")
-                        click.echo(f"         Server version mismatch - may be incompatible")
+                        click.echo(
+                            f"  [WARN] {url} (v{server_version} != v{__version__})"
+                        )
+                        click.echo(
+                            f"         Server version mismatch - may be incompatible"
+                        )
 
                     if api_found is None:
                         api_found = url
@@ -346,8 +402,19 @@ def status():
     default="stdio",
     help="Transport protocol",
 )
-@click.option("--host", default="localhost", envvar="CROSSREF_LOCAL_MCP_HOST", help="Host for HTTP/SSE transport")
-@click.option("--port", default=8082, type=int, envvar="CROSSREF_LOCAL_MCP_PORT", help="Port for HTTP/SSE transport")
+@click.option(
+    "--host",
+    default="localhost",
+    envvar="CROSSREF_LOCAL_MCP_HOST",
+    help="Host for HTTP/SSE transport",
+)
+@click.option(
+    "--port",
+    default=8082,
+    type=int,
+    envvar="CROSSREF_LOCAL_MCP_PORT",
+    help="Port for HTTP/SSE transport",
+)
 def serve_mcp(transport: str, host: str, port: int):
     """Run MCP (Model Context Protocol) server.
 
@@ -376,8 +443,16 @@ def serve_mcp(transport: str, host: str, port: int):
 
 
 @cli.command("run-server-http", context_settings=CONTEXT_SETTINGS)
-@click.option("--host", default="0.0.0.0", envvar="CROSSREF_LOCAL_HOST", help="Host to bind")
-@click.option("--port", default=8333, type=int, envvar="CROSSREF_LOCAL_PORT", help="Port to listen on")
+@click.option(
+    "--host", default="0.0.0.0", envvar="CROSSREF_LOCAL_HOST", help="Host to bind"
+)
+@click.option(
+    "--port",
+    default=8333,
+    type=int,
+    envvar="CROSSREF_LOCAL_PORT",
+    help="Port to listen on",
+)
 def serve_http(host: str, port: int):
     """Run HTTP API server.
 
