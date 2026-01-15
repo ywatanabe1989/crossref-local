@@ -1,20 +1,126 @@
 #!/bin/bash
-# Convenience script to run impact factor calculations in Docker
+# -*- coding: utf-8 -*-
+# File: scripts/deployment/run_docker.sh
+# Description: Run crossref-local in Docker container
 
-set -e
+set -euo pipefail
 
-IMAGE_NAME="impact-factor-calculator"
-CONTAINER_NAME="impact-factor-calc"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+IMAGE_NAME="crossref-local"
+CONTAINER_NAME="crossref-local"
+DATA_PATH="${CROSSREF_LOCAL_DATA:-/path/to/crossref_local/data}"
+PORT="${CROSSREF_LOCAL_PORT:-3333}"
 
-# Build image if it doesn't exist
-if [[ "$(docker images -q ${IMAGE_NAME} 2> /dev/null)" == "" ]]; then
-    echo "Building Docker image..."
-    docker build -t ${IMAGE_NAME} .
-fi
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
-# Run calculation
-docker run --rm \
-    -v /mnt/nas_ug/crossref_local/data:/data:ro \
-    -v $(pwd)/output:/output \
-    ${IMAGE_NAME} \
-    python calculate_if.py "$@"
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [COMMAND]
+
+Run crossref-local in a Docker container.
+
+COMMANDS:
+    api         Start API server (default)
+    serve       Start MCP server
+    search      Run search command
+    shell       Open interactive shell
+
+OPTIONS:
+    -d, --data PATH    Data directory with crossref.db (default: \$CROSSREF_LOCAL_DATA)
+    -p, --port PORT    Port for API server (default: 3333)
+    -b, --build        Force rebuild of Docker image
+    -h, --help         Show this help message
+
+EXAMPLES:
+    $(basename "$0")                        # Start API server
+    $(basename "$0") --port 8080 api        # API on custom port
+    $(basename "$0") search "CRISPR"        # Run search
+    $(basename "$0") shell                  # Interactive shell
+
+ENVIRONMENT:
+    CROSSREF_LOCAL_DATA   Data directory (default: /path/to/crossref_local/data)
+    CROSSREF_LOCAL_PORT   API port (default: 3333)
+EOF
+}
+
+build_image() {
+    echo -e "${GREEN}Building Docker image...${NC}"
+    docker build -t "${IMAGE_NAME}" "${PROJECT_ROOT}"
+}
+
+check_image() {
+    if [[ "$(docker images -q ${IMAGE_NAME} 2>/dev/null)" == "" ]] || [[ "${BUILD:-0}" == "1" ]]; then
+        build_image
+    fi
+}
+
+run_api() {
+    echo -e "${GREEN}Starting API server on port ${PORT}...${NC}"
+    docker run --rm -it \
+        --name "${CONTAINER_NAME}" \
+        -v "${DATA_PATH}:/data:ro" \
+        -p "${PORT}:3333" \
+        -e CROSSREF_LOCAL_DB=/data/crossref.db \
+        "${IMAGE_NAME}" \
+        crossref-local api --host 0.0.0.0 --port 3333
+}
+
+run_serve() {
+    echo -e "${GREEN}Starting MCP server...${NC}"
+    docker run --rm -it \
+        --name "${CONTAINER_NAME}" \
+        -v "${DATA_PATH}:/data:ro" \
+        -e CROSSREF_LOCAL_DB=/data/crossref.db \
+        "${IMAGE_NAME}" \
+        crossref-local serve
+}
+
+run_command() {
+    docker run --rm -it \
+        -v "${DATA_PATH}:/data:ro" \
+        -e CROSSREF_LOCAL_DB=/data/crossref.db \
+        "${IMAGE_NAME}" \
+        crossref-local "$@"
+}
+
+run_shell() {
+    docker run --rm -it \
+        -v "${DATA_PATH}:/data:ro" \
+        -e CROSSREF_LOCAL_DB=/data/crossref.db \
+        "${IMAGE_NAME}" \
+        /bin/bash
+}
+
+# Parse arguments
+BUILD=0
+COMMAND="api"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -d|--data) DATA_PATH="$2"; shift 2 ;;
+        -p|--port) PORT="$2"; shift 2 ;;
+        -b|--build) BUILD=1; shift ;;
+        -h|--help) usage; exit 0 ;;
+        api|serve|shell) COMMAND="$1"; shift ;;
+        search|get|count|info|impact-factor)
+            COMMAND="cmd"
+            CMD_ARGS=("$@")
+            break
+            ;;
+        *) echo -e "${RED}Unknown option: $1${NC}"; usage; exit 1 ;;
+    esac
+done
+
+check_image
+
+case "$COMMAND" in
+    api) run_api ;;
+    serve) run_serve ;;
+    shell) run_shell ;;
+    cmd) run_command "${CMD_ARGS[@]}" ;;
+esac

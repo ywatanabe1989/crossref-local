@@ -117,7 +117,7 @@ Examples:
     parser.add_argument(
         "--db",
         type=str,
-        default="/home/ywatanabe/proj/crossref_local/data/crossref.db",
+        default="./data/crossref.db",
         help="Path to CrossRef database"
     )
 

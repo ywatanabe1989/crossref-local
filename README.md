@@ -1,3 +1,9 @@
+<!-- ---
+!-- Timestamp: 2026-01-14 22:10:27
+!-- Author: ywatanabe
+!-- File: /home/ywatanabe/proj/crossref-local/README.md
+!-- --- -->
+
 # CrossRef Local
 
 Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
@@ -90,8 +96,8 @@ async def main():
 
 ```bash
 crossref-local search "CRISPR genome editing" -n 5
-crossref-local get 10.1038/nature12373
-crossref-local impact-factor Nature -y 2023  # IF: 54.067
+crossref-local search-by-doi 10.1038/nature12373
+crossref-local status  # Configuration and database stats
 ```
 
 With abstracts (`-a` flag):
@@ -104,9 +110,90 @@ Found 4 matches in 128.4ms
    DOI: 10.1038/ncomms10548
    Journal: Nature Communications
    Abstract: Zinc-finger nuclease, transcription activator-like effector nuclease
-   and CRISPR/Cas9 are becoming major tools for genome editing. Importantly,
-   knock-in in several non-rodent species has been finally achieved...
+   and CRISPR/Cas9 are becoming major tools for genome editing...
 ```
+
+</details>
+
+<details>
+<summary><strong>HTTP API</strong></summary>
+
+Start the FastAPI server:
+```bash
+crossref-local run-server-http --host 0.0.0.0 --port 8333
+```
+
+Endpoints:
+```bash
+# Search works (FTS5)
+curl "http://localhost:8333/works?q=CRISPR&limit=10"
+
+# Get by DOI
+curl "http://localhost:8333/works/10.1038/nature12373"
+
+# Batch DOI lookup
+curl -X POST "http://localhost:8333/works/batch" \
+  -H "Content-Type: application/json" \
+  -d '{"dois": ["10.1038/nature12373", "10.1126/science.aax0758"]}'
+
+# Database info
+curl "http://localhost:8333/info"
+```
+
+HTTP mode (connect to running server):
+```bash
+# On local machine (if server is remote)
+ssh -L 8333:127.0.0.1:8333 your-server
+
+# Python client
+from crossref_local import configure_http
+configure_http("http://localhost:8333")
+
+# Or via CLI
+crossref-local --http search "CRISPR"
+```
+
+</details>
+
+<details>
+<summary><strong>MCP Server</strong></summary>
+
+Run as MCP (Model Context Protocol) server:
+```bash
+crossref-local run-server-mcp
+```
+
+Local MCP client configuration:
+```json
+{
+  "mcpServers": {
+    "crossref-local": {
+      "command": "crossref-local",
+      "args": ["run-server-mcp"],
+      "env": {
+        "CROSSREF_LOCAL_DB": "/path/to/crossref.db"
+      }
+    }
+  }
+}
+```
+
+Remote MCP via SSH (access database on another machine):
+```json
+{
+  "mcpServers": {
+    "crossref-local": {
+      "command": "ssh",
+      "args": ["your-server", "CROSSREF_LOCAL_DB=/path/to/crossref.db crossref-local run-server-mcp"]
+    }
+  }
+}
+```
+
+Available tools:
+- `search` - Full-text search across 167M+ papers
+- `search_by_doi` - Get paper by DOI
+- `status` - Database statistics
 
 </details>
 

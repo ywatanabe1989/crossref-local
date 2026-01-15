@@ -160,7 +160,7 @@ def build_issn_table(db_path: str, batch_size: int = 10000) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="Build ISSN-based journal lookup table")
-    parser.add_argument("--db", default="/home/ywatanabe/proj/crossref_local/data/crossref.db")
+    parser.add_argument("--db", default="./data/crossref.db")
     parser.add_argument("--batch-size", type=int, default=10000)
     args = parser.parse_args()
 

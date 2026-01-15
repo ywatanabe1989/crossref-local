@@ -22,6 +22,6 @@ showmount -e localhost 2>/dev/null || echo "  No exports (run: make nfs-setup)"
 echo ""
 echo "=== Client Mount Command ==="
 IP=$(hostname -I | awk '{print $1}')
-echo "  sudo mount -t nfs ${IP}:/home/ywatanabe/proj/crossref_local/data /mnt/crossref"
+echo "  sudo mount -t nfs ${IP}:/path/to/crossref_local/data /mnt/crossref"
 
 # EOF

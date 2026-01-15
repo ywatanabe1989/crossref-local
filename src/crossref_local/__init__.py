@@ -4,6 +4,9 @@ crossref_local - Local CrossRef database with full-text search.
 A Python package for querying a local mirror of the CrossRef database
 with 167M+ scholarly works, full-text search, and impact factor calculation.
 
+Quick Start
+-----------
+
 Sync usage:
     >>> from crossref_local import search, get
     >>> results = search("hippocampal sharp wave ripples")
@@ -14,24 +17,54 @@ Async usage:
     >>> results = await aio.search("machine learning")
     >>> counts = await aio.count_many(["CRISPR", "neural network"])
 
-Local mode (direct database access):
+Configuration
+-------------
+
+DB mode (direct database access):
     >>> from crossref_local import configure
     >>> configure("/path/to/crossref.db")
     Or set CROSSREF_LOCAL_DB environment variable.
 
-Remote mode (API access via HTTP):
-    >>> from crossref_local import configure_remote
-    >>> configure_remote("http://localhost:3333")
-    Or set CROSSREF_LOCAL_API environment variable.
+HTTP mode (API access via HTTP):
+    >>> from crossref_local import configure_http
+    >>> configure_http("http://localhost:8333")
+    Or set CROSSREF_LOCAL_API_URL environment variable.
 
     Typical setup with SSH tunnel:
-    $ ssh -L 3333:127.0.0.1:3333 nas  # In terminal
-    >>> configure_remote()  # Uses default localhost:3333
+    $ ssh -L 8333:127.0.0.1:8333 your-server  # In terminal
+    >>> configure_http()  # Uses default localhost:8333
+
+Public API
+----------
+
+Functions:
+    search(query, limit, offset) -> SearchResult
+    count(query) -> int
+    get(doi) -> Work | None
+    get_many(dois) -> list[Work]
+    exists(doi) -> bool
+    configure(db_path) -> None
+    configure_remote(api_url) -> None
+    get_mode() -> str
+    info() -> dict
+
+Citation functions:
+    get_citing(doi) -> list[str]
+    get_cited(doi) -> list[str]
+    get_citation_count(doi) -> int
+
+Classes:
+    Work - Scholarly work with title, authors, DOI, etc.
+    SearchResult - Container for search results
+    CitationNetwork - Citation graph builder and visualizer
+
+Modules:
+    aio - Async versions of all API functions
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
-# Core API
+# Core API (public functions)
 from .api import (
     search,
     count,
@@ -39,57 +72,59 @@ from .api import (
     get_many,
     exists,
     configure,
-    configure_remote,
+    configure_http,
+    configure_remote,  # Backward compatibility alias
     get_mode,
     info,
 )
 
-# Remote client
-from .remote import RemoteClient
-
-# Models
+# Models (public classes)
 from .models import Work, SearchResult
 
-# Database utilities
-from .db import Database, connection
-
-# Configuration
-from .config import Config
-
-# Async API
+# Async API (public module)
 from . import aio
 
-# Citation network
+# Citation network (public functions and classes)
 from .citations import get_citing, get_cited, get_citation_count, CitationNetwork
 
+
+# Public API - what users should import
 __all__ = [
     # Version
     "__version__",
-    # Core API
+    # Core search/retrieval
     "search",
     "count",
     "get",
     "get_many",
     "exists",
+    # Configuration
     "configure",
-    "configure_remote",
+    "configure_http",
+    "configure_remote",  # Backward compatibility alias
     "get_mode",
     "info",
-    # Remote
-    "RemoteClient",
-    # Models
+    # Data models
     "Work",
     "SearchResult",
-    # Database
-    "Database",
-    "connection",
-    # Config
-    "Config",
-    # Async
+    # Async API
     "aio",
-    # Citations
+    # Citation network
     "get_citing",
     "get_cited",
     "get_citation_count",
     "CitationNetwork",
 ]
+
+
+# ============================================================================
+# Advanced / Internal APIs (not in __all__, but importable if needed)
+# ============================================================================
+# These are exposed for advanced users but not part of the stable public API.
+# Use at your own risk - they may change without notice.
+#
+# from crossref_local.db import Database, connection
+# from crossref_local.config import Config
+# from crossref_local.remote import RemoteClient
+# from crossref_local.fts import search_dois
+# ============================================================================

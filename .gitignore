@@ -681,3 +681,4 @@ GITIGNORED/
 tests/fixtures/*.db
 tests/fixtures/*.json
 _.venv/
+.coverage

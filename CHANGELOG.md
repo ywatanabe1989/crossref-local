@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-01-14
+
+### Added
+- FastAPI HTTP server with RESTful endpoints (`/works`, `/works/{doi}`, `/works/batch`)
+- MCP server for Claude Desktop integration (`crossref-local serve`)
+- Remote client for accessing API over SSH tunnel
+- Comprehensive test suite (114 tests covering all modules)
+- Shell scripts with proper usage/help options
+
+### Changed
+- Renamed API endpoints to RESTful conventions (`/search` → `/works`)
+- Cleaned up Python API exposure - internal modules no longer in `__all__`
+- Improved module docstrings with full API documentation
+
+### Fixed
+- SQLite threading issue for FastAPI multi-threaded access
+- Batch endpoint path in remote client
+- FastMCP API compatibility (`description` → `instructions`)
+
 ## [0.3.0] - 2026-01-11
 
 ### Added

@@ -34,7 +34,9 @@ class Database:
 
     def _connect(self) -> None:
         """Establish database connection."""
-        self.conn = sqlite3.connect(self.db_path)
+        # check_same_thread=False allows connection to be used across threads
+        # Safe for read-only operations (which is our use case)
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
 
     def close(self) -> None:

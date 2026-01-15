@@ -22,7 +22,7 @@ import zlib
 import json
 from pathlib import Path
 
-DEFAULT_DB_PATH = "/home/ywatanabe/proj/crossref-local/data/crossref.db"
+DEFAULT_DB_PATH = "./data/crossref.db"
 
 
 def decompress_metadata(data: bytes) -> dict:
