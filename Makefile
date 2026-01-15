@@ -7,7 +7,8 @@
 #   make status    - Show database status
 
 .PHONY: help install dev test status db-info db-schema db-indices fts-build fts-status \
-        citations-status citations-rebuild check clean nfs-setup nfs-status nfs-stop
+        citations-status citations-rebuild check clean nfs-setup nfs-status nfs-stop \
+        mcp-install mcp-uninstall mcp-status mcp-start mcp-stop mcp-restart mcp-logs
 
 # Paths
 PROJECT_ROOT := $(shell pwd)
@@ -149,6 +150,8 @@ status: ## Show overall system status (run this first!)
 		echo "    Hint: Check data symlink or run 'make download'"; \
 	fi
 	@echo ""
+	@echo "=== MCP Server ==="
+	@$(SCRIPTS)/mcp/status.sh
 	@echo "=== NFS Server ==="
 	@$(SCRIPTS)/nfs/check.sh
 	@echo ""
@@ -165,6 +168,7 @@ status: ## Show overall system status (run this first!)
 	fi
 	@echo ""
 	@echo "For detailed database info: make db-info"
+	@echo "For MCP server: make mcp-status"
 	@echo "For NFS details: make nfs-status"
 
 db-info: ## Show database tables, indices, and row counts
@@ -256,6 +260,32 @@ create-missing-indices: ## Create any missing indices
 
 maintain-indices: ## Analyze and optimize indices
 	@$(SCRIPTS)/database/99_maintain_indexes.sh
+
+##@ MCP Server (Remote Access)
+
+mcp-install: ## Install MCP server as systemd service
+	@$(SCRIPTS)/mcp/install.sh $(if $(DB),--db $(DB),) $(if $(PORT),--port $(PORT),)
+
+mcp-uninstall: ## Remove MCP systemd service
+	@$(SCRIPTS)/mcp/install.sh --uninstall
+
+mcp-status: ## Show MCP server status
+	@$(SCRIPTS)/mcp/status.sh
+
+mcp-start: ## Start MCP server
+	@sudo systemctl start crossref-mcp
+	@echo "✓ MCP server started"
+
+mcp-stop: ## Stop MCP server
+	@sudo systemctl stop crossref-mcp
+	@echo "✓ MCP server stopped"
+
+mcp-restart: ## Restart MCP server
+	@sudo systemctl restart crossref-mcp
+	@echo "✓ MCP server restarted"
+
+mcp-logs: ## Show MCP server logs (live)
+	@journalctl -u crossref-mcp -f
 
 ##@ NFS Server
 
