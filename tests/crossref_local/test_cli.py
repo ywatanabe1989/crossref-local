@@ -45,6 +45,21 @@ class TestCLIHelp:
         assert result.exit_code == 0
         assert "crossref-local" in result.output.lower()
 
+    def test_help_recursive(self, runner):
+        """--help-recursive shows help for all commands."""
+        result = runner.invoke(cli, ["--help-recursive"])
+        assert result.exit_code == 0
+        # Check main header
+        assert "crossref-local" in result.output
+        # Check all subcommands are included
+        assert "search" in result.output
+        assert "status" in result.output
+        assert "run-server-mcp" in result.output
+        assert "run-server-http" in result.output
+        assert "search-by-doi" in result.output
+        # Check formatted separators are present
+        assert "━━━" in result.output
+
 
 class TestSearchCommand:
     """Tests for search command."""
