@@ -178,17 +178,22 @@ Local MCP client configuration:
 }
 ```
 
-Remote MCP via SSH (access database on another machine):
+Remote MCP via HTTP (recommended):
+```bash
+# On server: start persistent MCP server
+crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082
+```
 ```json
 {
   "mcpServers": {
-    "crossref-local": {
-      "command": "ssh",
-      "args": ["your-server", "CROSSREF_LOCAL_DB=/path/to/crossref.db crossref-local run-server-mcp"]
+    "crossref-remote": {
+      "url": "http://your-server:8082/mcp"
     }
   }
 }
 ```
+
+See [docs/remote-deployment.md](docs/remote-deployment.md) for systemd and Docker setup.
 
 Available tools:
 - `search` - Full-text search across 167M+ papers
