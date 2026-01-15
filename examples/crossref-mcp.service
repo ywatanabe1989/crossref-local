@@ -1,0 +1,47 @@
+# CrossRef Local MCP Server - systemd service unit
+#
+# Installation:
+#   sudo cp examples/crossref-mcp.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable crossref-mcp
+#   sudo systemctl start crossref-mcp
+#
+# Check status:
+#   sudo systemctl status crossref-mcp
+#   journalctl -u crossref-mcp -f
+
+[Unit]
+Description=CrossRef Local MCP Server
+Documentation=https://github.com/ywatanabe1989/crossref-local
+After=network.target
+
+[Service]
+Type=simple
+User=ywatanabe
+Group=ywatanabe
+
+# Environment - adjust path to your database
+Environment=CROSSREF_LOCAL_DB=/home/ywatanabe/proj/crossref-local/data/crossref.db
+
+# Run MCP server with HTTP transport (recommended over SSE)
+# SSE is deprecated as of MCP spec 2025-03-26
+ExecStart=/usr/local/bin/crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082
+
+# Restart policy
+Restart=always
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=/
+ReadWritePaths=/tmp
+
+# Resource limits (optional)
+# MemoryMax=2G
+# CPUQuota=200%
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+# Dockerfile for CrossRef Local MCP Server
+#
+# Build:
+#   docker build -f examples/Dockerfile.mcp -t crossref-mcp .
+#
+# Run:
+#   docker run -d \
+#     -p 8082:8082 \
+#     -v /path/to/crossref.db:/data/crossref.db:ro \
+#     --name crossref-mcp \
+#     crossref-mcp
+#
+# Test:
+#   curl http://localhost:8082/mcp
+
+FROM python:3.11-slim
+
+LABEL maintainer="ywatanabe@scitex.ai"
+LABEL description="CrossRef Local MCP Server"
+
+# Install crossref-local with MCP support
+RUN pip install --no-cache-dir crossref-local[mcp]
+
+# Database path (mount at runtime)
+ENV CROSSREF_LOCAL_DB=/data/crossref.db
+
+# MCP server port
+EXPOSE 8082
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8082/mcp || exit 1
+
+# Run MCP server with HTTP transport
+CMD ["crossref-local", "run-server-mcp", "-t", "http", "--host", "0.0.0.0", "--port", "8082"]
