@@ -199,6 +199,11 @@ class RemoteClient:
                     authors=item.get("authors", []),
                     year=item.get("year"),
                     journal=item.get("journal"),
+                    volume=item.get("volume"),
+                    issue=item.get("issue"),
+                    page=item.get("page"),
+                    abstract=item.get("abstract"),
+                    citation_count=item.get("citation_count"),
                 )
                 works.append(work)
             return works

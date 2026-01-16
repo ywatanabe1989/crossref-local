@@ -1,0 +1,44 @@
+# Docker Compose for CrossRef Local MCP Server
+#
+# Usage:
+#   cd examples
+#   docker-compose -f docker-compose.mcp.yml up -d
+#
+# Configuration:
+#   Edit the volume path to point to your crossref.db file
+
+services:
+  crossref-mcp:
+    build:
+      context: ..
+      dockerfile: examples/Dockerfile.mcp
+    image: crossref-mcp:latest
+    container_name: crossref-mcp
+    ports:
+      - "8082:8082"
+    volumes:
+      # Mount your database file (read-only)
+      - /path/to/crossref.db:/data/crossref.db:ro
+    environment:
+      - CROSSREF_LOCAL_DB=/data/crossref.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/mcp"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# Optional: Run with pre-built image from pip install
+#  crossref-mcp-pip:
+#    image: python:3.11-slim
+#    command: >
+#      sh -c "pip install crossref-local[mcp] &&
+#             crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082"
+#    ports:
+#      - "8082:8082"
+#    volumes:
+#      - /path/to/crossref.db:/data/crossref.db:ro
+#    environment:
+#      - CROSSREF_LOCAL_DB=/data/crossref.db
+#    restart: unless-stopped

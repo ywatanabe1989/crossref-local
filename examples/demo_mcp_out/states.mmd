@@ -1,0 +1,11 @@
+stateDiagram-v2
+    [*] --> Interictal: Normal State
+    Interictal --> Preictal: SPH (5-120 min)
+    Preictal --> Ictal: Seizure Onset
+    Ictal --> Postictal: Seizure End
+    Postictal --> Interictal: Recovery
+
+    note right of Preictal
+        Detection Target
+        Critical Window
+    end note

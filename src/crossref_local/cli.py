@@ -400,7 +400,7 @@ def status():
     "--transport",
     type=click.Choice(["stdio", "sse", "http"]),
     default="stdio",
-    help="Transport protocol",
+    help="Transport protocol (http recommended for remote)",
 )
 @click.option(
     "--host",
@@ -419,7 +419,13 @@ def serve_mcp(transport: str, host: str, port: int):
     """Run MCP (Model Context Protocol) server.
 
     \b
-    Example MCP client configuration:
+    Transports:
+      stdio  - Standard I/O (default, for Claude Desktop local)
+      http   - Streamable HTTP (recommended for remote/persistent)
+      sse    - Server-Sent Events (deprecated as of MCP spec 2025-03-26)
+
+    \b
+    Local configuration (stdio):
       {
         "mcpServers": {
           "crossref": {
@@ -428,6 +434,23 @@ def serve_mcp(transport: str, host: str, port: int):
           }
         }
       }
+
+    \b
+    Remote configuration (http):
+      # Start server:
+      crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082
+
+      # Client config:
+      {
+        "mcpServers": {
+          "crossref-remote": {
+            "url": "http://your-server:8082/mcp"
+          }
+        }
+      }
+
+    \b
+    See docs/remote-deployment.md for systemd and Docker setup.
     """
     try:
         from .mcp_server import run_server

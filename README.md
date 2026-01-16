@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-01-14 22:10:27
+!-- Timestamp: 2026-01-16 19:15:51
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/crossref-local/README.md
 !-- --- -->
@@ -15,6 +15,22 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 <p align="center">
   <img src="examples/readme_figure.png" alt="CrossRef Local Demo" width="800"/>
 </p>
+
+<details>
+<summary><strong>MCP Demo Video</strong></summary>
+
+<p align="center">
+  <a href="https://scitex.ai/media/videos/crossref-local-v0.3.1-demo.mp4">
+    <img src="examples/demo_mcp_out/crossref-local-v0.3.1-demo-thumbnail_6m55s.png" alt="Demo Video Thumbnail" width="600"/>
+  </a>
+</p>
+
+Live demonstration of MCP server integration with Claude Code for `epilepsy seizure prediction` literature review:
+- Full-text search on title, abstracts, and keywords across 167M papers (22ms response)
+
+📄 [Full demo documentation](examples/demo_mcp.org) | 📊 [Generated diagrams](examples/demo_mcp_out/)
+
+</details>
 
 <details>
 <summary><strong>Why CrossRef Local?</strong></summary>
@@ -178,17 +194,22 @@ Local MCP client configuration:
 }
 ```
 
-Remote MCP via SSH (access database on another machine):
+Remote MCP via HTTP (recommended):
+```bash
+# On server: start persistent MCP server
+crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082
+```
 ```json
 {
   "mcpServers": {
-    "crossref-local": {
-      "command": "ssh",
-      "args": ["your-server", "CROSSREF_LOCAL_DB=/path/to/crossref.db crossref-local run-server-mcp"]
+    "crossref-remote": {
+      "url": "http://your-server:8082/mcp"
     }
   }
 }
 ```
+
+See [docs/remote-deployment.md](docs/remote-deployment.md) for systemd and Docker setup.
 
 Available tools:
 - `search` - Full-text search across 167M+ papers
