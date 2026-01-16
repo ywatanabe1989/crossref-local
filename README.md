@@ -20,8 +20,8 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 <summary><strong>MCP Demo Video</strong></summary>
 
 <p align="center">
-  <a href="examples/demo_mcp_out/crossref-local-v0.3.1-demo.mp4">
-    <img src="examples/demo_mcp_out/crossref-local-v0.3.1-demo-thumbnail_10m40s.jpg" alt="Demo Video Thumbnail" width="600"/>
+  <a href="https://scitex.ai/media/videos/crossref-local-v0.3.1-demo.mp4">
+    <img src="examples/demo_mcp_out/crossref-local-v0.3.1-demo-thumbnail_6m55s.png" alt="Demo Video Thumbnail" width="600"/>
   </a>
 </p>
 
