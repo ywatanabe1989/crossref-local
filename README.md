@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-01-14 22:10:27
+!-- Timestamp: 2026-01-16 19:15:51
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/crossref-local/README.md
 !-- --- -->
@@ -15,6 +15,22 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 <p align="center">
   <img src="examples/readme_figure.png" alt="CrossRef Local Demo" width="800"/>
 </p>
+
+<details>
+<summary><strong>MCP Demo Video</strong></summary>
+
+<p align="center">
+  <a href="examples/demo_mcp_out/crossref-local-v0.3.1-demo.mp4">
+    <img src="examples/demo_mcp_out/crossref-local-v0.3.1-demo-thumbnail_10m40s.jpg" alt="Demo Video Thumbnail" width="600"/>
+  </a>
+</p>
+
+Live demonstration of MCP server integration with Claude Code for `epilepsy seizure prediction` literature review:
+- Full-text search on title, abstracts, and keywords across 167M papers (22ms response)
+
+📄 [Full demo documentation](examples/demo_mcp.org) | 📊 [Generated diagrams](examples/demo_mcp_out/)
+
+</details>
 
 <details>
 <summary><strong>Why CrossRef Local?</strong></summary>

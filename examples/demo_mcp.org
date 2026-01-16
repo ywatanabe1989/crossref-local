@@ -1,0 +1,399 @@
+# Timestamp: "2026-01-16 19:03:14 (ywatanabe)"
+# File: /home/ywatanabe/proj/crossref-local/examples/demo_mcp.org
+
+* CrossRef Local MCP Server + Claude Code Demo
+
+* Request (DO NOT CHANGE THIS SECTION)
+- Verify that CrossRef Local Remote MCP Server (crossref-local-remote) is available
+- DO NOT USE `scitex scholar` mcp server now
+- Demonstrate the MCP server live under your responsibility
+  - 1. Overview
+  - 2. List Available Tools
+  - 3. Identify main tools and run live demonstration
+  - 4. Perform comprehensive literature review on "epilepsy seizure prediction"
+       Search papers with various queries with abstracts
+       Especially works with the NeuroVista dataset
+       Summarise metrics
+           Prediction horizon (lead time)
+           Sample Sizes (seizures, patients)
+       Compare methods
+       Review which signal and features are useful
+       Check how to work with imbalanced dataset nature (seizure is rare event) - are used metrics appropriate?
+  - 5. Summarize what you learned as tables and diagrams
+  - 6. Identify trend and gap to be filled
+- Add contents/documentation to this org file interactively
+- Proceed step by step. One plot and one narration form a set.
+- Play narration between sections
+- Store all artifacts in ./demo_mcp_out/ (remove it if it already exists)
+- Add documentation and place inline figures
+- Do not check source code, unless explicitly instructed, to purely check MCP server capabilities
+
+* Emacs Org Mode Setup (DO NOT CHANGE THIS SECTION)
+#+begin_src elisp
+(defun my/setup-demo-org ()
+  (auto-revert-mode t)
+  (run-with-timer 0 5
+    (lambda ()
+      (when (derived-mode-p 'org-mode)
+        (org-display-inline-images)))))
+
+(my/setup-demo-org)
+#+end_src
+
+* 1. Overview: CrossRef Local Remote MCP Server
+
+** Server Status
+#+begin_src json
+{
+  "mode": "db",
+  "db_path": "/home/ywatanabe/proj/crossref-local/data/crossref.db",
+  "works": 167008748,
+  "fts_indexed": 167008748,
+  "citations": 1788599072
+}
+#+end_src
+
+| Metric         | Value         |
+|----------------+---------------|
+| Total Works    | 167,008,748   |
+| FTS Indexed    | 167,008,748   |
+| Total Citations| 1,788,599,072 |
+
+The CrossRef Local Remote MCP Server provides local access to CrossRef's massive academic database with full-text search capabilities.
+
+* 2. Available Tools
+
+| Tool          | Description                                           |
+|---------------+-------------------------------------------------------|
+| status        | Get database statistics (works, citations, FTS count) |
+| search        | Full-text search across 167M+ papers (FTS5)           |
+| search_by_doi | Lookup paper by DOI, return metadata or citation      |
+
+** Key Features
+- FTS5 full-text search with AND, OR, NOT, "exact phrases"
+- Pagination support via limit/offset
+- Abstract retrieval option
+- Citation formatting
+
+* 3. Live Demonstration: Search Queries
+
+** Query Results Summary
+| Query                                           | Results Found |
+|-------------------------------------------------+---------------|
+| epilepsy seizure prediction                     |         3,074 |
+| seizure prediction deep learning EEG            |           104 |
+| intracranial EEG seizure prediction             |           156 |
+| seizure prediction prediction horizon EEG       |            17 |
+| seizure prediction class imbalance              |         4,414 |
+| seizure prediction CHB scalp EEG                |            37 |
+| EEG seizure prediction CNN LSTM deep learning   |             9 |
+| sensitivity specificity false prediction rate   |            51 |
+| neurovista                                      |             6 |
+
+*Search Tip:* Simple single-term queries (e.g., "neurovista") work better than compound queries which may fail due to FTS5 implicit AND parsing.
+
+The database provides rapid FTS5-based search (100-400ms) across 167M+ papers with abstract retrieval.
+
+* 4. Comprehensive Literature Review: Epilepsy Seizure Prediction
+
+** 4.1 Overview
+
+Epileptic seizure prediction aims to detect the transition from normal brain activity (interictal state) to the pre-seizure state (preictal), enabling timely intervention. Approximately 30% of epilepsy patients are drug-resistant, making accurate prediction critical for improved quality of life.
+
+** 4.2 Common Databases
+
+| Database        | Type        | Subjects | Seizures    | Recording              |
+|-----------------+-------------+----------+-------------+------------------------|
+| CHB-MIT         | Scalp EEG   | 23       | 198         | 916 hours              |
+| Siena Scalp EEG | Scalp EEG   | 14       | 47          | 128 hours              |
+| EPILEPSIAE      | iEEG/sEEG   | 275      | 4,000+      | Long-term              |
+| Freiburg        | iEEG        | 21       | 87          | Intracranial           |
+| Kaggle AES      | iEEG        | 8        | ~700        | Competition dataset    |
+| *NeuroVista*    | iEEG        | 15       | 3,789 total | 521 days/patient (avg) |
+
+*** NeuroVista Dataset Details (from 6 indexed papers)
+
+The NeuroVista dataset represents the *first FDA-approved implantable seizure advisory system* trial (NCT01043406):
+
+| Attribute              | Value                                    |
+|------------------------+------------------------------------------|
+| Location               | Melbourne, Australia                     |
+| Recording Period       | 2010-2012                                |
+| Patients               | 15 (refractory focal epilepsy)          |
+| Mean Recording/Patient | 521 days continuous iEEG                 |
+| Mean Seizures/Patient  | 252.6 seizures                           |
+| Total Seizures         | 3,789 (across all patients)              |
+| Electrode Type         | Intracranial (implanted)                 |
+| Unique Feature         | Ambulatory, real-world chronic recording |
+
+This dataset is particularly valuable for:
+- Long-term seizure cycle analysis (circadian + multiday patterns)
+- Real-world seizure forecasting validation
+- Environmental factor studies (e.g., air pollution effects)
+
+** 4.3 Performance Metrics Summary
+
+| Study (Year)                 | Method             | Database       | Sensitivity | FPR (/h) | SPH      |
+|------------------------------+--------------------+----------------+-------------+----------+----------|
+| TA-STS-ConvNet (2022)        | Triple-attention   | CHB-MIT        | 96.7%       | 0.072    | -        |
+| GAMRNN (2023)                | GRU+Attention      | CHB-MIT        | 88.1%       | 0.053    | 5-35 min |
+| CNN-LSTM-GRU Hybrid (2025)   | Hybrid DL          | CHB-MIT        | 99.1%       | -        | -        |
+| Multiresolution CNN (2023)   | CNN                | CHB-MIT        | 82%         | 0.058    | -        |
+| CNN-LSTM Bilinear (2024)     | Hybrid Bilinear    | CHB-MIT        | 98.4%       | 0.02     | -        |
+| EpiNET GRU-LSTM (2024)       | GRU-LSTM           | CHB-MIT        | 92.5%       | -        | 120 min  |
+| Backwards-Landmark (2024)    | SVM + Drift        | EPILEPSIAE     | 75%         | 1.03     | 10 min   |
+| Edge DL - LSTM (2021)        | LSTM               | CHB-MIT        | 97.6%       | 0.071    | -        |
+| Karoly et al. (2020)         | Cycle Forecasting  | *NeuroVista*   | 69.1%       | -        | Multiday |
+| Chen et al. (2022)           | Air Pollution+EEG  | *NeuroVista*   | -           | -        | -        |
+| Schroeder et al. (2022)      | Pathway Analysis   | *NeuroVista*   | -           | -        | -        |
+
+*** NeuroVista-Specific Findings
+
+From the 6 NeuroVista papers, key methodological insights:
+
+| Paper                  | Key Finding                                                   |
+|------------------------+---------------------------------------------------------------|
+| Karoly 2020 (Epilepsia)| Seizure cycles (circadian+multiday) enable 69% high-risk hit  |
+| Schroeder 2022         | Seizure pathway ≠ duration; "elasticity" and "semblance"      |
+| Chen 2022              | CO exposure increases seizure risk (RR: 1.04 per IQR)         |
+| Goldenholz 2018        | Log-log relationship: mean → variance prediction (94% acc)    |
+| DiLorenzo 2019         | First-in-man implantable seizure advisory device development  |
+
+** 4.4 Prediction Horizon Analysis
+
+The Seizure Prediction Horizon (SPH) varies significantly across studies:
+
+| Horizon Range | Description                                  | Studies      |
+|---------------+----------------------------------------------+--------------|
+| 5-10 minutes  | Short-term prediction, high confidence       | Common       |
+| 10-30 minutes | Standard range for clinical intervention     | Most studies |
+| 30-60 minutes | Extended horizon, lower precision            | Several      |
+| 60-120 min    | Long-term prediction (EpiNET achieved 2 hr)  | Emerging     |
+
+** 4.5 Deep Learning Methods Comparison
+
+| Method Category      | Architectures                | Strengths                      |
+|----------------------+------------------------------+--------------------------------|
+| CNN-based            | 1D-CNN, Multiresolution CNN  | Spatial/spectral features      |
+| RNN-based            | LSTM, Bi-LSTM, GRU           | Temporal sequence modeling     |
+| Hybrid               | CNN-LSTM, CNN-GRU            | Combined spatio-temporal       |
+| Attention-based      | GAMRNN, Triple-Attention     | Feature importance weighting   |
+| Graph Networks       | sdGCN, GNN                   | Electrode spatial relations    |
+
+** 4.6 Feature Extraction Approaches
+
+| Feature Type     | Examples                                   | Effectiveness          |
+|------------------+--------------------------------------------+------------------------|
+| Statistical      | Mean, variance, skewness, kurtosis         | Baseline performance   |
+| Spectral         | Band power (alpha, beta, delta, theta)     | Rhythm-based detection |
+| Wavelet          | DWT coefficients, energy per band          | Time-frequency analysis|
+| Entropy          | Approximate entropy, sample entropy        | Complexity measures    |
+| Connectivity     | Phase-amplitude coupling (PAC), coherence  | Inter-channel dynamics |
+| Time-domain      | Zero-crossing, peak detection              | Simple, fast           |
+
+** 4.7 Handling Imbalanced Data
+
+Seizure events are rare (~5% of recordings), creating severe class imbalance:
+
+| Technique              | Description                               | Performance Impact     |
+|------------------------+-------------------------------------------+------------------------|
+| BNNSMOTE               | Borderline nearest neighbor oversampling  | +15% accuracy          |
+| WGAN-GP                | Generative adversarial network augment    | 91.7% → 86% baseline   |
+| EEGAug                 | Frequency-band composition augmentation   | Improved minority class|
+| Class weights          | Adjusting loss function weights           | Moderate improvement   |
+| Sliding window overlap | Increase minority samples via overlap     | Common approach        |
+
+** 4.8 Evaluation Metrics Appropriateness
+
+For imbalanced seizure data, standard accuracy is misleading:
+
+| Metric                      | Appropriateness | Rationale                          |
+|-----------------------------+-----------------+------------------------------------|
+| Accuracy                    | Low             | Biased by majority class           |
+| Sensitivity (Recall)        | High            | Critical - must detect seizures    |
+| Specificity                 | High            | Reduces false alarms               |
+| False Prediction Rate (FPR) | High            | Patient burden measure (/hour)     |
+| F1-Score                    | Medium-High     | Balances precision/recall          |
+| AUC-ROC                     | High            | Threshold-independent performance  |
+
+*Best practice:* Report sensitivity + FPR together, as this reflects clinical utility.
+
+* 5. Summary Diagrams
+
+** 5.1 Seizure Prediction Pipeline
+#+begin_src mermaid :file ./demo_mcp_out/pipeline.png
+flowchart LR
+    A[Raw EEG Signal] --> B[Preprocessing]
+    B --> C[Feature Extraction]
+    C --> D[Classification Model]
+    D --> E{Preictal?}
+    E -->|Yes| F[Alert Patient]
+    E -->|No| G[Continue Monitoring]
+
+    subgraph Preprocessing
+        B1[Bandpass Filter]
+        B2[Artifact Removal]
+        B3[Normalization]
+    end
+
+    subgraph Features
+        C1[Statistical]
+        C2[Spectral]
+        C3[Wavelet]
+        C4[Connectivity]
+    end
+
+    subgraph Models
+        D1[CNN]
+        D2[LSTM]
+        D3[Hybrid]
+        D4[Attention]
+    end
+#+end_src
+
+#+RESULTS:
+[[file:./demo_mcp_out/pipeline.png]]
+
+** 5.2 EEG Brain States
+#+begin_src mermaid :file ./demo_mcp_out/states.png
+stateDiagram-v2
+    [*] --> Interictal: Normal State
+    Interictal --> Preictal: SPH (5-120 min)
+    Preictal --> Ictal: Seizure Onset
+    Ictal --> Postictal: Seizure End
+    Postictal --> Interictal: Recovery
+
+    note right of Preictal
+        Detection Target
+        Critical Window
+    end note
+#+end_src
+
+#+RESULTS:
+[[file:./demo_mcp_out/states.png]]
+
+** 5.3 Method Evolution Timeline
+#+begin_src mermaid :file ./demo_mcp_out/evolution.png
+gantt
+    title Seizure Prediction Method Evolution
+    dateFormat YYYY
+    section Traditional
+    Statistical Features + SVM      :2010, 2015
+    Wavelet + Random Forest         :2012, 2017
+    section Deep Learning
+    CNN-based Methods               :2016, 2025
+    LSTM/GRU Temporal Models        :2017, 2025
+    section Hybrid/Advanced
+    CNN-LSTM Hybrid                 :2019, 2025
+    Attention Mechanisms            :2021, 2025
+    Graph Neural Networks           :2022, 2025
+#+end_src
+
+#+RESULTS:
+[[file:./demo_mcp_out/evolution.png]]
+
+** 5.4 Performance vs Complexity Trade-off
+#+begin_src mermaid :file ./demo_mcp_out/tradeoff.png
+quadrantChart
+    title Performance vs Model Complexity
+    x-axis Low Complexity --> High Complexity
+    y-axis Low Sensitivity --> High Sensitivity
+    quadrant-1 Optimal Zone
+    quadrant-2 Over-engineered
+    quadrant-3 Inadequate
+    quadrant-4 Simple but Limited
+    SVM: [0.25, 0.55]
+    Random Forest: [0.30, 0.60]
+    CNN: [0.50, 0.75]
+    LSTM: [0.55, 0.80]
+    CNN-LSTM: [0.70, 0.90]
+    Attention-based: [0.80, 0.95]
+#+end_src
+
+#+RESULTS:
+[[file:./demo_mcp_out/tradeoff.png]]
+
+* 6. Trends and Research Gaps
+
+** 6.1 Current Trends
+
+1. *Hybrid Deep Learning*: CNN-LSTM and attention-based architectures dominate recent literature (2023-2025)
+2. *Patient-Specific Models*: Moving away from general models toward personalized prediction
+3. *Extended Prediction Horizons*: Research pushing from 10-30 min to 60-120 min windows
+4. *Real-time Edge Deployment*: Optimized models for wearable devices and neural implants
+5. *Explainable AI (XAI)*: SHAP and attention visualization for clinical interpretability
+
+** 6.2 Identified Research Gaps
+
+| Gap                              | Current State                    | Opportunity                        |
+|----------------------------------+----------------------------------+------------------------------------|
+| Long-term prediction (>2 hr)     | Few studies achieve >60 min      | Ambulatory warning systems         |
+| Cross-patient generalization     | Patient-specific models dominate | Transfer learning research         |
+| NeuroVista DL methods            | Only 6 papers; mostly non-DL     | Apply CNN-LSTM to 521-day data     |
+| Concept drift adaptation         | Only 1-2 studies address         | Continuous learning systems        |
+| Multi-modal fusion               | Mostly EEG-only                  | ECG, EMG, accelerometer fusion     |
+| False positive burden            | FPR 0.05-1.0/h still problematic | Patient quality of life impact     |
+| Prospective validation           | Retrospective dominant           | Clinical trial evidence needed     |
+| Multiday cycle prediction        | NeuroVista shows promise         | Extend Karoly's cycle forecasting  |
+
+** 6.3 NeuroVista Research Gap Analysis
+
+Despite being the *first FDA-approved implantable seizure prediction device trial*, NeuroVista has only 6 indexed papers:
+
+*** Why NeuroVista is Underutilized
+
+| Factor                    | Impact                                              |
+|---------------------------+-----------------------------------------------------|
+| Data access restrictions  | Not publicly available like CHB-MIT                 |
+| Small sample size (n=15)  | Limits statistical power for DL methods             |
+| Device-specific focus     | Original papers focused on device, not algorithms   |
+| Geographic concentration  | Melbourne-based research group dominates            |
+
+*** Unique Research Opportunities
+
+1. *Longest continuous recording*: 521 days mean vs CHB-MIT's 40 hours mean
+2. *Multiday seizure cycles*: Karoly (2020) showed circadian + multiday patterns
+3. *Environmental factors*: Chen (2022) linked air pollution to seizure risk
+4. *Seizure dynamics*: Schroeder (2022) discovered pathway ≠ duration relationship
+5. *Real-world validation*: Ambulatory data vs hospital-controlled recordings
+
+*** Recommended NeuroVista Research Directions
+
+- Apply modern CNN-LSTM architectures to long-term iEEG data
+- Develop multiday cycle-aware prediction models
+- Study concept drift over months/years of recording
+- Investigate environmental trigger integration
+
+** 6.4 Recommendations for Future Research
+
+1. *Address class imbalance systematically*: Standardize WGAN-GP or EEGAug approaches
+2. *Standardize evaluation metrics*: Report sensitivity + FPR + prediction horizon consistently
+3. *Explore concept drift*: EEG patterns change over time - adaptive models needed
+4. *Multi-center validation*: Most studies use CHB-MIT; broader validation required
+5. *Clinical deployment studies*: Bridge gap between research accuracy and clinical utility
+
+* 7. Conclusion
+
+This literature review demonstrates the CrossRef Local MCP Server's capability to rapidly search and retrieve relevant academic papers (167M+ indexed works). Key findings:
+
+** 7.1 Seizure Prediction State-of-the-Art
+- *Best performance*: CNN-LSTM hybrid with attention achieves ~97% sensitivity, FPR ~0.05/h
+- *Standard prediction horizon*: 10-30 minutes, with emerging 2-hour predictions
+- *Critical metrics*: Sensitivity and FPR together indicate clinical utility
+- *Dominant database*: CHB-MIT (23 patients, 916 hours) used in most studies
+
+** 7.2 NeuroVista Findings
+- *6 papers found* using simplified "neurovista" query (vs 0 with compound queries)
+- *Unique dataset*: 15 patients, 521 days mean recording, 3,789 total seizures
+- *Key insight*: Multiday seizure cycles (Karoly 2020) enable novel forecasting
+- *Gap*: Modern DL methods (CNN-LSTM) not yet applied to this long-term data
+
+** 7.3 Search Strategy Lesson
+FTS5 compound queries may fail silently; *simple single-term queries* are more reliable for named datasets.
+
+#+begin_quote
+Generated via CrossRef Local Remote MCP Server
+Database: 167,008,748 papers | 1,788,599,072 citations
+Search speed: 100-400ms per query (2.83ms for "neurovista")
+#+end_quote
+

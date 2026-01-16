@@ -1,0 +1,27 @@
+flowchart LR
+    A[Raw EEG Signal] --> B[Preprocessing]
+    B --> C[Feature Extraction]
+    C --> D[Classification Model]
+    D --> E{Preictal?}
+    E -->|Yes| F[Alert Patient]
+    E -->|No| G[Continue Monitoring]
+
+    subgraph Preprocessing
+        B1[Bandpass Filter]
+        B2[Artifact Removal]
+        B3[Normalization]
+    end
+
+    subgraph Features
+        C1[Statistical]
+        C2[Spectral]
+        C3[Wavelet]
+        C4[Connectivity]
+    end
+
+    subgraph Models
+        D1[CNN]
+        D2[LSTM]
+        D3[Hybrid]
+        D4[Attention]
+    end
