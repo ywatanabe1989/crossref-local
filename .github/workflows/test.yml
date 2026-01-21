@@ -30,9 +30,16 @@ jobs:
         run: |
           python scripts/create_test_db.py --rows 500
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
-          pytest tests/ -v --tb=short
+          pytest tests/ -v --tb=short --cov=crossref_local --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
 
       - name: Test CLI
         run: |

@@ -43,6 +43,8 @@ Functions:
     get(doi) -> Work | None
     get_many(dois) -> list[Work]
     exists(doi) -> bool
+    enrich(results) -> SearchResult
+    enrich_dois(dois) -> list[Work]
     configure(db_path) -> None
     configure_remote(api_url) -> None
     get_mode() -> str
@@ -71,6 +73,8 @@ from .api import (
     get,
     get_many,
     exists,
+    enrich,
+    enrich_dois,
     configure,
     configure_http,
     configure_remote,  # Backward compatibility alias
@@ -87,6 +91,9 @@ from . import aio
 # Citation network (public functions and classes)
 from .citations import get_citing, get_cited, get_citation_count, CitationNetwork
 
+# Cache module (public)
+from . import cache
+
 
 # Public API - what users should import
 __all__ = [
@@ -98,6 +105,9 @@ __all__ = [
     "get",
     "get_many",
     "exists",
+    # Enrichment (add citations/references to search results)
+    "enrich",
+    "enrich_dois",
     # Configuration
     "configure",
     "configure_http",
@@ -109,6 +119,8 @@ __all__ = [
     "SearchResult",
     # Async API
     "aio",
+    # Cache module
+    "cache",
     # Citation network
     "get_citing",
     "get_cited",

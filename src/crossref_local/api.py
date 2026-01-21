@@ -172,6 +172,77 @@ def configure_http(api_url: str = "http://localhost:8333") -> None:
 configure_remote = configure_http
 
 
+def enrich(
+    results: SearchResult,
+    include_citations: bool = True,
+    include_references: bool = True,
+) -> SearchResult:
+    """
+    Enrich search results with full metadata (citations, references).
+
+    The search() function returns basic metadata for speed. This function
+    fetches full metadata for each work, adding citation counts and references.
+
+    Args:
+        results: SearchResult from search()
+        include_citations: Include citation counts
+        include_references: Include reference DOIs
+
+    Returns:
+        SearchResult with enriched works
+
+    Example:
+        >>> from crossref_local import search, enrich
+        >>> results = search("machine learning", limit=10)
+        >>> enriched = enrich(results)
+        >>> for work in enriched:
+        ...     print(f"{work.title}: {work.citation_count} citations")
+    """
+    enriched_works = []
+    for work in results.works:
+        full_work = get(work.doi)
+        if full_work:
+            enriched_works.append(full_work)
+        else:
+            # Keep original if full metadata not available
+            enriched_works.append(work)
+
+    return SearchResult(
+        works=enriched_works,
+        total=results.total,
+        query=results.query,
+        elapsed_ms=results.elapsed_ms,
+    )
+
+
+def enrich_dois(
+    dois: List[str],
+    include_citations: bool = True,
+    include_references: bool = True,
+) -> List[Work]:
+    """
+    Enrich a list of DOIs with full metadata.
+
+    Fetches complete metadata for each DOI including citation counts
+    and reference lists.
+
+    Args:
+        dois: List of DOIs to enrich
+        include_citations: Include citation counts
+        include_references: Include reference DOIs
+
+    Returns:
+        List of Work objects with full metadata
+
+    Example:
+        >>> from crossref_local import enrich_dois
+        >>> works = enrich_dois(["10.1038/nature12373", "10.1126/science.aax0758"])
+        >>> for w in works:
+        ...     print(f"{w.doi}: {w.citation_count} citations, {len(w.references)} refs")
+    """
+    return get_many(dois)
+
+
 def get_mode() -> str:
     """
     Get current mode.

@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-01-22
+
+### Added
+- Shell completion command (`crossref-local completion bash/zsh/fish/install/status`)
+- Paper cache module for efficient collection management (`crossref-local cache`)
+- MCP subcommand group (`crossref-local mcp {start,doctor,installation,list-tools}`)
+- `--help-recursive` option for complete CLI help
+- Remote deployment docs with systemd and Docker examples
+- Automated MCP server installation via Makefile
+
+### Changed
+- Reorganized CLI commands for better clarity
+- Improved MCP tools alignment with CLI commands
+- Examples renamed to follow numbered convention (04_mcp_demo)
+- Updated .env.example with all environment variables
+
+### Fixed
+- Remote client `get_many` batch response includes citation_count
+- CI workflow now includes pytest-cov for coverage reporting
+
 ## [0.3.1] - 2026-01-14
 
 ### Added
