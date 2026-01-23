@@ -41,8 +41,14 @@ class RemoteClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
 
-    def _request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict:
-        """Make HTTP GET request to API."""
+    def _request(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+        method: str = "GET",
+        data: Optional[Dict[str, Any]] = None,
+    ) -> Dict:
+        """Make HTTP request to API."""
         url = f"{self.base_url}{endpoint}"
         if params:
             # Filter out None values
@@ -51,8 +57,15 @@ class RemoteClient:
                 url = f"{url}?{urllib.parse.urlencode(params)}"
 
         try:
-            req = urllib.request.Request(url)
+            req_data = None
+            if data is not None:
+                req_data = json.dumps(data).encode("utf-8")
+
+            req = urllib.request.Request(url, data=req_data, method=method)
             req.add_header("Accept", "application/json")
+            if req_data:
+                req.add_header("Content-Type", "application/json")
+
             with urllib.request.urlopen(req, timeout=self.timeout) as response:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as e:

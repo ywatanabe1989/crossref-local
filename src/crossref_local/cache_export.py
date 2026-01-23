@@ -4,7 +4,13 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .cache import load
+from .cache_utils import sanitize_name
+
+
+def _load_cache(name: str, user_id: Optional[str] = None):
+    """Load cache data (lazy import to avoid circular dependency)."""
+    from .cache import load
+    return load(name, user_id=user_id)
 
 
 def export(
@@ -12,6 +18,7 @@ def export(
     output_path: str,
     format: str = "json",
     fields: Optional[List[str]] = None,
+    user_id: Optional[str] = None,
 ) -> str:
     """Export cache to file.
 
@@ -20,11 +27,17 @@ def export(
         output_path: Output file path
         format: Export format (json, csv, bibtex, dois)
         fields: Fields to include (for json/csv)
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         Output file path
+
+    Raises:
+        ValueError: If cache name contains invalid characters
     """
-    papers = load(name)
+    # Validate cache name
+    sanitize_name(name)
+    papers = _load_cache(name, user_id=user_id)
     output = Path(output_path)
 
     if format == "json":

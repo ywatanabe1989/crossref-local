@@ -20,7 +20,7 @@ from . import fts
 
 def _get_http_client():
     """Get HTTP client (lazy import to avoid circular dependency)."""
-    from .remote import RemoteClient
+    from .remote import RemoteClient  # Uses enhanced client with collections
 
     return RemoteClient(Config.get_api_url())
 
