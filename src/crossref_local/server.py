@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from . import fts, __version__
 from .db import get_db
 from .models import Work
+from .citations import get_citing, get_cited, get_citation_count, CitationNetwork
 
 app = FastAPI(
     title="CrossRef Local API",
@@ -83,6 +84,10 @@ def root():
             "search": "/works?q=<query>",
             "get_by_doi": "/works/{doi}",
             "batch": "/works/batch",
+            "citations_citing": "/citations/{doi}/citing",
+            "citations_cited": "/citations/{doi}/cited",
+            "citations_count": "/citations/{doi}/count",
+            "citations_network": "/citations/{doi}/network",
         },
     }
 
@@ -251,6 +256,122 @@ def get_works_batch(request: BatchRequest):
     )
 
 
+# =============================================================================
+# Citation Endpoints
+# =============================================================================
+
+
+class CitingResponse(BaseModel):
+    doi: str
+    citing_count: int
+    papers: List[str]
+
+
+class CitedResponse(BaseModel):
+    doi: str
+    cited_count: int
+    papers: List[str]
+
+
+class CitationCountResponse(BaseModel):
+    doi: str
+    citation_count: int
+
+
+class CitationNetworkResponse(BaseModel):
+    center_doi: str
+    depth: int
+    total_nodes: int
+    total_edges: int
+    nodes: List[dict]
+    edges: List[dict]
+
+
+@app.get("/citations/{doi:path}/citing", response_model=CitingResponse)
+def get_citing_papers(
+    doi: str,
+    limit: int = Query(100, ge=1, le=1000, description="Max papers to return"),
+):
+    """
+    Get papers that cite this DOI.
+
+    Examples:
+        /citations/10.1038/nature12373/citing
+        /citations/10.1038/nature12373/citing?limit=50
+    """
+    citing_dois = get_citing(doi, limit=limit)
+    return CitingResponse(
+        doi=doi,
+        citing_count=len(citing_dois),
+        papers=citing_dois,
+    )
+
+
+@app.get("/citations/{doi:path}/cited", response_model=CitedResponse)
+def get_cited_papers(
+    doi: str,
+    limit: int = Query(100, ge=1, le=1000, description="Max papers to return"),
+):
+    """
+    Get papers cited by this DOI (references).
+
+    Examples:
+        /citations/10.1038/nature12373/cited
+        /citations/10.1038/nature12373/cited?limit=50
+    """
+    cited_dois = get_cited(doi, limit=limit)
+    return CitedResponse(
+        doi=doi,
+        cited_count=len(cited_dois),
+        papers=cited_dois,
+    )
+
+
+@app.get("/citations/{doi:path}/count", response_model=CitationCountResponse)
+def get_citation_count_endpoint(doi: str):
+    """
+    Get citation count for a DOI.
+
+    Examples:
+        /citations/10.1038/nature12373/count
+    """
+    count = get_citation_count(doi)
+    return CitationCountResponse(doi=doi, citation_count=count)
+
+
+@app.get("/citations/{doi:path}/network", response_model=CitationNetworkResponse)
+def get_citation_network(
+    doi: str,
+    depth: int = Query(1, ge=1, le=3, description="Network depth (1-3)"),
+    max_citing: int = Query(25, ge=1, le=100, description="Max citing per node"),
+    max_cited: int = Query(25, ge=1, le=100, description="Max cited per node"),
+):
+    """
+    Get citation network graph for a DOI.
+
+    Returns nodes (papers) and edges (citation relationships).
+
+    Examples:
+        /citations/10.1038/nature12373/network
+        /citations/10.1038/nature12373/network?depth=2&max_citing=50
+    """
+    network = CitationNetwork(
+        doi,
+        depth=depth,
+        max_citing=max_citing,
+        max_cited=max_cited,
+    )
+    data = network.to_dict()
+    return CitationNetworkResponse(
+        center_doi=data["center_doi"],
+        depth=data["depth"],
+        total_nodes=data["stats"]["total_nodes"],
+        total_edges=data["stats"]["total_edges"],
+        nodes=data["nodes"],
+        edges=data["edges"],
+    )
+
+
 # For backwards compatibility with existing API endpoints
 @app.get("/api/search/")
 def api_search_compat(
@@ -341,10 +462,25 @@ def api_stats_compat():
     }
 
 
-def run_server(host: str = "0.0.0.0", port: int = 8333):
+import os
+
+# Default port: SCITEX convention (3129X scheme)
+DEFAULT_PORT = int(os.environ.get(
+    "SCITEX_SCHOLAR_CROSSREF_PORT",
+    os.environ.get("CROSSREF_LOCAL_PORT", "31291")
+))
+DEFAULT_HOST = os.environ.get(
+    "SCITEX_SCHOLAR_CROSSREF_HOST",
+    os.environ.get("CROSSREF_LOCAL_HOST", "0.0.0.0")
+)
+
+
+def run_server(host: str = None, port: int = None):
     """Run the FastAPI server."""
     import uvicorn
 
+    host = host or DEFAULT_HOST
+    port = port or DEFAULT_PORT
     uvicorn.run(app, host=host, port=port)
 
 

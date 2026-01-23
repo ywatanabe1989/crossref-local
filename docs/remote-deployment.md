@@ -40,7 +40,7 @@ For production deployment, use systemd to manage the service.
 
 ```bash
 # Copy and customize the service file
-sudo cp examples/crossref-mcp.service /etc/systemd/system/
+sudo cp scripts/deployment/mcp/crossref-mcp.service /etc/systemd/system/
 
 # Edit to match your setup
 sudo nano /etc/systemd/system/crossref-mcp.service

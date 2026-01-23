@@ -3,7 +3,7 @@
 # Install CrossRef Local MCP server as systemd service
 #
 # Usage:
-#   ./scripts/mcp/install.sh [--user USER] [--db PATH] [--port PORT]
+#   ./scripts/deployment/mcp/install.sh [--user USER] [--db PATH] [--port PORT]
 #
 # Environment:
 #   CROSSREF_LOCAL_DB - Database path (required if not specified)
@@ -12,7 +12,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # Defaults
 SERVICE_NAME="crossref-mcp"

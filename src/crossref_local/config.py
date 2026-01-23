@@ -10,9 +10,14 @@ DEFAULT_DB_PATHS = [
     Path.home() / ".crossref_local" / "crossref.db",
 ]
 
-# Default remote API URL (via SSH tunnel)
+# Default port: SCITEX convention (3129X scheme)
+# 31290: scitex-cloud, 31291: crossref-local, 31292: openalex-local, 31293: audio relay
+DEFAULT_PORT = 31291
+
+# Default remote API URLs (checked in order)
 DEFAULT_API_URLS = [
-    "http://localhost:8333",  # SSH tunnel to NAS
+    f"http://localhost:{DEFAULT_PORT}",  # SCITEX default
+    "http://localhost:8333",  # Legacy port (backwards compatibility)
 ]
 DEFAULT_API_URL = DEFAULT_API_URLS[0]
 
@@ -22,8 +27,9 @@ def get_db_path() -> Path:
     Get database path from environment or auto-detect.
 
     Priority:
-    1. CROSSREF_LOCAL_DB environment variable
-    2. First existing path from DEFAULT_DB_PATHS
+    1. SCITEX_SCHOLAR_CROSSREF_DB environment variable
+    2. CROSSREF_LOCAL_DB environment variable
+    3. First existing path from DEFAULT_DB_PATHS
 
     Returns:
         Path to the database file
@@ -31,13 +37,15 @@ def get_db_path() -> Path:
     Raises:
         FileNotFoundError: If no database found
     """
-    # Check environment variable first
-    env_path = os.environ.get("CROSSREF_LOCAL_DB")
+    # Check SCITEX environment variable first (takes priority)
+    env_path = os.environ.get("SCITEX_SCHOLAR_CROSSREF_DB")
+    if not env_path:
+        env_path = os.environ.get("CROSSREF_LOCAL_DB")
     if env_path:
         path = Path(env_path)
         if path.exists():
             return path
-        raise FileNotFoundError(f"CROSSREF_LOCAL_DB path not found: {env_path}")
+        raise FileNotFoundError(f"Database path not found: {env_path}")
 
     # Auto-detect from default locations
     for path in DEFAULT_DB_PATHS:
@@ -67,8 +75,11 @@ class Config:
             "http" if using HTTP API
         """
         if cls._mode == "auto":
-            # Check environment variable
-            env_mode = os.environ.get("CROSSREF_LOCAL_MODE", "").lower()
+            # Check environment variables (SCITEX takes priority)
+            env_mode = os.environ.get(
+                "SCITEX_SCHOLAR_CROSSREF_MODE",
+                os.environ.get("CROSSREF_LOCAL_MODE", "")
+            ).lower()
             if env_mode in ("http", "remote", "api"):
                 return "http"
             if env_mode in ("db", "local"):

@@ -1,0 +1,31 @@
+# Timestamp: "2026-01-16 08:40:32 (ywatanabe)"
+# File: /ssh:nas:/home/ywatanabe/proj/crossref-local/examples/demo_mcp.org
+
+* CrossRef Local MCP Server + Claude Code Demo
+
+* Request (DO NOT CHANGE THIS SECTION)
+- Verify that CrossRef Local MCP Server (crossref-local) is available
+- Demonstrate the MCP server live under your responsibility
+  - 1. Overview
+  - 2. List Available Tools
+  - 3. Identify main tools and run live demonstration
+  - 4. Perform comprehensive literature review on the topic of "memory and hippocampus"
+- Add contents/documentation to this org file interactively
+- Proceed step by step. One plot and one narration form a set.
+- Play narration between sections
+- Store all artifacts in ./demo_mcp_out/ (remove it if it already exists)
+- Add documentation and place inline figures
+- Do not check source code, unless explicitly instructed, to purely check MCP server capabilities
+
+* Emacs Org Mode Setup (DO NOT CHANGE THIS SECTION)
+#+begin_src elisp
+(defun my/setup-demo-org ()
+  (auto-revert-mode t)
+  (run-with-timer 0 5
+    (lambda ()
+      (when (derived-mode-p 'org-mode)
+        (org-display-inline-images)))))
+
+(my/setup-demo-org)
+#+end_src
+

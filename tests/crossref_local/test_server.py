@@ -146,6 +146,63 @@ class TestWorksBatchEndpoint:
         assert data["found"] == 0
 
 
+class TestCitationEndpoints:
+    """Tests for /citations/* endpoints."""
+
+    def test_citing_returns_list(self, client):
+        """GET /citations/{doi}/citing returns list of citing papers."""
+        # Use a DOI from search
+        search = client.get("/works?q=test&limit=1")
+        if search.status_code == 200 and search.json()["results"]:
+            doi = search.json()["results"][0]["doi"]
+            response = client.get(f"/citations/{doi}/citing?limit=10")
+            assert response.status_code == 200
+            data = response.json()
+            assert "doi" in data
+            assert "citing_count" in data
+            assert "papers" in data
+            assert isinstance(data["papers"], list)
+
+    def test_cited_returns_list(self, client):
+        """GET /citations/{doi}/cited returns list of cited papers."""
+        search = client.get("/works?q=test&limit=1")
+        if search.status_code == 200 and search.json()["results"]:
+            doi = search.json()["results"][0]["doi"]
+            response = client.get(f"/citations/{doi}/cited?limit=10")
+            assert response.status_code == 200
+            data = response.json()
+            assert "doi" in data
+            assert "cited_count" in data
+            assert "papers" in data
+            assert isinstance(data["papers"], list)
+
+    def test_count_returns_integer(self, client):
+        """GET /citations/{doi}/count returns citation count."""
+        search = client.get("/works?q=test&limit=1")
+        if search.status_code == 200 and search.json()["results"]:
+            doi = search.json()["results"][0]["doi"]
+            response = client.get(f"/citations/{doi}/count")
+            assert response.status_code == 200
+            data = response.json()
+            assert "doi" in data
+            assert "citation_count" in data
+            assert isinstance(data["citation_count"], int)
+
+    def test_network_returns_graph(self, client):
+        """GET /citations/{doi}/network returns citation network."""
+        search = client.get("/works?q=test&limit=1")
+        if search.status_code == 200 and search.json()["results"]:
+            doi = search.json()["results"][0]["doi"]
+            response = client.get(f"/citations/{doi}/network?depth=1")
+            assert response.status_code == 200
+            data = response.json()
+            assert "center_doi" in data
+            assert "nodes" in data
+            assert "edges" in data
+            assert isinstance(data["nodes"], list)
+            assert isinstance(data["edges"], list)
+
+
 class TestBackwardsCompatibleEndpoints:
     """Tests for backwards-compatible /api/* endpoints."""
 

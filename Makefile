@@ -137,39 +137,7 @@ help: ## Show this help
 ##@ Status & Information
 
 status: ## Show overall system status (run this first!)
-	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║           CROSSREF LOCAL - STATUS                         ║"
-	@echo "╚════════════════════════════════════════════════════════════╝"
-	@echo ""
-	@echo "=== Database ==="
-	@if [ -f "$(DB_PATH)" ]; then \
-		echo "  ✓ Database exists: $(DB_PATH)"; \
-		echo "  Size: $$(du -h "$(DB_PATH)" | cut -f1)"; \
-	else \
-		echo "  ✗ Database NOT FOUND: $(DB_PATH)"; \
-		echo "    Hint: Check data symlink or run 'make download'"; \
-	fi
-	@echo ""
-	@echo "=== MCP Server ==="
-	@$(SCRIPTS)/mcp/status.sh
-	@echo "=== NFS Server ==="
-	@$(SCRIPTS)/nfs/check.sh
-	@echo ""
-	@echo "=== Running Processes ==="
-	@ps aux | grep -E "(rebuild_citations|build_fts|sqlite3)" | grep -v grep | head -5 || echo "  No database processes running"
-	@echo ""
-	@echo "=== Screen Sessions ==="
-	@screen -ls 2>/dev/null | grep -E "(citations|fts|rebuild)" || echo "  No relevant screen sessions"
-	@echo ""
-	@echo "=== Quick Stats ==="
-	@if [ -f "$(DB_PATH)" ]; then \
-		echo "  Works:     $$(sqlite3 "$(DB_PATH)" "SELECT stat FROM sqlite_stat1 WHERE tbl='works' LIMIT 1;" 2>/dev/null | cut -d' ' -f1 || echo '?')"; \
-		echo "  Citations: $$(sqlite3 "$(DB_PATH)" "SELECT MAX(rowid) FROM citations;" 2>/dev/null || echo '?')"; \
-	fi
-	@echo ""
-	@echo "For detailed database info: make db-info"
-	@echo "For MCP server: make mcp-status"
-	@echo "For NFS details: make nfs-status"
+	@$(SCRIPTS)/status.sh
 
 db-info: ## Show database tables, indices, and row counts
 	@$(SCRIPTS)/database/99_db_info.sh
@@ -264,13 +232,13 @@ maintain-indices: ## Analyze and optimize indices
 ##@ MCP Server (Remote Access)
 
 mcp-install: ## Install MCP server as systemd service
-	@$(SCRIPTS)/mcp/install.sh $(if $(DB),--db $(DB),) $(if $(PORT),--port $(PORT),)
+	@$(SCRIPTS)/deployment/mcp/install.sh $(if $(DB),--db $(DB),) $(if $(PORT),--port $(PORT),)
 
 mcp-uninstall: ## Remove MCP systemd service
-	@$(SCRIPTS)/mcp/install.sh --uninstall
+	@$(SCRIPTS)/deployment/mcp/install.sh --uninstall
 
 mcp-status: ## Show MCP server status
-	@$(SCRIPTS)/mcp/status.sh
+	@$(SCRIPTS)/deployment/mcp/status.sh
 
 mcp-start: ## Start MCP server
 	@sudo systemctl start crossref-mcp
