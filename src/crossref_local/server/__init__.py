@@ -1,0 +1,140 @@
+"""FastAPI server for CrossRef Local with FTS5 search.
+
+Modular server structure:
+- routes_works.py: /works endpoints
+- routes_citations.py: /citations endpoints
+- routes_collections.py: /collections endpoints
+- routes_compat.py: Legacy /api/* endpoints
+- models.py: Pydantic response models
+- middleware.py: Request middleware
+"""
+
+import os
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .. import __version__
+from .middleware import UserContextMiddleware
+from .routes_works import router as works_router
+from .routes_citations import router as citations_router
+from .routes_collections import router as collections_router
+from .routes_compat import router as compat_router
+
+# Create FastAPI app
+app = FastAPI(
+    title="CrossRef Local API",
+    description="Fast full-text search across 167M+ scholarly works",
+    version=__version__,
+)
+
+# Middleware
+app.add_middleware(UserContextMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(works_router)
+app.include_router(citations_router)
+app.include_router(collections_router)
+app.include_router(compat_router)
+
+
+@app.get("/")
+def root():
+    """API root with endpoint information."""
+    return {
+        "name": "CrossRef Local API",
+        "version": __version__,
+        "status": "running",
+        "endpoints": {
+            "health": "/health",
+            "info": "/info",
+            "search": "/works?q=<query>",
+            "get_by_doi": "/works/{doi}",
+            "batch": "/works/batch",
+            "citations_citing": "/citations/{doi}/citing",
+            "citations_cited": "/citations/{doi}/cited",
+            "citations_count": "/citations/{doi}/count",
+            "citations_network": "/citations/{doi}/network",
+            "collections_list": "/collections",
+            "collections_create": "/collections (POST)",
+            "collections_get": "/collections/{name}",
+            "collections_stats": "/collections/{name}/stats",
+            "collections_download": "/collections/{name}/download",
+            "collections_delete": "/collections/{name} (DELETE)",
+        },
+    }
+
+
+@app.get("/health")
+def health():
+    """Health check endpoint."""
+    from ..db import get_db
+
+    db = get_db()
+    return {
+        "status": "healthy",
+        "database_connected": db is not None,
+        "database_path": str(db.db_path) if db else None,
+    }
+
+
+@app.get("/info")
+def info():
+    """Get database statistics."""
+    from ..db import get_db
+    from .models import InfoResponse
+
+    db = get_db()
+
+    row = db.fetchone("SELECT COUNT(*) as count FROM works")
+    work_count = row["count"] if row else 0
+
+    try:
+        row = db.fetchone("SELECT COUNT(*) as count FROM works_fts")
+        fts_count = row["count"] if row else 0
+    except Exception:
+        fts_count = 0
+
+    try:
+        row = db.fetchone("SELECT COUNT(*) as count FROM citations")
+        citation_count = row["count"] if row else 0
+    except Exception:
+        citation_count = 0
+
+    return InfoResponse(
+        total_papers=work_count,
+        fts_indexed=fts_count,
+        citations=citation_count,
+        database_path=str(db.db_path),
+    )
+
+
+# Default port: SCITEX convention (3129X scheme)
+DEFAULT_PORT = int(
+    os.environ.get(
+        "SCITEX_SCHOLAR_CROSSREF_PORT",
+        os.environ.get("CROSSREF_LOCAL_PORT", "31291"),
+    )
+)
+DEFAULT_HOST = os.environ.get(
+    "SCITEX_SCHOLAR_CROSSREF_HOST",
+    os.environ.get("CROSSREF_LOCAL_HOST", "0.0.0.0"),
+)
+
+
+def run_server(host: str = None, port: int = None):
+    """Run the FastAPI server."""
+    import uvicorn
+
+    host = host or DEFAULT_HOST
+    port = port or DEFAULT_PORT
+    uvicorn.run(app, host=host, port=port)
+
+
+__all__ = ["app", "run_server", "DEFAULT_PORT", "DEFAULT_HOST"]
