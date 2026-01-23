@@ -219,3 +219,8 @@ def run_mcp_server(transport: str, host: str, port: int):
         sys.exit(1)
 
     run_server(transport=transport, host=host, port=port)
+
+
+def register_mcp_commands(cli_group):
+    """Register MCP commands with the main CLI group."""
+    cli_group.add_command(mcp)
