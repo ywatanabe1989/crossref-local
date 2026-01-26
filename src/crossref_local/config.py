@@ -4,6 +4,13 @@ import os
 from pathlib import Path
 from typing import Optional
 
+__all__ = [
+    "Config",
+    "get_db_path",
+    "DEFAULT_PORT",
+    "DEFAULT_API_URL",
+]
+
 # Default database locations (checked in order)
 DEFAULT_DB_PATHS = [
     Path.cwd() / "data" / "crossref.db",
@@ -78,7 +85,7 @@ class Config:
             # Check environment variables (SCITEX takes priority)
             env_mode = os.environ.get(
                 "SCITEX_SCHOLAR_CROSSREF_MODE",
-                os.environ.get("CROSSREF_LOCAL_MODE", "")
+                os.environ.get("CROSSREF_LOCAL_MODE", ""),
             ).lower()
             if env_mode in ("http", "remote", "api"):
                 return "http"

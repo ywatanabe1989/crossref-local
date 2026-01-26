@@ -5,7 +5,13 @@ import time
 from typing import List, Optional
 
 from .db import Database, get_db
-from .models import Work, SearchResult
+from .models import SearchResult, Work
+
+__all__ = [
+    "search",
+    "count",
+    "search_dois",
+]
 
 
 def _sanitize_query(query: str) -> str:
@@ -24,13 +30,13 @@ def _sanitize_query(query: str) -> str:
 
     # Check for problematic patterns (hyphenated words, special chars)
     # But allow explicit FTS5 operators: AND, OR, NOT, NEAR
-    has_hyphenated_word = re.search(r'\w+-\w+', query)
-    has_special = re.search(r'[/\\@#$%^&]', query)
+    has_hyphenated_word = re.search(r"\w+-\w+", query)
+    has_special = re.search(r"[/\\@#$%^&]", query)
 
     if has_hyphenated_word or has_special:
         # Quote each word to treat as literal
         words = query.split()
-        quoted = ' '.join(f'"{w}"' for w in words)
+        quoted = " ".join(f'"{w}"' for w in words)
         return quoted
 
     return query
@@ -72,8 +78,7 @@ def search(
 
     # Get total count
     count_row = db.fetchone(
-        "SELECT COUNT(*) as total FROM works_fts WHERE works_fts MATCH ?",
-        (safe_query,)
+        "SELECT COUNT(*) as total FROM works_fts WHERE works_fts MATCH ?", (safe_query,)
     )
     total = count_row["total"] if count_row else 0
 
@@ -86,7 +91,7 @@ def search(
         WHERE works_fts MATCH ?
         LIMIT ? OFFSET ?
         """,
-        (safe_query, limit, offset)
+        (safe_query, limit, offset),
     )
 
     elapsed_ms = (time.perf_counter() - start) * 1000
@@ -121,8 +126,7 @@ def count(query: str, db: Optional[Database] = None) -> int:
 
     safe_query = _sanitize_query(query)
     row = db.fetchone(
-        "SELECT COUNT(*) as total FROM works_fts WHERE works_fts MATCH ?",
-        (safe_query,)
+        "SELECT COUNT(*) as total FROM works_fts WHERE works_fts MATCH ?", (safe_query,)
     )
     return row["total"] if row else 0
 
@@ -155,7 +159,7 @@ def search_dois(
         WHERE works_fts MATCH ?
         LIMIT ?
         """,
-        (safe_query, limit)
+        (safe_query, limit),
     )
 
     return [row["doi"] for row in rows]

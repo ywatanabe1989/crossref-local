@@ -12,10 +12,29 @@ Mode is auto-detected or can be set explicitly via:
 
 from typing import List, Optional
 
-from .config import Config
-from .db import get_db, close_db
-from .models import Work, SearchResult
 from . import fts
+from .config import Config
+from .db import close_db, get_db
+from .models import SearchResult, Work
+
+__all__ = [
+    "search",
+    "count",
+    "get",
+    "get_many",
+    "exists",
+    "configure",
+    "configure_http",
+    "configure_remote",
+    "enrich",
+    "enrich_dois",
+    "get_mode",
+    "info",
+    # Re-exported for convenience
+    "Work",
+    "SearchResult",
+    "Config",
+]
 
 
 def _get_http_client():

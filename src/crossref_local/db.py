@@ -1,13 +1,20 @@
 """Database connection handling for crossref_local."""
 
-import sqlite3
 import json
+import sqlite3
 import zlib
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional, Generator
+from typing import Generator, Optional
 
 from .config import Config
+
+__all__ = [
+    "Database",
+    "get_db",
+    "close_db",
+    "connection",
+]
 
 
 class Database:
@@ -75,10 +82,7 @@ class Database:
         Returns:
             Metadata dictionary or None
         """
-        row = self.fetchone(
-            "SELECT metadata FROM works WHERE doi = ?",
-            (doi,)
-        )
+        row = self.fetchone("SELECT metadata FROM works WHERE doi = ?", (doi,))
         if row and row["metadata"]:
             return self._decompress_metadata(row["metadata"])
         return None

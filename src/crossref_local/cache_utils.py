@@ -8,6 +8,13 @@ import re
 from pathlib import Path
 from typing import Optional
 
+__all__ = [
+    "sanitize_name",
+    "get_cache_dir",
+    "cache_path",
+    "meta_path",
+]
+
 
 # Valid cache name pattern: alphanumeric, underscores, hyphens only
 _CACHE_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")

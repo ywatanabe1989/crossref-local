@@ -23,10 +23,9 @@ import asyncio
 import threading
 from typing import List, Optional
 
-from .models import Work, SearchResult
 from .config import Config
 from .db import Database
-
+from .models import SearchResult, Work
 
 # Thread-local storage for database connections
 _thread_local = threading.local()
@@ -34,7 +33,7 @@ _thread_local = threading.local()
 
 def _get_thread_db() -> Database:
     """Get thread-local database connection."""
-    if not hasattr(_thread_local, 'db'):
+    if not hasattr(_thread_local, "db"):
         _thread_local.db = Database(Config.get_db_path())
     return _thread_local.db
 
@@ -42,6 +41,7 @@ def _get_thread_db() -> Database:
 def _search_sync(query: str, limit: int, offset: int) -> SearchResult:
     """Thread-safe sync search."""
     from . import fts
+
     # Use thread-local DB
     db = _get_thread_db()
     return fts._search_with_db(db, query, limit, offset)
@@ -50,6 +50,7 @@ def _search_sync(query: str, limit: int, offset: int) -> SearchResult:
 def _count_sync(query: str) -> int:
     """Thread-safe sync count."""
     from . import fts
+
     db = _get_thread_db()
     return fts._count_with_db(db, query)
 

@@ -2,7 +2,11 @@
 
 from dataclasses import dataclass, field
 from typing import List, Optional
-import json
+
+__all__ = [
+    "Work",
+    "SearchResult",
+]
 
 
 @dataclass
