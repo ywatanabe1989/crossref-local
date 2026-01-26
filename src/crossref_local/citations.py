@@ -16,7 +16,8 @@ Usage:
     network.save_html("citation_network.html")
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass as _dataclass
+from dataclasses import field as _field
 from typing import Dict, List, Optional, Set, Tuple
 
 from .db import Database, get_db
@@ -106,13 +107,13 @@ def get_citation_count(doi: str, db: Optional[Database] = None) -> int:
     return row["count"] if row else 0
 
 
-@dataclass
+@_dataclass
 class CitationNode:
     """A node in the citation network."""
 
     doi: str
     title: str = ""
-    authors: List[str] = field(default_factory=list)
+    authors: List[str] = _field(default_factory=list)
     year: Optional[int] = None
     journal: str = ""
     citation_count: int = 0
@@ -130,7 +131,7 @@ class CitationNode:
         }
 
 
-@dataclass
+@_dataclass
 class CitationEdge:
     """An edge in the citation network (citing -> cited)."""
 
@@ -281,6 +282,8 @@ class CitationNetwork:
         Raises:
             ImportError: If pyvis is not installed
         """
+        import math as _math
+
         try:
             from pyvis.network import Network
         except ImportError:
@@ -307,9 +310,7 @@ class CitationNetwork:
         # Add nodes with styling based on depth and citation count
         for doi, node in self.nodes.items():
             # Size based on citation count (log scale)
-            import math
-
-            size = 10 + min(30, math.log1p(node.citation_count) * 5)
+            size = 10 + min(30, _math.log1p(node.citation_count) * 5)
 
             # Color based on depth
             colors = ["#e74c3c", "#3498db", "#2ecc71", "#9b59b6", "#f39c12"]
@@ -365,6 +366,8 @@ class CitationNetwork:
         Raises:
             ImportError: If matplotlib is not installed
         """
+        import math as _math
+
         try:
             import matplotlib.pyplot as plt
             import networkx as nx
@@ -379,10 +382,8 @@ class CitationNetwork:
         pos = nx.spring_layout(G, k=2, iterations=50)
 
         # Node sizes based on citation count
-        import math
-
         sizes = [
-            100 + min(500, math.log1p(self.nodes[n].citation_count) * 50)
+            100 + min(500, _math.log1p(self.nodes[n].citation_count) * 50)
             for n in G.nodes()
         ]
 

@@ -18,22 +18,34 @@ Usage:
     >>> stats = cache.stats("epilepsy")
 """
 
-import json
-import time
-from dataclasses import dataclass
-from pathlib import Path
+import json as _json
+import time as _time
+from dataclasses import dataclass as _dataclass
 from typing import Any, Dict, List, Optional
 
-from .api import get_many, search
-from .cache_utils import (
-    get_cache_dir as _get_cache_dir,
-    cache_path as _cache_path,
-    meta_path as _meta_path,
-    sanitize_name,
-)
+from .api import get_many as _get_many
+from .api import search as _search
+from .cache_utils import cache_path as _cache_path
+from .cache_utils import get_cache_dir as _get_cache_dir
+from .cache_utils import meta_path as _meta_path
+
+__all__ = [
+    "CacheInfo",
+    "create",
+    "append",
+    "load",
+    "query",
+    "query_dois",
+    "stats",
+    "info",
+    "exists",
+    "list_caches",
+    "delete",
+    "export",
+]
 
 
-@dataclass
+@_dataclass
 class CacheInfo:
     """Information about a cache."""
 
@@ -91,31 +103,31 @@ def create(
         raise ValueError("Must provide 'query', 'dois', or 'papers'")
     elif dois is None:
         # Get DOIs from search
-        results = search(query, limit=limit, offset=offset)
+        results = _search(query, limit=limit, offset=offset)
         dois = [w.doi for w in results.works]
         # Fetch full metadata
-        works = get_many(dois)
+        works = _get_many(dois)
         papers = [w.to_dict() for w in works]
     else:
         # Fetch full metadata for DOIs
-        works = get_many(dois)
+        works = _get_many(dois)
         papers = [w.to_dict() for w in works]
 
     # Save cache
     cache_file = _cache_path(name, user_id)
     with open(cache_file, "w") as f:
-        json.dump(papers, f)
+        _json.dump(papers, f)
 
     # Save metadata
     meta = {
         "name": name,
         "query": query,
-        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "created_at": _time.strftime("%Y-%m-%d %H:%M:%S"),
         "paper_count": len(papers),
         "dois_requested": len(dois) if dois else len(papers),
     }
     with open(_meta_path(name, user_id), "w") as f:
-        json.dump(meta, f, indent=2)
+        _json.dump(meta, f, indent=2)
 
     return CacheInfo(
         name=name,
@@ -149,7 +161,9 @@ def append(
         Updated CacheInfo
     """
     if not exists(name, user_id=user_id):
-        return create(name, query=query, dois=dois, limit=limit, offset=offset, user_id=user_id)
+        return create(
+            name, query=query, dois=dois, limit=limit, offset=offset, user_id=user_id
+        )
 
     # Load existing
     existing = load(name, user_id=user_id)
@@ -157,7 +171,7 @@ def append(
 
     # Get new DOIs
     if dois is None and query is not None:
-        results = search(query, limit=limit, offset=offset)
+        results = _search(query, limit=limit, offset=offset)
         dois = [w.doi for w in results.works]
     elif dois is None:
         raise ValueError("Must provide either 'query' or 'dois'")
@@ -167,28 +181,28 @@ def append(
 
     if new_dois:
         # Fetch new metadata
-        new_works = get_many(new_dois)
+        new_works = _get_many(new_dois)
         new_papers = [w.to_dict() for w in new_works]
 
         # Combine and save
         all_papers = existing + new_papers
         cache_file = _cache_path(name, user_id)
         with open(cache_file, "w") as f:
-            json.dump(all_papers, f)
+            _json.dump(all_papers, f)
 
         # Update metadata
         meta_file = _meta_path(name, user_id)
         if meta_file.exists():
             with open(meta_file) as f:
-                meta = json.load(f)
+                meta = _json.load(f)
         else:
             meta = {"name": name}
 
-        meta["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        meta["updated_at"] = _time.strftime("%Y-%m-%d %H:%M:%S")
         meta["paper_count"] = len(all_papers)
 
         with open(meta_file, "w") as f:
-            json.dump(meta, f, indent=2)
+            _json.dump(meta, f, indent=2)
 
         return info(name, user_id=user_id)
 
@@ -210,7 +224,7 @@ def load(name: str, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
         raise FileNotFoundError(f"Cache not found: {name}")
 
     with open(cache_file) as f:
-        return json.load(f)
+        return _json.load(f)
 
 
 def query(
@@ -371,7 +385,7 @@ def info(name: str, user_id: Optional[str] = None) -> CacheInfo:
     meta = {}
     if meta_file.exists():
         with open(meta_file) as f:
-            meta = json.load(f)
+            meta = _json.load(f)
 
     papers = load(name, user_id=user_id)
 
@@ -445,21 +459,5 @@ def delete(name: str, user_id: Optional[str] = None) -> bool:
     return deleted
 
 
-
 # Re-export from cache_export for backwards compatibility
 from .cache_export import export
-
-__all__ = [
-    "CacheInfo",
-    "create",
-    "append",
-    "load",
-    "query",
-    "query_dois",
-    "stats",
-    "info",
-    "exists",
-    "list_caches",
-    "delete",
-    "export",
-]

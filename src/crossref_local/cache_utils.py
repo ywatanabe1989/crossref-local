@@ -3,9 +3,9 @@
 Provides path handling and validation utilities for the cache module.
 """
 
-import os
-import re
-from pathlib import Path
+import os as _os
+import re as _re
+from pathlib import Path as _Path
 from typing import Optional
 
 __all__ = [
@@ -17,7 +17,7 @@ __all__ = [
 
 
 # Valid cache name pattern: alphanumeric, underscores, hyphens only
-_CACHE_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")
+_CACHE_NAME_PATTERN = _re.compile(r"^[a-zA-Z0-9_-]+$")
 
 
 def sanitize_name(name: str) -> str:
@@ -43,29 +43,29 @@ def sanitize_name(name: str) -> str:
     return name
 
 
-def get_cache_dir(user_id: Optional[str] = None) -> Path:
+def get_cache_dir(user_id: Optional[str] = None) -> _Path:
     """Get cache directory, creating if needed.
 
     Args:
         user_id: Optional user ID for multi-tenant scoping.
                  If provided, creates a user-specific subdirectory.
     """
-    cache_dir = Path(
-        os.environ.get(
-            "CROSSREF_LOCAL_CACHE_DIR", Path.home() / ".cache" / "crossref-local"
+    cache_dir = _Path(
+        _os.environ.get(
+            "CROSSREF_LOCAL_CACHE_DIR", _Path.home() / ".cache" / "crossref-local"
         )
     )
     # Add user subdirectory for multi-tenant support
     if user_id:
         # Sanitize user_id as well
-        safe_user_id = re.sub(r"[^a-zA-Z0-9_-]", "", user_id[:16])
+        safe_user_id = _re.sub(r"[^a-zA-Z0-9_-]", "", user_id[:16])
         if safe_user_id:
             cache_dir = cache_dir / safe_user_id
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir
 
 
-def cache_path(name: str, user_id: Optional[str] = None) -> Path:
+def cache_path(name: str, user_id: Optional[str] = None) -> _Path:
     """Get path for a named cache.
 
     Args:
@@ -79,7 +79,7 @@ def cache_path(name: str, user_id: Optional[str] = None) -> Path:
     return get_cache_dir(user_id) / f"{safe_name}.json"
 
 
-def meta_path(name: str, user_id: Optional[str] = None) -> Path:
+def meta_path(name: str, user_id: Optional[str] = None) -> _Path:
     """Get path for cache metadata.
 
     Args:

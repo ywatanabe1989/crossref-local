@@ -19,22 +19,36 @@ Usage:
     counts = await aio.count_many(["CRISPR", "machine learning"])
 """
 
-import asyncio
-import threading
+import asyncio as _asyncio
+import threading as _threading
 from typing import List, Optional
 
-from .config import Config
-from .db import Database
+from .config import Config as _Config
+from .db import Database as _Database
 from .models import SearchResult, Work
 
+__all__ = [
+    "search",
+    "count",
+    "get",
+    "get_many",
+    "exists",
+    "info",
+    "search_many",
+    "count_many",
+    # Public types for type hints
+    "SearchResult",
+    "Work",
+]
+
 # Thread-local storage for database connections
-_thread_local = threading.local()
+_thread_local = _threading.local()
 
 
-def _get_thread_db() -> Database:
+def _get_thread_db() -> _Database:
     """Get thread-local database connection."""
     if not hasattr(_thread_local, "db"):
-        _thread_local.db = Database(Config.get_db_path())
+        _thread_local.db = _Database(_Config.get_db_path())
     return _thread_local.db
 
 
@@ -42,7 +56,6 @@ def _search_sync(query: str, limit: int, offset: int) -> SearchResult:
     """Thread-safe sync search."""
     from . import fts
 
-    # Use thread-local DB
     db = _get_thread_db()
     return fts._search_with_db(db, query, limit, offset)
 
@@ -102,7 +115,7 @@ def _info_sync() -> dict:
         citation_count = 0
 
     return {
-        "db_path": str(Config.get_db_path()),
+        "db_path": str(_Config.get_db_path()),
         "works": work_count,
         "fts_indexed": fts_count,
         "citations": citation_count,
@@ -125,7 +138,7 @@ async def search(
     Returns:
         SearchResult with matching works
     """
-    return await asyncio.to_thread(_search_sync, query, limit, offset)
+    return await _asyncio.to_thread(_search_sync, query, limit, offset)
 
 
 async def count(query: str) -> int:
@@ -138,7 +151,7 @@ async def count(query: str) -> int:
     Returns:
         Number of matching works
     """
-    return await asyncio.to_thread(_count_sync, query)
+    return await _asyncio.to_thread(_count_sync, query)
 
 
 async def get(doi: str) -> Optional[Work]:
@@ -151,7 +164,7 @@ async def get(doi: str) -> Optional[Work]:
     Returns:
         Work object or None if not found
     """
-    return await asyncio.to_thread(_get_sync, doi)
+    return await _asyncio.to_thread(_get_sync, doi)
 
 
 async def get_many(dois: List[str]) -> List[Work]:
@@ -164,7 +177,7 @@ async def get_many(dois: List[str]) -> List[Work]:
     Returns:
         List of Work objects (missing DOIs are skipped)
     """
-    return await asyncio.to_thread(_get_many_sync, dois)
+    return await _asyncio.to_thread(_get_many_sync, dois)
 
 
 async def exists(doi: str) -> bool:
@@ -177,7 +190,7 @@ async def exists(doi: str) -> bool:
     Returns:
         True if DOI exists
     """
-    return await asyncio.to_thread(_exists_sync, doi)
+    return await _asyncio.to_thread(_exists_sync, doi)
 
 
 async def info() -> dict:
@@ -187,7 +200,7 @@ async def info() -> dict:
     Returns:
         Dictionary with database stats
     """
-    return await asyncio.to_thread(_info_sync)
+    return await _asyncio.to_thread(_info_sync)
 
 
 async def search_many(queries: List[str], limit: int = 10) -> List[SearchResult]:
@@ -202,7 +215,7 @@ async def search_many(queries: List[str], limit: int = 10) -> List[SearchResult]
         List of SearchResult objects
     """
     tasks = [search(q, limit=limit) for q in queries]
-    return await asyncio.gather(*tasks)
+    return await _asyncio.gather(*tasks)
 
 
 async def count_many(queries: List[str]) -> dict:
@@ -221,17 +234,5 @@ async def count_many(queries: List[str]) -> dict:
         {'CRISPR': 45000, 'machine learning': 477922}
     """
     tasks = [count(q) for q in queries]
-    results = await asyncio.gather(*tasks)
+    results = await _asyncio.gather(*tasks)
     return dict(zip(queries, results))
-
-
-__all__ = [
-    "search",
-    "count",
-    "get",
-    "get_many",
-    "exists",
-    "info",
-    "search_many",
-    "count_many",
-]

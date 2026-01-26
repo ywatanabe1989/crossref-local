@@ -1,7 +1,7 @@
 """Full-text search using FTS5."""
 
-import re
-import time
+import re as _re
+import time as _time
 from typing import List, Optional
 
 from .db import Database, get_db
@@ -30,8 +30,8 @@ def _sanitize_query(query: str) -> str:
 
     # Check for problematic patterns (hyphenated words, special chars)
     # But allow explicit FTS5 operators: AND, OR, NOT, NEAR
-    has_hyphenated_word = re.search(r"\w+-\w+", query)
-    has_special = re.search(r"[/\\@#$%^&]", query)
+    has_hyphenated_word = _re.search(r"\w+-\w+", query)
+    has_special = _re.search(r"[/\\@#$%^&]", query)
 
     if has_hyphenated_word or has_special:
         # Quote each word to treat as literal
@@ -71,7 +71,7 @@ def search(
     if db is None:
         db = get_db()
 
-    start = time.perf_counter()
+    start = _time.perf_counter()
 
     # Sanitize query for FTS5
     safe_query = _sanitize_query(query)
@@ -94,7 +94,7 @@ def search(
         (safe_query, limit, offset),
     )
 
-    elapsed_ms = (time.perf_counter() - start) * 1000
+    elapsed_ms = (_time.perf_counter() - start) * 1000
 
     # Convert to Work objects
     works = []

@@ -1,10 +1,11 @@
 """Export functionality for cache module."""
 
-import json
-from pathlib import Path
+import csv as _csv
+import json as _json
+from pathlib import Path as _Path
 from typing import List, Optional
 
-from .cache_utils import sanitize_name
+from .cache_utils import sanitize_name as _sanitize_name
 
 __all__ = [
     "export",
@@ -41,23 +42,21 @@ def export(
         ValueError: If cache name contains invalid characters
     """
     # Validate cache name
-    sanitize_name(name)
+    _sanitize_name(name)
     papers = _load_cache(name, user_id=user_id)
-    output = Path(output_path)
+    output = _Path(output_path)
 
     if format == "json":
         if fields:
             papers = [{k: p.get(k) for k in fields} for p in papers]
         with open(output, "w") as f:
-            json.dump(papers, f, indent=2)
+            _json.dump(papers, f, indent=2)
 
     elif format == "csv":
-        import csv
-
         if fields is None:
             fields = ["doi", "title", "authors", "year", "journal"]
         with open(output, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+            writer = _csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
             writer.writeheader()
             for p in papers:
                 row = dict(p)

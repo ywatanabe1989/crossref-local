@@ -1,7 +1,7 @@
 """Configuration for crossref_local."""
 
-import os
-from pathlib import Path
+import os as _os
+from pathlib import Path as _Path
 from typing import Optional
 
 __all__ = [
@@ -13,8 +13,8 @@ __all__ = [
 
 # Default database locations (checked in order)
 DEFAULT_DB_PATHS = [
-    Path.cwd() / "data" / "crossref.db",
-    Path.home() / ".crossref_local" / "crossref.db",
+    _Path.cwd() / "data" / "crossref.db",
+    _Path.home() / ".crossref_local" / "crossref.db",
 ]
 
 # Default port: SCITEX convention (3129X scheme)
@@ -29,7 +29,7 @@ DEFAULT_API_URLS = [
 DEFAULT_API_URL = DEFAULT_API_URLS[0]
 
 
-def get_db_path() -> Path:
+def get_db_path() -> _Path:
     """
     Get database path from environment or auto-detect.
 
@@ -45,11 +45,11 @@ def get_db_path() -> Path:
         FileNotFoundError: If no database found
     """
     # Check SCITEX environment variable first (takes priority)
-    env_path = os.environ.get("SCITEX_SCHOLAR_CROSSREF_DB")
+    env_path = _os.environ.get("SCITEX_SCHOLAR_CROSSREF_DB")
     if not env_path:
-        env_path = os.environ.get("CROSSREF_LOCAL_DB")
+        env_path = _os.environ.get("CROSSREF_LOCAL_DB")
     if env_path:
-        path = Path(env_path)
+        path = _Path(env_path)
         if path.exists():
             return path
         raise FileNotFoundError(f"Database path not found: {env_path}")
@@ -68,7 +68,7 @@ def get_db_path() -> Path:
 class Config:
     """Configuration container."""
 
-    _db_path: Optional[Path] = None
+    _db_path: Optional[_Path] = None
     _api_url: Optional[str] = None
     _mode: str = "auto"  # "auto", "db", or "http"
 
@@ -83,9 +83,9 @@ class Config:
         """
         if cls._mode == "auto":
             # Check environment variables (SCITEX takes priority)
-            env_mode = os.environ.get(
+            env_mode = _os.environ.get(
                 "SCITEX_SCHOLAR_CROSSREF_MODE",
-                os.environ.get("CROSSREF_LOCAL_MODE", ""),
+                _os.environ.get("CROSSREF_LOCAL_MODE", ""),
             ).lower()
             if env_mode in ("http", "remote", "api"):
                 return "http"
@@ -93,7 +93,7 @@ class Config:
                 return "db"
 
             # Check if API URL is set
-            if cls._api_url or os.environ.get("CROSSREF_LOCAL_API_URL"):
+            if cls._api_url or _os.environ.get("CROSSREF_LOCAL_API_URL"):
                 return "http"
 
             # Check if local database exists
@@ -114,16 +114,16 @@ class Config:
         cls._mode = mode
 
     @classmethod
-    def get_db_path(cls) -> Path:
+    def get_db_path(cls) -> _Path:
         """Get or auto-detect database path."""
         if cls._db_path is None:
             cls._db_path = get_db_path()
         return cls._db_path
 
     @classmethod
-    def set_db_path(cls, path: str | Path) -> None:
+    def set_db_path(cls, path: str | _Path) -> None:
         """Set database path explicitly."""
-        path = Path(path)
+        path = _Path(path)
         if not path.exists():
             raise FileNotFoundError(f"Database not found: {path}")
         cls._db_path = path
@@ -143,7 +143,7 @@ class Config:
         if cls._api_url:
             return cls._api_url
 
-        env_url = os.environ.get("CROSSREF_LOCAL_API_URL")
+        env_url = _os.environ.get("CROSSREF_LOCAL_API_URL")
         if env_url:
             return env_url
 
@@ -158,8 +158,8 @@ class Config:
     @classmethod
     def _find_working_api(cls) -> Optional[str]:
         """Try each default API URL and return first working one."""
-        import urllib.request
         import urllib.error
+        import urllib.request
 
         for url in DEFAULT_API_URLS:
             try:
