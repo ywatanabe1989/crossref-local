@@ -81,7 +81,7 @@ class TestCacheOperations:
             ),
         ]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             info = cache.create("test", dois=["10.1234/test1", "10.1234/test2"])
 
         assert info.name == "test"
@@ -94,7 +94,7 @@ class TestCacheOperations:
             MagicMock(to_dict=lambda: {"doi": "10.1234/test", "title": "Test"})
         ]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("loadtest", dois=["10.1234/test"])
 
         papers = cache.load("loadtest")
@@ -115,7 +115,7 @@ class TestCacheOperations:
             )
         ]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("fieldtest", dois=["10.1234/test"])
 
         # Query with explicit fields
@@ -133,7 +133,7 @@ class TestCacheOperations:
             for i in range(5)
         ]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("filtertest", dois=[f"10.1234/test{i}" for i in range(5)])
 
         # Filter by year
@@ -154,7 +154,7 @@ class TestCacheOperations:
             )
         ]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("statstest", dois=["10.1234/test"])
 
         stats = cache.stats("statstest")
@@ -166,7 +166,7 @@ class TestCacheOperations:
         """Cache can be deleted."""
         fake_works = [MagicMock(to_dict=lambda: {"doi": "10.1234/test"})]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("deltest", dois=["10.1234/test"])
 
         assert cache.exists("deltest")
@@ -177,7 +177,7 @@ class TestCacheOperations:
         """List caches returns all caches."""
         fake_works = [MagicMock(to_dict=lambda: {"doi": "10.1234/test"})]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("list1", dois=["10.1234/test"])
             cache.create("list2", dois=["10.1234/test"])
 
@@ -205,7 +205,7 @@ class TestCacheExport:
             )
         ]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("exportjson", dois=["10.1234/test"])
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
@@ -227,7 +227,7 @@ class TestCacheExport:
             MagicMock(to_dict=lambda: {"doi": "10.1234/test2"}),
         ]
 
-        with patch("crossref_local.cache.get_many", return_value=fake_works):
+        with patch("crossref_local.cache._get_many", return_value=fake_works):
             cache.create("exportdois", dois=["10.1234/test1", "10.1234/test2"])
 
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
