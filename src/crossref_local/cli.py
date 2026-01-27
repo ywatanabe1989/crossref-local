@@ -287,12 +287,12 @@ def status():
         ),
         (
             "CROSSREF_LOCAL_HOST",
-            "Host for run-server-http (default: 0.0.0.0)",
+            "Host for relay server (default: 0.0.0.0)",
             os.environ.get("CROSSREF_LOCAL_HOST"),
         ),
         (
             "CROSSREF_LOCAL_PORT",
-            "Port for run-server-http (default: 8333)",
+            "Port for relay server (default: 8333)",
             os.environ.get("CROSSREF_LOCAL_PORT"),
         ),
     ]
@@ -402,28 +402,31 @@ cli.add_command(mcp)
 
 # Backward compatibility alias (hidden)
 @cli.command("run-server-mcp", context_settings=CONTEXT_SETTINGS, hidden=True)
-@click.option("-t", "--transport", type=click.Choice(["stdio", "sse", "http"]), default="stdio")
+@click.option(
+    "-t", "--transport", type=click.Choice(["stdio", "sse", "http"]), default="stdio"
+)
 @click.option("--host", default="localhost", envvar="CROSSREF_LOCAL_MCP_HOST")
 @click.option("--port", default=8082, type=int, envvar="CROSSREF_LOCAL_MCP_PORT")
 def serve_mcp(transport: str, host: str, port: int):
     """Run MCP server (deprecated: use 'mcp start' instead)."""
-    click.echo("Note: 'run-server-mcp' is deprecated. Use 'crossref-local mcp start'.", err=True)
+    click.echo(
+        "Note: 'run-server-mcp' is deprecated. Use 'crossref-local mcp start'.",
+        err=True,
+    )
     run_mcp_server(transport, host, port)
 
 
-@cli.command("run-server-http", context_settings=CONTEXT_SETTINGS)
-@click.option(
-    "--host", default=None, envvar="CROSSREF_LOCAL_HOST", help="Host to bind"
-)
+@cli.command("relay", context_settings=CONTEXT_SETTINGS)
+@click.option("--host", default=None, envvar="CROSSREF_LOCAL_HOST", help="Host to bind")
 @click.option(
     "--port",
     default=None,
     type=int,
     envvar="CROSSREF_LOCAL_PORT",
-    help="Port to listen on (default: 31291)",
+    help="Port to listen on (default: 8333)",
 )
-def serve_http(host: str, port: int):
-    """Run HTTP API server.
+def relay(host: str, port: int):
+    """Run HTTP relay server for remote database access.
 
     \b
     This runs a FastAPI server that provides proper full-text search
@@ -431,8 +434,8 @@ def serve_http(host: str, port: int):
 
     \b
     Example:
-      crossref-local run-server-http                  # Run on 0.0.0.0:8333
-      crossref-local run-server-http --port 8080      # Custom port
+      crossref-local relay                  # Run on 0.0.0.0:8333
+      crossref-local relay --port 8080      # Custom port
 
     \b
     Then connect with http mode:
@@ -450,12 +453,27 @@ def serve_http(host: str, port: int):
         sys.exit(1)
 
     from .server import DEFAULT_HOST, DEFAULT_PORT
+
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
-    click.echo(f"Starting CrossRef Local API server on {host}:{port}")
+    click.echo(f"Starting CrossRef Local relay server on {host}:{port}")
     click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
     click.echo(f"Docs: http://{host}:{port}/docs")
     run_server(host=host, port=port)
+
+
+# Deprecated alias for backwards compatibility
+@cli.command("run-server-http", context_settings=CONTEXT_SETTINGS, hidden=True)
+@click.option("--host", default=None, envvar="CROSSREF_LOCAL_HOST")
+@click.option("--port", default=None, type=int, envvar="CROSSREF_LOCAL_PORT")
+@click.pass_context
+def run_server_http_deprecated(ctx, host: str, port: int):
+    """Deprecated: Use 'crossref-local relay' instead."""
+    click.echo(
+        "Note: 'run-server-http' is deprecated. Use 'crossref-local relay'.",
+        err=True,
+    )
+    ctx.invoke(relay, host=host, port=port)
 
 
 def main():
