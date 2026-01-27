@@ -18,38 +18,34 @@ Usage:
     >>> stats = cache.stats("epilepsy")
 """
 
-import json
-import os
-import time
-from dataclasses import dataclass
-from pathlib import Path
+import json as _json
+import time as _time
+from dataclasses import dataclass as _dataclass
 from typing import Any, Dict, List, Optional
 
-from .api import get_many, search
+from .api import get_many as _get_many
+from .api import search as _search
+from .cache_utils import cache_path as _cache_path
+from .cache_utils import get_cache_dir as _get_cache_dir
+from .cache_utils import meta_path as _meta_path
+
+__all__ = [
+    "CacheInfo",
+    "create",
+    "append",
+    "load",
+    "query",
+    "query_dois",
+    "stats",
+    "info",
+    "exists",
+    "list_caches",
+    "delete",
+    "export",
+]
 
 
-def _get_cache_dir() -> Path:
-    """Get cache directory, creating if needed."""
-    cache_dir = Path(
-        os.environ.get(
-            "CROSSREF_LOCAL_CACHE_DIR", Path.home() / ".cache" / "crossref-local"
-        )
-    )
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    return cache_dir
-
-
-def _cache_path(name: str) -> Path:
-    """Get path for a named cache."""
-    return _get_cache_dir() / f"{name}.json"
-
-
-def _meta_path(name: str) -> Path:
-    """Get path for cache metadata."""
-    return _get_cache_dir() / f"{name}.meta.json"
-
-
-@dataclass
+@_dataclass
 class CacheInfo:
     """Information about a cache."""
 
@@ -79,6 +75,7 @@ def create(
     papers: Optional[List[Dict[str, Any]]] = None,
     limit: int = 1000,
     offset: int = 0,
+    user_id: Optional[str] = None,
 ) -> CacheInfo:
     """Create a cache from search query, DOI list, or pre-fetched papers.
 
@@ -89,6 +86,7 @@ def create(
         papers: Pre-fetched paper dicts (skips API calls)
         limit: Max papers to fetch (for query mode)
         offset: Offset for pagination (for query mode)
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         CacheInfo with cache details
@@ -105,31 +103,31 @@ def create(
         raise ValueError("Must provide 'query', 'dois', or 'papers'")
     elif dois is None:
         # Get DOIs from search
-        results = search(query, limit=limit, offset=offset)
+        results = _search(query, limit=limit, offset=offset)
         dois = [w.doi for w in results.works]
         # Fetch full metadata
-        works = get_many(dois)
+        works = _get_many(dois)
         papers = [w.to_dict() for w in works]
     else:
         # Fetch full metadata for DOIs
-        works = get_many(dois)
+        works = _get_many(dois)
         papers = [w.to_dict() for w in works]
 
     # Save cache
-    cache_file = _cache_path(name)
+    cache_file = _cache_path(name, user_id)
     with open(cache_file, "w") as f:
-        json.dump(papers, f)
+        _json.dump(papers, f)
 
     # Save metadata
     meta = {
         "name": name,
         "query": query,
-        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "created_at": _time.strftime("%Y-%m-%d %H:%M:%S"),
         "paper_count": len(papers),
         "dois_requested": len(dois) if dois else len(papers),
     }
-    with open(_meta_path(name), "w") as f:
-        json.dump(meta, f, indent=2)
+    with open(_meta_path(name, user_id), "w") as f:
+        _json.dump(meta, f, indent=2)
 
     return CacheInfo(
         name=name,
@@ -147,6 +145,7 @@ def append(
     dois: Optional[List[str]] = None,
     limit: int = 1000,
     offset: int = 0,
+    user_id: Optional[str] = None,
 ) -> CacheInfo:
     """Append papers to existing cache.
 
@@ -156,20 +155,23 @@ def append(
         dois: Explicit list of DOIs to add
         limit: Max papers to fetch (for query mode)
         offset: Offset for pagination (for query mode)
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         Updated CacheInfo
     """
-    if not exists(name):
-        return create(name, query=query, dois=dois, limit=limit, offset=offset)
+    if not exists(name, user_id=user_id):
+        return create(
+            name, query=query, dois=dois, limit=limit, offset=offset, user_id=user_id
+        )
 
     # Load existing
-    existing = load(name)
+    existing = load(name, user_id=user_id)
     existing_dois = {p["doi"] for p in existing}
 
     # Get new DOIs
     if dois is None and query is not None:
-        results = search(query, limit=limit, offset=offset)
+        results = _search(query, limit=limit, offset=offset)
         dois = [w.doi for w in results.works]
     elif dois is None:
         raise ValueError("Must provide either 'query' or 'dois'")
@@ -179,49 +181,50 @@ def append(
 
     if new_dois:
         # Fetch new metadata
-        new_works = get_many(new_dois)
+        new_works = _get_many(new_dois)
         new_papers = [w.to_dict() for w in new_works]
 
         # Combine and save
         all_papers = existing + new_papers
-        cache_file = _cache_path(name)
+        cache_file = _cache_path(name, user_id)
         with open(cache_file, "w") as f:
-            json.dump(all_papers, f)
+            _json.dump(all_papers, f)
 
         # Update metadata
-        meta_file = _meta_path(name)
+        meta_file = _meta_path(name, user_id)
         if meta_file.exists():
             with open(meta_file) as f:
-                meta = json.load(f)
+                meta = _json.load(f)
         else:
             meta = {"name": name}
 
-        meta["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        meta["updated_at"] = _time.strftime("%Y-%m-%d %H:%M:%S")
         meta["paper_count"] = len(all_papers)
 
         with open(meta_file, "w") as f:
-            json.dump(meta, f, indent=2)
+            _json.dump(meta, f, indent=2)
 
-        return info(name)
+        return info(name, user_id=user_id)
 
-    return info(name)
+    return info(name, user_id=user_id)
 
 
-def load(name: str) -> List[Dict[str, Any]]:
+def load(name: str, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
     """Load raw cache data.
 
     Args:
         name: Cache name
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         List of paper dictionaries with full metadata
     """
-    cache_file = _cache_path(name)
+    cache_file = _cache_path(name, user_id)
     if not cache_file.exists():
         raise FileNotFoundError(f"Cache not found: {name}")
 
     with open(cache_file) as f:
-        return json.load(f)
+        return _json.load(f)
 
 
 def query(
@@ -234,6 +237,7 @@ def query(
     year_max: Optional[int] = None,
     journal: Optional[str] = None,
     limit: Optional[int] = None,
+    user_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """Query cache with field filtering.
 
@@ -247,6 +251,7 @@ def query(
         year_max: Filter by maximum year
         journal: Filter by journal name (substring match)
         limit: Max results to return
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         Filtered list of paper dictionaries
@@ -257,7 +262,7 @@ def query(
         >>> # With filters
         >>> papers = query("epilepsy", year_min=2020, include_citations=True)
     """
-    papers = load(name)
+    papers = load(name, user_id=user_id)
 
     # Apply filters
     if year_min is not None:
@@ -295,29 +300,31 @@ def query(
     return papers
 
 
-def query_dois(name: str) -> List[str]:
+def query_dois(name: str, user_id: Optional[str] = None) -> List[str]:
     """Get just DOIs from cache.
 
     Args:
         name: Cache name
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         List of DOIs
     """
-    papers = load(name)
+    papers = load(name, user_id=user_id)
     return [p["doi"] for p in papers if p.get("doi")]
 
 
-def stats(name: str) -> Dict[str, Any]:
+def stats(name: str, user_id: Optional[str] = None) -> Dict[str, Any]:
     """Get cache statistics.
 
     Args:
         name: Cache name
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         Dictionary with statistics
     """
-    papers = load(name)
+    papers = load(name, user_id=user_id)
 
     # Year distribution
     years = [p.get("year") for p in papers if p.get("year")]
@@ -360,26 +367,27 @@ def stats(name: str) -> Dict[str, Any]:
     }
 
 
-def info(name: str) -> CacheInfo:
+def info(name: str, user_id: Optional[str] = None) -> CacheInfo:
     """Get cache information.
 
     Args:
         name: Cache name
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         CacheInfo object
     """
-    cache_file = _cache_path(name)
+    cache_file = _cache_path(name, user_id)
     if not cache_file.exists():
         raise FileNotFoundError(f"Cache not found: {name}")
 
-    meta_file = _meta_path(name)
+    meta_file = _meta_path(name, user_id)
     meta = {}
     if meta_file.exists():
         with open(meta_file) as f:
-            meta = json.load(f)
+            meta = _json.load(f)
 
-    papers = load(name)
+    papers = load(name, user_id=user_id)
 
     return CacheInfo(
         name=name,
@@ -391,25 +399,29 @@ def info(name: str) -> CacheInfo:
     )
 
 
-def exists(name: str) -> bool:
+def exists(name: str, user_id: Optional[str] = None) -> bool:
     """Check if cache exists.
 
     Args:
         name: Cache name
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         True if cache exists
     """
-    return _cache_path(name).exists()
+    return _cache_path(name, user_id).exists()
 
 
-def list_caches() -> List[CacheInfo]:
+def list_caches(user_id: Optional[str] = None) -> List[CacheInfo]:
     """List all available caches.
+
+    Args:
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         List of CacheInfo objects
     """
-    cache_dir = _get_cache_dir()
+    cache_dir = _get_cache_dir(user_id)
     caches = []
 
     for f in cache_dir.glob("*.json"):
@@ -417,24 +429,25 @@ def list_caches() -> List[CacheInfo]:
             continue
         name = f.stem
         try:
-            caches.append(info(name))
+            caches.append(info(name, user_id=user_id))
         except Exception:
             pass
 
     return sorted(caches, key=lambda c: c.name)
 
 
-def delete(name: str) -> bool:
+def delete(name: str, user_id: Optional[str] = None) -> bool:
     """Delete a cache.
 
     Args:
         name: Cache name
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         True if deleted
     """
-    cache_file = _cache_path(name)
-    meta_file = _meta_path(name)
+    cache_file = _cache_path(name, user_id)
+    meta_file = _meta_path(name, user_id)
 
     deleted = False
     if cache_file.exists():
@@ -446,21 +459,5 @@ def delete(name: str) -> bool:
     return deleted
 
 
-
 # Re-export from cache_export for backwards compatibility
 from .cache_export import export
-
-__all__ = [
-    "CacheInfo",
-    "create",
-    "append",
-    "load",
-    "query",
-    "query_dois",
-    "stats",
-    "info",
-    "exists",
-    "list_caches",
-    "delete",
-    "export",
-]

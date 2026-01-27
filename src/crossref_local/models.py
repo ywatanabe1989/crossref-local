@@ -1,11 +1,16 @@
 """Data models for crossref_local."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass as _dataclass
+from dataclasses import field as _field
 from typing import List, Optional
-import json
+
+__all__ = [
+    "Work",
+    "SearchResult",
+]
 
 
-@dataclass
+@_dataclass
 class Work:
     """
     Represents a scholarly work from CrossRef.
@@ -30,7 +35,7 @@ class Work:
 
     doi: str
     title: Optional[str] = None
-    authors: List[str] = field(default_factory=list)
+    authors: List[str] = _field(default_factory=list)
     year: Optional[int] = None
     journal: Optional[str] = None
     issn: Optional[str] = None
@@ -42,7 +47,7 @@ class Work:
     abstract: Optional[str] = None
     url: Optional[str] = None
     citation_count: Optional[int] = None
-    references: List[str] = field(default_factory=list)
+    references: List[str] = _field(default_factory=list)
 
     @classmethod
     def from_metadata(cls, doi: str, metadata: dict) -> "Work":
@@ -159,7 +164,7 @@ class Work:
         return ". ".join(filter(None, parts))
 
 
-@dataclass
+@_dataclass
 class SearchResult:
     """
     Container for search results with metadata.

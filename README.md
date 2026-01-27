@@ -9,6 +9,7 @@
 Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
 
 [![Tests](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml)
+[![Coverage](https://codecov.io/gh/ywatanabe1989/crossref-local/branch/main/graph/badge.svg)](https://codecov.io/gh/ywatanabe1989/crossref-local)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
@@ -136,34 +137,46 @@ Found 4 matches in 128.4ms
 
 Start the FastAPI server:
 ```bash
-crossref-local run-server-http --host 0.0.0.0 --port 8333
+crossref-local run-server-http --host 0.0.0.0 --port 31291
 ```
 
 Endpoints:
 ```bash
 # Search works (FTS5)
-curl "http://localhost:8333/works?q=CRISPR&limit=10"
+curl "http://localhost:31291/works?q=CRISPR&limit=10"
 
 # Get by DOI
-curl "http://localhost:8333/works/10.1038/nature12373"
+curl "http://localhost:31291/works/10.1038/nature12373"
 
 # Batch DOI lookup
-curl -X POST "http://localhost:8333/works/batch" \
+curl -X POST "http://localhost:31291/works/batch" \
   -H "Content-Type: application/json" \
   -d '{"dois": ["10.1038/nature12373", "10.1126/science.aax0758"]}'
 
+# Citation endpoints
+curl "http://localhost:31291/citations/10.1038/nature12373/citing"
+curl "http://localhost:31291/citations/10.1038/nature12373/cited"
+curl "http://localhost:31291/citations/10.1038/nature12373/count"
+
+# Collection endpoints
+curl "http://localhost:31291/collections"
+curl -X POST "http://localhost:31291/collections" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my_papers", "query": "CRISPR", "limit": 100}'
+curl "http://localhost:31291/collections/my_papers/download?format=bibtex"
+
 # Database info
-curl "http://localhost:8333/info"
+curl "http://localhost:31291/info"
 ```
 
 HTTP mode (connect to running server):
 ```bash
 # On local machine (if server is remote)
-ssh -L 8333:127.0.0.1:8333 your-server
+ssh -L 31291:127.0.0.1:31291 your-server
 
 # Python client
 from crossref_local import configure_http
-configure_http("http://localhost:8333")
+configure_http("http://localhost:31291")
 
 # Or via CLI
 crossref-local --http search "CRISPR"
@@ -176,7 +189,7 @@ crossref-local --http search "CRISPR"
 
 Run as MCP (Model Context Protocol) server:
 ```bash
-crossref-local run-server-mcp
+crossref-local mcp start
 ```
 
 Local MCP client configuration:
@@ -185,7 +198,7 @@ Local MCP client configuration:
   "mcpServers": {
     "crossref-local": {
       "command": "crossref-local",
-      "args": ["run-server-mcp"],
+      "args": ["mcp", "start"],
       "env": {
         "CROSSREF_LOCAL_DB": "/path/to/crossref.db"
       }
@@ -197,7 +210,7 @@ Local MCP client configuration:
 Remote MCP via HTTP (recommended):
 ```bash
 # On server: start persistent MCP server
-crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082
+crossref-local mcp start -t http --host 0.0.0.0 --port 8082
 ```
 ```json
 {
@@ -209,12 +222,21 @@ crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082
 }
 ```
 
+Diagnose setup:
+```bash
+crossref-local mcp doctor        # Check dependencies and database
+crossref-local mcp list-tools    # Show available MCP tools
+crossref-local mcp installation  # Show client config examples
+```
+
 See [docs/remote-deployment.md](docs/remote-deployment.md) for systemd and Docker setup.
 
 Available tools:
 - `search` - Full-text search across 167M+ papers
 - `search_by_doi` - Get paper by DOI
+- `enrich_dois` - Add citation counts and references to DOIs
 - `status` - Database statistics
+- `cache_*` - Paper collection management
 
 </details>
 

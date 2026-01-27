@@ -1,13 +1,20 @@
 """Database connection handling for crossref_local."""
 
-import sqlite3
-import json
-import zlib
-from contextlib import contextmanager
-from pathlib import Path
-from typing import Optional, Generator
+import json as _json
+import sqlite3 as _sqlite3
+import zlib as _zlib
+from contextlib import contextmanager as _contextmanager
+from pathlib import Path as _Path
+from typing import Generator, Optional
 
-from .config import Config
+from .config import Config as _Config
+
+__all__ = [
+    "Database",
+    "get_db",
+    "close_db",
+    "connection",
+]
 
 
 class Database:
@@ -17,7 +24,7 @@ class Database:
     Supports both direct usage and context manager pattern.
     """
 
-    def __init__(self, db_path: Optional[str | Path] = None):
+    def __init__(self, db_path: Optional[str | _Path] = None):
         """
         Initialize database connection.
 
@@ -25,19 +32,19 @@ class Database:
             db_path: Path to database. If None, auto-detects.
         """
         if db_path:
-            self.db_path = Path(db_path)
+            self.db_path = _Path(db_path)
         else:
-            self.db_path = Config.get_db_path()
+            self.db_path = _Config.get_db_path()
 
-        self.conn: Optional[sqlite3.Connection] = None
+        self.conn: Optional[_sqlite3.Connection] = None
         self._connect()
 
     def _connect(self) -> None:
         """Establish database connection."""
         # check_same_thread=False allows connection to be used across threads
         # Safe for read-only operations (which is our use case)
-        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        self.conn.row_factory = sqlite3.Row
+        self.conn = _sqlite3.connect(self.db_path, check_same_thread=False)
+        self.conn.row_factory = _sqlite3.Row
 
     def close(self) -> None:
         """Close database connection."""
@@ -51,11 +58,11 @@ class Database:
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
 
-    def execute(self, query: str, params: tuple = ()) -> sqlite3.Cursor:
+    def execute(self, query: str, params: tuple = ()) -> _sqlite3.Cursor:
         """Execute SQL query."""
         return self.conn.execute(query, params)
 
-    def fetchone(self, query: str, params: tuple = ()) -> Optional[sqlite3.Row]:
+    def fetchone(self, query: str, params: tuple = ()) -> Optional[_sqlite3.Row]:
         """Execute query and fetch one result."""
         cursor = self.execute(query, params)
         return cursor.fetchone()
@@ -75,10 +82,7 @@ class Database:
         Returns:
             Metadata dictionary or None
         """
-        row = self.fetchone(
-            "SELECT metadata FROM works WHERE doi = ?",
-            (doi,)
-        )
+        row = self.fetchone("SELECT metadata FROM works WHERE doi = ?", (doi,))
         if row and row["metadata"]:
             return self._decompress_metadata(row["metadata"])
         return None
@@ -87,15 +91,15 @@ class Database:
         """Decompress and parse metadata (handles both compressed and plain JSON)."""
         # If it's already a string, parse directly
         if isinstance(data, str):
-            return json.loads(data)
+            return _json.loads(data)
 
         # If bytes, try decompression
         if isinstance(data, bytes):
             try:
-                decompressed = zlib.decompress(data)
-                return json.loads(decompressed)
-            except zlib.error:
-                return json.loads(data.decode("utf-8"))
+                decompressed = _zlib.decompress(data)
+                return _json.loads(decompressed)
+            except _zlib.error:
+                return _json.loads(data.decode("utf-8"))
 
         return data
 
@@ -120,8 +124,10 @@ def close_db() -> None:
         _db = None
 
 
-@contextmanager
-def connection(db_path: Optional[str | Path] = None) -> Generator[Database, None, None]:
+@_contextmanager
+def connection(
+    db_path: Optional[str | _Path] = None,
+) -> Generator[Database, None, None]:
     """
     Context manager for database connection.
 

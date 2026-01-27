@@ -394,87 +394,33 @@ def status():
         click.echo("     crossref-local --http search 'query'")
 
 
-@cli.command("run-server-mcp", context_settings=CONTEXT_SETTINGS)
-@click.option(
-    "-t",
-    "--transport",
-    type=click.Choice(["stdio", "sse", "http"]),
-    default="stdio",
-    help="Transport protocol (http recommended for remote)",
-)
-@click.option(
-    "--host",
-    default="localhost",
-    envvar="CROSSREF_LOCAL_MCP_HOST",
-    help="Host for HTTP/SSE transport",
-)
-@click.option(
-    "--port",
-    default=8082,
-    type=int,
-    envvar="CROSSREF_LOCAL_MCP_PORT",
-    help="Port for HTTP/SSE transport",
-)
+# Register MCP subcommand group
+from .cli_mcp import mcp, run_mcp_server
+
+cli.add_command(mcp)
+
+
+# Backward compatibility alias (hidden)
+@cli.command("run-server-mcp", context_settings=CONTEXT_SETTINGS, hidden=True)
+@click.option("-t", "--transport", type=click.Choice(["stdio", "sse", "http"]), default="stdio")
+@click.option("--host", default="localhost", envvar="CROSSREF_LOCAL_MCP_HOST")
+@click.option("--port", default=8082, type=int, envvar="CROSSREF_LOCAL_MCP_PORT")
 def serve_mcp(transport: str, host: str, port: int):
-    """Run MCP (Model Context Protocol) server.
-
-    \b
-    Transports:
-      stdio  - Standard I/O (default, for Claude Desktop local)
-      http   - Streamable HTTP (recommended for remote/persistent)
-      sse    - Server-Sent Events (deprecated as of MCP spec 2025-03-26)
-
-    \b
-    Local configuration (stdio):
-      {
-        "mcpServers": {
-          "crossref": {
-            "command": "crossref-local",
-            "args": ["run-server-mcp"]
-          }
-        }
-      }
-
-    \b
-    Remote configuration (http):
-      # Start server:
-      crossref-local run-server-mcp -t http --host 0.0.0.0 --port 8082
-
-      # Client config:
-      {
-        "mcpServers": {
-          "crossref-remote": {
-            "url": "http://your-server:8082/mcp"
-          }
-        }
-      }
-
-    \b
-    See docs/remote-deployment.md for systemd and Docker setup.
-    """
-    try:
-        from .mcp_server import run_server
-    except ImportError:
-        click.echo(
-            "MCP server requires fastmcp. Install with:\n"
-            "  pip install crossref-local[mcp]",
-            err=True,
-        )
-        sys.exit(1)
-
-    run_server(transport=transport, host=host, port=port)
+    """Run MCP server (deprecated: use 'mcp start' instead)."""
+    click.echo("Note: 'run-server-mcp' is deprecated. Use 'crossref-local mcp start'.", err=True)
+    run_mcp_server(transport, host, port)
 
 
 @cli.command("run-server-http", context_settings=CONTEXT_SETTINGS)
 @click.option(
-    "--host", default="0.0.0.0", envvar="CROSSREF_LOCAL_HOST", help="Host to bind"
+    "--host", default=None, envvar="CROSSREF_LOCAL_HOST", help="Host to bind"
 )
 @click.option(
     "--port",
-    default=8333,
+    default=None,
     type=int,
     envvar="CROSSREF_LOCAL_PORT",
-    help="Port to listen on",
+    help="Port to listen on (default: 31291)",
 )
 def serve_http(host: str, port: int):
     """Run HTTP API server.
@@ -503,8 +449,11 @@ def serve_http(host: str, port: int):
         )
         sys.exit(1)
 
+    from .server import DEFAULT_HOST, DEFAULT_PORT
+    host = host or DEFAULT_HOST
+    port = port or DEFAULT_PORT
     click.echo(f"Starting CrossRef Local API server on {host}:{port}")
-    click.echo(f"Search endpoint: http://{host}:{port}/search?q=<query>")
+    click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
     click.echo(f"Docs: http://{host}:{port}/docs")
     run_server(host=host, port=port)
 

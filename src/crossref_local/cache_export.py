@@ -1,10 +1,22 @@
 """Export functionality for cache module."""
 
-import json
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+import csv as _csv
+import json as _json
+from pathlib import Path as _Path
+from typing import List, Optional
 
-from .cache import load
+from .cache_utils import sanitize_name as _sanitize_name
+
+__all__ = [
+    "export",
+]
+
+
+def _load_cache(name: str, user_id: Optional[str] = None):
+    """Load cache data (lazy import to avoid circular dependency)."""
+    from .cache import load
+
+    return load(name, user_id=user_id)
 
 
 def export(
@@ -12,6 +24,7 @@ def export(
     output_path: str,
     format: str = "json",
     fields: Optional[List[str]] = None,
+    user_id: Optional[str] = None,
 ) -> str:
     """Export cache to file.
 
@@ -20,26 +33,30 @@ def export(
         output_path: Output file path
         format: Export format (json, csv, bibtex, dois)
         fields: Fields to include (for json/csv)
+        user_id: Optional user ID for multi-tenant scoping
 
     Returns:
         Output file path
+
+    Raises:
+        ValueError: If cache name contains invalid characters
     """
-    papers = load(name)
-    output = Path(output_path)
+    # Validate cache name
+    _sanitize_name(name)
+    papers = _load_cache(name, user_id=user_id)
+    output = _Path(output_path)
 
     if format == "json":
         if fields:
             papers = [{k: p.get(k) for k in fields} for p in papers]
         with open(output, "w") as f:
-            json.dump(papers, f, indent=2)
+            _json.dump(papers, f, indent=2)
 
     elif format == "csv":
-        import csv
-
         if fields is None:
             fields = ["doi", "title", "authors", "year", "journal"]
         with open(output, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+            writer = _csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
             writer.writeheader()
             for p in papers:
                 row = dict(p)

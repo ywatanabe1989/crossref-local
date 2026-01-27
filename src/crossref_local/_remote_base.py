@@ -11,6 +11,10 @@ import urllib.error
 from typing import List, Optional, Dict, Any
 
 from .models import Work, SearchResult
+from .config import DEFAULT_PORT
+
+# Default URL uses SCITEX port convention
+DEFAULT_API_URL = f"http://localhost:{DEFAULT_PORT}"
 
 
 class RemoteClient:
@@ -21,12 +25,12 @@ class RemoteClient:
     to a remote server via HTTP.
 
     Example:
-        >>> client = RemoteClient("http://localhost:3333")
+        >>> client = RemoteClient("http://localhost:31291")
         >>> results = client.search(title="machine learning", limit=10)
         >>> work = client.get("10.1038/nature12373")
     """
 
-    def __init__(self, base_url: str = "http://localhost:3333", timeout: int = 30):
+    def __init__(self, base_url: str = DEFAULT_API_URL, timeout: int = 30):
         """
         Initialize remote client.
 
@@ -37,8 +41,14 @@ class RemoteClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
 
-    def _request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict:
-        """Make HTTP GET request to API."""
+    def _request(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+        method: str = "GET",
+        data: Optional[Dict[str, Any]] = None,
+    ) -> Dict:
+        """Make HTTP request to API."""
         url = f"{self.base_url}{endpoint}"
         if params:
             # Filter out None values
@@ -47,8 +57,15 @@ class RemoteClient:
                 url = f"{url}?{urllib.parse.urlencode(params)}"
 
         try:
-            req = urllib.request.Request(url)
+            req_data = None
+            if data is not None:
+                req_data = json.dumps(data).encode("utf-8")
+
+            req = urllib.request.Request(url, data=req_data, method=method)
             req.add_header("Accept", "application/json")
+            if req_data:
+                req.add_header("Content-Type", "application/json")
+
             with urllib.request.urlopen(req, timeout=self.timeout) as response:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
@@ -222,7 +239,7 @@ class RemoteClient:
 
     def get_citations(self, doi: str, direction: str = "both") -> Dict:
         """
-        Get citations for a paper.
+        Get citations for a paper (legacy endpoint).
 
         Args:
             doi: Paper DOI
@@ -233,6 +250,74 @@ class RemoteClient:
         """
         params = {"doi": doi, "direction": direction}
         return self._request("/api/citations/", params) or {}
+
+    def get_citing(self, doi: str, limit: int = 100) -> List[str]:
+        """
+        Get DOIs of papers that cite the given DOI.
+
+        Args:
+            doi: The DOI to find citations for
+            limit: Maximum number of citing papers to return
+
+        Returns:
+            List of DOIs that cite this paper
+        """
+        data = self._request(f"/citations/{doi}/citing", {"limit": limit})
+        if not data:
+            return []
+        return data.get("papers", [])
+
+    def get_cited(self, doi: str, limit: int = 100) -> List[str]:
+        """
+        Get DOIs of papers that the given DOI cites (references).
+
+        Args:
+            doi: The DOI to find references for
+            limit: Maximum number of referenced papers to return
+
+        Returns:
+            List of DOIs that this paper cites
+        """
+        data = self._request(f"/citations/{doi}/cited", {"limit": limit})
+        if not data:
+            return []
+        return data.get("papers", [])
+
+    def get_citation_count(self, doi: str) -> int:
+        """
+        Get the number of citations for a DOI.
+
+        Args:
+            doi: The DOI to count citations for
+
+        Returns:
+            Number of papers citing this DOI
+        """
+        data = self._request(f"/citations/{doi}/count")
+        if not data:
+            return 0
+        return data.get("citation_count", 0)
+
+    def get_citation_network(self, doi: str, depth: int = 1, max_citing: int = 25, max_cited: int = 25) -> Dict:
+        """
+        Get citation network graph for a DOI.
+
+        Args:
+            doi: The DOI to build the network around
+            depth: How many levels of citations to include (1-3)
+            max_citing: Max papers citing each node to include
+            max_cited: Max papers each node cites to include
+
+        Returns:
+            Dict with nodes, edges, and stats
+        """
+        params = {
+            "depth": depth,
+            "max_citing": max_citing,
+            "max_cited": max_cited,
+        }
+        data = self._request(f"/citations/{doi}/network", params)
+        return data or {}
 
     def get_journal(
         self, issn: Optional[str] = None, name: Optional[str] = None
@@ -255,7 +340,7 @@ class RemoteClient:
 _client: Optional[RemoteClient] = None
 
 
-def get_client(base_url: str = "http://localhost:3333") -> RemoteClient:
+def get_client(base_url: str = DEFAULT_API_URL) -> RemoteClient:
     """Get or create singleton remote client."""
     global _client
     if _client is None or _client.base_url != base_url:

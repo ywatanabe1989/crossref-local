@@ -64,7 +64,7 @@ Modules:
     aio - Async versions of all API functions
 """
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 
 # Core API (public functions)
 from .api import (

@@ -28,7 +28,7 @@ class TestGetDbPath:
             Config.reset()
             with pytest.raises(FileNotFoundError) as exc_info:
                 get_db_path()
-            assert "CROSSREF_LOCAL_DB" in str(exc_info.value)
+            assert "/nonexistent/path.db" in str(exc_info.value)
 
     def test_autodetects_from_default_paths(self):
         """get_db_path() finds database from default paths."""

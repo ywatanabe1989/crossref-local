@@ -5,25 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - 2026-01-22
+## [0.4.0] - 2026-01-24
 
 ### Added
+- **Collections API** - HTTP endpoints for paper collections (`/collections/*`)
+  - CRUD operations: list, create, query, delete
+  - Download as JSON, CSV, BibTeX, or DOIs
+  - Statistics endpoint for collection analytics
+- **Citation HTTP endpoints** - RESTful citation access
+  - `GET /citations/{doi}/citing` - Papers citing this DOI
+  - `GET /citations/{doi}/cited` - Papers cited by this DOI
+  - `GET /citations/{doi}/count` - Citation count
+  - `GET /citations/{doi}/network` - Citation network graph
+- **Multi-tenant support** - X-User-ID header for collection scoping
+- **Security hardening**
+  - Path traversal protection via name sanitization
+  - Input validation with field whitelist (14 allowed fields)
+  - Size limits: MAX_LIMIT=10000, MAX_DOIS=1000
 - Shell completion command (`crossref-local completion bash/zsh/fish/install/status`)
-- Paper cache module for efficient collection management (`crossref-local cache`)
+- Paper cache module for efficient collection management
 - MCP subcommand group (`crossref-local mcp {start,doctor,installation,list-tools}`)
 - `--help-recursive` option for complete CLI help
 - Remote deployment docs with systemd and Docker examples
 - Automated MCP server installation via Makefile
+- RemoteClient collection methods mixin
 
 ### Changed
+- Default port changed from 8333 to 31291 (SCITEX convention)
+- Server refactored into modular package (`server/`)
 - Reorganized CLI commands for better clarity
 - Improved MCP tools alignment with CLI commands
+- SCITEX environment variables supported with fallback chain
 - Examples renamed to follow numbered convention (04_mcp_demo)
 - Updated .env.example with all environment variables
 
 ### Fixed
 - Remote client `get_many` batch response includes citation_count
 - CI workflow now includes pytest-cov for coverage reporting
+- Circular import between cache.py and cache_export.py
 
 ## [0.3.1] - 2026-01-14
 
