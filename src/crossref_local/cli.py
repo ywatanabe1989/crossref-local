@@ -292,7 +292,7 @@ def status():
         ),
         (
             "CROSSREF_LOCAL_PORT",
-            "Port for relay server (default: 8333)",
+            "Port for relay server (default: 31291)",
             os.environ.get("CROSSREF_LOCAL_PORT"),
         ),
     ]
@@ -423,7 +423,7 @@ def serve_mcp(transport: str, host: str, port: int):
     default=None,
     type=int,
     envvar="CROSSREF_LOCAL_PORT",
-    help="Port to listen on (default: 8333)",
+    help="Port to listen on (default: 31291)",
 )
 def relay(host: str, port: int):
     """Run HTTP relay server for remote database access.
@@ -434,7 +434,7 @@ def relay(host: str, port: int):
 
     \b
     Example:
-      crossref-local relay                  # Run on 0.0.0.0:8333
+      crossref-local relay                  # Run on 0.0.0.0:31291
       crossref-local relay --port 8080      # Custom port
 
     \b
