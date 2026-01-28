@@ -1,7 +1,7 @@
 """Tests for crossref_local.models module."""
 
 import pytest
-from crossref_local.models import Work, SearchResult
+from crossref_local._core.models import Work, SearchResult
 
 
 class TestWork:

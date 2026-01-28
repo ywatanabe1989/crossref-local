@@ -4,7 +4,7 @@ import pytest
 import sqlite3
 from pathlib import Path
 
-from crossref_local.db import Database, get_db, close_db, connection
+from crossref_local._core.db import Database, get_db, close_db, connection
 
 
 class TestDatabase:

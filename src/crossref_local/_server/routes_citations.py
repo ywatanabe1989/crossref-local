@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Query
 
-from ..citations import get_citing, get_cited, get_citation_count, CitationNetwork
+from .._core.citations import get_citing, get_cited, get_citation_count, CitationNetwork
 from .models import (
     CitingResponse,
     CitedResponse,

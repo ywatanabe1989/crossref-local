@@ -5,7 +5,7 @@ import json as _json
 from pathlib import Path as _Path
 from typing import List, Optional
 
-from .cache_utils import sanitize_name as _sanitize_name
+from .utils import sanitize_name as _sanitize_name
 
 __all__ = [
     "export",

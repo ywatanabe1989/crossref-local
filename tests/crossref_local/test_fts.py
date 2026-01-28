@@ -2,8 +2,8 @@
 
 import pytest
 
-from crossref_local.fts import search, count, search_dois
-from crossref_local.models import SearchResult, Work
+from crossref_local._core.fts import search, count, search_dois
+from crossref_local._core.models import SearchResult, Work
 
 
 class TestSearch:
@@ -128,7 +128,7 @@ class TestFTSTable:
 
     def test_fts_table_exists(self):
         """works_fts table exists."""
-        from crossref_local.db import get_db
+        from crossref_local._core.db import get_db
 
         db = get_db()
         row = db.fetchone(

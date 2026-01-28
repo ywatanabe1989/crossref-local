@@ -3,7 +3,7 @@
 import sys
 import click
 
-from . import info
+from .. import info
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
@@ -22,6 +22,7 @@ class AliasedGroup(click.Group):
                 for alias in aliases:
                     self._aliases[alias] = cmd.name
             return cmd
+
         return decorator
 
     def get_command(self, ctx, cmd_name):
@@ -115,7 +116,10 @@ def mcp_doctor():
     click.echo("Dependencies:")
     try:
         import fastmcp
-        click.echo(f"  [OK] fastmcp installed (v{getattr(fastmcp, '__version__', 'unknown')})")
+
+        click.echo(
+            f"  [OK] fastmcp installed (v{getattr(fastmcp, '__version__', 'unknown')})"
+        )
     except ImportError:
         click.echo("  [FAIL] fastmcp not installed")
         click.echo("         Fix: pip install crossref-local[mcp]")
@@ -150,19 +154,19 @@ def mcp_installation():
     click.echo()
     click.echo("1. Local (stdio) - Claude Desktop / Claude Code:")
     click.echo()
-    click.echo('   Add to your MCP client config (e.g., claude_desktop_config.json):')
+    click.echo("   Add to your MCP client config (e.g., claude_desktop_config.json):")
     click.echo()
-    click.echo('   {')
+    click.echo("   {")
     click.echo('     "mcpServers": {')
     click.echo('       "crossref-local": {')
     click.echo('         "command": "crossref-local",')
     click.echo('         "args": ["mcp", "start"],')
     click.echo('         "env": {')
     click.echo('           "CROSSREF_LOCAL_DB": "/path/to/crossref.db"')
-    click.echo('         }')
-    click.echo('       }')
-    click.echo('     }')
-    click.echo('   }')
+    click.echo("         }")
+    click.echo("       }")
+    click.echo("     }")
+    click.echo("   }")
     click.echo()
     click.echo("2. Remote (HTTP) - Persistent server:")
     click.echo()
@@ -170,13 +174,13 @@ def mcp_installation():
     click.echo("     crossref-local mcp start -t http --host 0.0.0.0 --port 8082")
     click.echo()
     click.echo("   Client config:")
-    click.echo('   {')
+    click.echo("   {")
     click.echo('     "mcpServers": {')
     click.echo('       "crossref-remote": {')
     click.echo('         "url": "http://your-server:8082/mcp"')
-    click.echo('       }')
-    click.echo('     }')
-    click.echo('   }')
+    click.echo("       }")
+    click.echo("     }")
+    click.echo("   }")
     click.echo()
     click.echo("See docs/remote-deployment.md for systemd and Docker setup.")
 

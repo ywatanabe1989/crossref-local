@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from crossref_local.cli_completion import (
+from crossref_local._cli.completion import (
     BASH_COMPLETION,
     COMPLETION_END_MARKER,
     COMPLETION_MARKER,

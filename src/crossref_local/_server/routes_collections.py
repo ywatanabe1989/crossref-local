@@ -1,21 +1,31 @@
 """Collection management endpoints with file download support."""
 
-import re
 import tempfile
-from typing import Optional, List
+from typing import Optional
 
 from fastapi import APIRouter, Query, HTTPException, Request
 from fastapi.responses import FileResponse
 
 from .. import cache
-from ..cache_utils import sanitize_name
+from .._cache.utils import sanitize_name
 from .models import CollectionCreateRequest, CollectionInfo
 
 
 # Allowed fields for field filtering (whitelist)
 ALLOWED_FIELDS = {
-    "doi", "title", "authors", "year", "journal", "volume", "issue",
-    "page", "abstract", "citation_count", "references", "issn", "publisher",
+    "doi",
+    "title",
+    "authors",
+    "year",
+    "journal",
+    "volume",
+    "issue",
+    "page",
+    "abstract",
+    "citation_count",
+    "references",
+    "issn",
+    "publisher",
 }
 
 # Maximum limits
@@ -233,9 +243,7 @@ def download_collection(
     filename = f"{name}{ext}"
 
     # Export to temporary file
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=ext, delete=False
-    ) as tmp:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=ext, delete=False) as tmp:
         field_list = fields.split(",") if fields else None
         cache.export(
             name,

@@ -2,7 +2,7 @@
 
 import pytest
 
-from crossref_local.citations import (
+from crossref_local._core.citations import (
     get_citing,
     get_cited,
     get_citation_count,

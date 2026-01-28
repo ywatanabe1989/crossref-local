@@ -23,9 +23,9 @@ import asyncio as _asyncio
 import threading as _threading
 from typing import List, Optional
 
-from .config import Config as _Config
-from .db import Database as _Database
-from .models import SearchResult, Work
+from .._core.config import Config as _Config
+from .._core.db import Database as _Database
+from .._core.models import SearchResult, Work
 
 __all__ = [
     "search",
@@ -54,7 +54,7 @@ def _get_thread_db() -> _Database:
 
 def _search_sync(query: str, limit: int, offset: int) -> SearchResult:
     """Thread-safe sync search."""
-    from . import fts
+    from .._core import fts
 
     db = _get_thread_db()
     return fts._search_with_db(db, query, limit, offset)
@@ -62,7 +62,7 @@ def _search_sync(query: str, limit: int, offset: int) -> SearchResult:
 
 def _count_sync(query: str) -> int:
     """Thread-safe sync count."""
-    from . import fts
+    from .._core import fts
 
     db = _get_thread_db()
     return fts._count_with_db(db, query)

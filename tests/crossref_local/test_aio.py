@@ -4,7 +4,7 @@ import pytest
 import asyncio
 
 from crossref_local import aio
-from crossref_local.models import SearchResult, Work
+from crossref_local._core.models import SearchResult, Work
 
 
 class TestAsyncSearch:

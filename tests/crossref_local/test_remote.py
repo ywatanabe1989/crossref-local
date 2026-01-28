@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 from io import BytesIO
 
 from crossref_local.remote import RemoteClient, get_client, reset_client
-from crossref_local.models import Work, SearchResult
+from crossref_local._core.models import Work, SearchResult
 
 
 class MockResponse:

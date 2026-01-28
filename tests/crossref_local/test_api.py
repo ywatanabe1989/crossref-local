@@ -2,7 +2,7 @@
 
 import pytest
 from crossref_local import search, get, count, info, exists
-from crossref_local.models import Work, SearchResult
+from crossref_local._core.models import Work, SearchResult
 
 
 class TestSearch:

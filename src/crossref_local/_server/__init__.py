@@ -74,7 +74,7 @@ def root():
 @app.get("/health")
 def health():
     """Health check endpoint."""
-    from ..db import get_db
+    from .._core.db import get_db
 
     db = get_db()
     return {
@@ -87,7 +87,7 @@ def health():
 @app.get("/info")
 def info():
     """Get database statistics."""
-    from ..db import get_db
+    from .._core.db import get_db
     from .models import InfoResponse
 
     db = get_db()

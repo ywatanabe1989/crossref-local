@@ -66,8 +66,9 @@ Modules:
 
 __version__ = "0.4.0"
 
-# Core API (public functions)
-from .api import (
+# Core API (from _core package)
+from ._core import (
+    # Functions
     search,
     count,
     get,
@@ -77,22 +78,27 @@ from .api import (
     enrich_dois,
     configure,
     configure_http,
-    configure_remote,  # Backward compatibility alias
+    configure_remote,
     get_mode,
     info,
+    # Models
+    Work,
+    SearchResult,
+    # Citations
+    get_citing,
+    get_cited,
+    get_citation_count,
+    CitationNetwork,
 )
 
-# Models (public classes)
-from .models import Work, SearchResult
-
 # Async API (public module)
-from . import aio
-
-# Citation network (public functions and classes)
-from .citations import get_citing, get_cited, get_citation_count, CitationNetwork
+from . import _aio as aio
 
 # Cache module (public)
 from . import cache
+
+# Jobs module (public)
+from . import jobs
 
 
 # Public API - what users should import
@@ -121,6 +127,8 @@ __all__ = [
     "aio",
     # Cache module
     "cache",
+    # Jobs module
+    "jobs",
     # Citation network
     "get_citing",
     "get_cited",
