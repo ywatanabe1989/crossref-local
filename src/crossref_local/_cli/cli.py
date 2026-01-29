@@ -130,7 +130,7 @@ def cli(ctx, http: bool, api_url: str):
     HTTP mode (connect to API server):
       crossref-local --http search "machine learning"
     """
-    from ._core.config import Config
+    from .._core.config import Config
 
     ctx.ensure_object(dict)
 
@@ -174,7 +174,7 @@ def search_cmd(
     as_json: bool,
 ):
     """Search for works by title, abstract, or authors."""
-    from ._core.db import get_db
+    from .._core.db import get_db
 
     try:
         results = search(query, limit=limit, offset=offset)
@@ -258,7 +258,7 @@ def search_by_doi_cmd(doi: str, as_json: bool, citation: bool):
 @cli.command(context_settings=CONTEXT_SETTINGS)
 def status():
     """Show status and configuration."""
-    from ._core.config import DEFAULT_DB_PATHS, DEFAULT_API_URLS
+    from .._core.config import DEFAULT_DB_PATHS, DEFAULT_API_URLS
     import os
 
     click.echo("CrossRef Local - Status")
@@ -474,6 +474,34 @@ def run_server_http_deprecated(ctx, host: str, port: int):
         err=True,
     )
     ctx.invoke(relay, host=host, port=port)
+
+
+@cli.command("list-apis", context_settings=CONTEXT_SETTINGS)
+@click.option(
+    "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"
+)
+@click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def list_apis(verbose, max_depth, as_json):
+    """List Python APIs (alias for: scitex introspect api crossref_local)."""
+    try:
+        from scitex.cli.introspect import api
+        import click
+
+        ctx = click.Context(api)
+        ctx.invoke(
+            api,
+            dotted_path="crossref_local",
+            verbose=verbose,
+            max_depth=max_depth,
+            as_json=as_json,
+        )
+    except ImportError:
+        # Fallback if scitex not installed
+        click.echo("Install scitex for full API introspection:")
+        click.echo("  pip install scitex")
+        click.echo()
+        click.echo("Or use: scitex introspect api crossref_local")
 
 
 def main():

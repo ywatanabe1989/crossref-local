@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Async API module."""
 
-from .aio import (
+from ._impl import (
     SearchResult,
     Work,
     count,

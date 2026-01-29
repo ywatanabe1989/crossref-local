@@ -14,7 +14,7 @@ __all__ = [
 
 def _load_cache(name: str, user_id: Optional[str] = None):
     """Load cache data (lazy import to avoid circular dependency)."""
-    from .cache import load
+    from ..cache import load
 
     return load(name, user_id=user_id)
 

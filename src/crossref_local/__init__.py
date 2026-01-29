@@ -64,7 +64,7 @@ Modules:
     aio - Async versions of all API functions
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 # Core API (from _core package)
 from ._core import (
@@ -92,7 +92,7 @@ from ._core import (
 )
 
 # Async API (public module)
-from . import _aio as aio
+from . import aio
 
 # Cache module (public)
 from . import cache
