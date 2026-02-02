@@ -132,6 +132,7 @@ data/*
 **/*.ppt
 **/*.pptx
 **/*.txt
+!docs/sphinx/requirements.txt
 **/*.log
 **/*.db
 **/*.sqlite
