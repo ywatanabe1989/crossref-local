@@ -179,13 +179,14 @@ def search_cmd(
     try:
         results = search(query, limit=limit, offset=offset)
     except ConnectionError as e:
-        click.echo(f"Error: {e}", err=True)
-        click.echo("\nRun 'crossref-local status' to check configuration.", err=True)
+        click.secho(f"Error: {e}", fg="red", err=True)
         sys.exit(1)
 
-    # Cache for fast IF lookups
-    if_cache = {}
-    db = get_db() if with_if else None
+    if_cache, db = {}, None
+    try:
+        db = get_db() if with_if else None
+    except FileNotFoundError:
+        pass  # HTTP mode: IF lookup unavailable
 
     if as_json:
         output = {
@@ -196,31 +197,29 @@ def search_cmd(
         }
         click.echo(json.dumps(output, indent=2))
     else:
-        click.echo(f"Found {results.total:,} matches in {results.elapsed_ms:.1f}ms\n")
+        click.secho(
+            f"Found {results.total:,} matches in {results.elapsed_ms:.1f}ms\n",
+            fg="green",
+        )
         for i, work in enumerate(results.works, start=offset + 1):
             title = _strip_xml_tags(work.title) if work.title else "Untitled"
             year = f"({work.year})" if work.year else ""
-            click.echo(f"{i}. {title} {year}")
-            click.echo(f"   DOI: {work.doi}")
+            click.secho(f"{i}. {title} {year}", fg="cyan", bold=True)
+            click.echo(f"   DOI: {work.doi or 'N/A'}")
             if authors and work.authors:
                 authors_str = ", ".join(work.authors[:5])
                 if len(work.authors) > 5:
                     authors_str += f" et al. ({len(work.authors)} total)"
                 click.echo(f"   Authors: {authors_str}")
-            if work.journal:
-                journal_line = f"   Journal: {work.journal}"
-                # Fast IF lookup from pre-computed table
-                if with_if and work.issn:
-                    impact_factor = _get_if_fast(db, work.issn, if_cache)
-                    if impact_factor is not None:
-                        journal_line += f" (IF: {impact_factor:.2f}, OpenAlex)"
-                click.echo(journal_line)
+            journal_line = f"   Journal: {work.journal or 'N/A'}"
+            if db and work.issn and (if_val := _get_if_fast(db, work.issn, if_cache)):
+                journal_line += f" (IF: {if_val:.2f}, OpenAlex)"
+            click.echo(journal_line)
             if abstracts and work.abstract:
-                # Strip XML tags and truncate
-                abstract = _strip_xml_tags(work.abstract)
-                if len(abstract) > 500:
-                    abstract = abstract[:500] + "..."
-                click.echo(f"   Abstract: {abstract}")
+                abstract = _strip_xml_tags(work.abstract)[:500]
+                click.echo(
+                    f"   Abstract: {abstract}{'...' if len(work.abstract) > 500 else ''}"
+                )
             click.echo()
 
 

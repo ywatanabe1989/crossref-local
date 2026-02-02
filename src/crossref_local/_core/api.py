@@ -69,7 +69,7 @@ def search(
     """
     if Config.get_mode() == "http":
         client = _get_http_client()
-        return client.search(query=query, limit=limit)
+        return client.search(query=query, limit=limit, offset=offset)
     return fts.search(query, limit, offset)
 
 
