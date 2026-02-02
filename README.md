@@ -8,6 +8,8 @@
 
 Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
 
+[![PyPI version](https://badge.fury.io/py/crossref-local.svg)](https://badge.fury.io/py/crossref-local)
+[![Documentation](https://readthedocs.org/projects/crossref-local/badge/?version=latest)](https://crossref-local.readthedocs.io/en/latest/)
 [![Tests](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml)
 [![Coverage](https://codecov.io/gh/ywatanabe1989/crossref-local/branch/main/graph/badge.svg)](https://codecov.io/gh/ywatanabe1989/crossref-local)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -137,7 +139,7 @@ Found 4 matches in 128.4ms
 
 Start the FastAPI server:
 ```bash
-crossref-local run-server-http --host 0.0.0.0 --port 31291
+crossref-local relay --host 0.0.0.0 --port 31291
 ```
 
 Endpoints:
