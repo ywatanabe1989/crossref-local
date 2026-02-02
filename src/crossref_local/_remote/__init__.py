@@ -5,7 +5,7 @@ Provides RemoteClient for connecting to CrossRef Local API server.
 
 from typing import Optional
 
-from .._remote_base import (
+from .base import (
     RemoteClient as _BaseClient,
     DEFAULT_API_URL,
 )
@@ -26,6 +26,7 @@ class RemoteClient(CollectionsMixin, _BaseClient):
         >>> # Download as file
         >>> client.download_collection("epilepsy", "papers.bib", format="bibtex")
     """
+
     pass
 
 

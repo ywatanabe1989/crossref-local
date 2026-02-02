@@ -10,8 +10,8 @@ import urllib.parse
 import urllib.error
 from typing import List, Optional, Dict, Any
 
-from .models import Work, SearchResult
-from .config import DEFAULT_PORT
+from .._core.models import Work, SearchResult
+from .._core.config import DEFAULT_PORT
 
 # Default URL uses SCITEX port convention
 DEFAULT_API_URL = f"http://localhost:{DEFAULT_PORT}"
@@ -298,7 +298,9 @@ class RemoteClient:
             return 0
         return data.get("citation_count", 0)
 
-    def get_citation_network(self, doi: str, depth: int = 1, max_citing: int = 25, max_cited: int = 25) -> Dict:
+    def get_citation_network(
+        self, doi: str, depth: int = 1, max_citing: int = 25, max_cited: int = 25
+    ) -> Dict:
         """
         Get citation network graph for a DOI.
 

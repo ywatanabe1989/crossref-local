@@ -27,7 +27,7 @@ def pytest_configure(config):
         print(f"\nUsing test database: {TEST_DB_PATH}")
     else:
         # Check if real database is available
-        from crossref_local.config import DEFAULT_DB_PATHS
+        from crossref_local._core.config import DEFAULT_DB_PATHS
 
         for path in DEFAULT_DB_PATHS:
             if path.exists():

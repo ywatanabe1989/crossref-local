@@ -21,13 +21,16 @@ Usage:
 import json as _json
 import time as _time
 from dataclasses import dataclass as _dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any as _Any
+from typing import Dict as _Dict
+from typing import List as _List
+from typing import Optional as _Optional
 
-from .api import get_many as _get_many
-from .api import search as _search
-from .cache_utils import cache_path as _cache_path
-from .cache_utils import get_cache_dir as _get_cache_dir
-from .cache_utils import meta_path as _meta_path
+from ._core.api import get_many as _get_many
+from ._core.api import search as _search
+from ._cache.utils import cache_path as _cache_path
+from ._cache.utils import get_cache_dir as _get_cache_dir
+from ._cache.utils import meta_path as _meta_path
 
 __all__ = [
     "CacheInfo",
@@ -54,7 +57,7 @@ class CacheInfo:
     size_bytes: int
     paper_count: int
     created_at: str
-    query: Optional[str] = None
+    query: _Optional[str] = None
 
     def to_dict(self) -> dict:
         return {
@@ -70,12 +73,12 @@ class CacheInfo:
 
 def create(
     name: str,
-    query: Optional[str] = None,
-    dois: Optional[List[str]] = None,
-    papers: Optional[List[Dict[str, Any]]] = None,
+    query: _Optional[str] = None,
+    dois: _Optional[_List[str]] = None,
+    papers: _Optional[_List[_Dict[str, _Any]]] = None,
     limit: int = 1000,
     offset: int = 0,
-    user_id: Optional[str] = None,
+    user_id: _Optional[str] = None,
 ) -> CacheInfo:
     """Create a cache from search query, DOI list, or pre-fetched papers.
 
@@ -86,7 +89,7 @@ def create(
         papers: Pre-fetched paper dicts (skips API calls)
         limit: Max papers to fetch (for query mode)
         offset: Offset for pagination (for query mode)
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         CacheInfo with cache details
@@ -141,11 +144,11 @@ def create(
 
 def append(
     name: str,
-    query: Optional[str] = None,
-    dois: Optional[List[str]] = None,
+    query: _Optional[str] = None,
+    dois: _Optional[_List[str]] = None,
     limit: int = 1000,
     offset: int = 0,
-    user_id: Optional[str] = None,
+    user_id: _Optional[str] = None,
 ) -> CacheInfo:
     """Append papers to existing cache.
 
@@ -155,7 +158,7 @@ def append(
         dois: Explicit list of DOIs to add
         limit: Max papers to fetch (for query mode)
         offset: Offset for pagination (for query mode)
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         Updated CacheInfo
@@ -209,12 +212,12 @@ def append(
     return info(name, user_id=user_id)
 
 
-def load(name: str, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+def load(name: str, user_id: _Optional[str] = None) -> _List[_Dict[str, _Any]]:
     """Load raw cache data.
 
     Args:
         name: Cache name
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         List of paper dictionaries with full metadata
@@ -229,16 +232,16 @@ def load(name: str, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
 
 def query(
     name: str,
-    fields: Optional[List[str]] = None,
+    fields: _Optional[_List[str]] = None,
     include_abstract: bool = False,
     include_references: bool = False,
     include_citations: bool = False,
-    year_min: Optional[int] = None,
-    year_max: Optional[int] = None,
-    journal: Optional[str] = None,
-    limit: Optional[int] = None,
-    user_id: Optional[str] = None,
-) -> List[Dict[str, Any]]:
+    year_min: _Optional[int] = None,
+    year_max: _Optional[int] = None,
+    journal: _Optional[str] = None,
+    limit: _Optional[int] = None,
+    user_id: _Optional[str] = None,
+) -> _List[_Dict[str, _Any]]:
     """Query cache with field filtering.
 
     Args:
@@ -251,7 +254,7 @@ def query(
         year_max: Filter by maximum year
         journal: Filter by journal name (substring match)
         limit: Max results to return
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         Filtered list of paper dictionaries
@@ -300,12 +303,12 @@ def query(
     return papers
 
 
-def query_dois(name: str, user_id: Optional[str] = None) -> List[str]:
+def query_dois(name: str, user_id: _Optional[str] = None) -> _List[str]:
     """Get just DOIs from cache.
 
     Args:
         name: Cache name
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         List of DOIs
@@ -314,12 +317,12 @@ def query_dois(name: str, user_id: Optional[str] = None) -> List[str]:
     return [p["doi"] for p in papers if p.get("doi")]
 
 
-def stats(name: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+def stats(name: str, user_id: _Optional[str] = None) -> _Dict[str, _Any]:
     """Get cache statistics.
 
     Args:
         name: Cache name
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         Dictionary with statistics
@@ -367,12 +370,12 @@ def stats(name: str, user_id: Optional[str] = None) -> Dict[str, Any]:
     }
 
 
-def info(name: str, user_id: Optional[str] = None) -> CacheInfo:
+def info(name: str, user_id: _Optional[str] = None) -> CacheInfo:
     """Get cache information.
 
     Args:
         name: Cache name
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         CacheInfo object
@@ -399,12 +402,12 @@ def info(name: str, user_id: Optional[str] = None) -> CacheInfo:
     )
 
 
-def exists(name: str, user_id: Optional[str] = None) -> bool:
+def exists(name: str, user_id: _Optional[str] = None) -> bool:
     """Check if cache exists.
 
     Args:
         name: Cache name
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         True if cache exists
@@ -412,11 +415,11 @@ def exists(name: str, user_id: Optional[str] = None) -> bool:
     return _cache_path(name, user_id).exists()
 
 
-def list_caches(user_id: Optional[str] = None) -> List[CacheInfo]:
+def list_caches(user_id: _Optional[str] = None) -> _List[CacheInfo]:
     """List all available caches.
 
     Args:
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         List of CacheInfo objects
@@ -436,12 +439,12 @@ def list_caches(user_id: Optional[str] = None) -> List[CacheInfo]:
     return sorted(caches, key=lambda c: c.name)
 
 
-def delete(name: str, user_id: Optional[str] = None) -> bool:
+def delete(name: str, user_id: _Optional[str] = None) -> bool:
     """Delete a cache.
 
     Args:
         name: Cache name
-        user_id: Optional user ID for multi-tenant scoping
+        user_id: _Optional user ID for multi-tenant scoping
 
     Returns:
         True if deleted
@@ -460,4 +463,4 @@ def delete(name: str, user_id: Optional[str] = None) -> bool:
 
 
 # Re-export from cache_export for backwards compatibility
-from .cache_export import export
+from ._cache.export import export

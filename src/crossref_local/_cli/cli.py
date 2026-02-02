@@ -1,0 +1,512 @@
+"""Command-line interface for crossref_local."""
+
+import click
+import json
+import re
+import sys
+from typing import Optional
+
+from rich.console import Console
+
+from .. import search, get, info, __version__
+
+console = Console()
+
+
+def _strip_xml_tags(text: str) -> str:
+    """Strip XML/JATS tags from abstract text."""
+    if not text:
+        return text
+    # Remove XML tags
+    text = re.sub(r"<[^>]+>", " ", text)
+    # Collapse multiple spaces
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+class AliasedGroup(click.Group):
+    """Click group that supports command aliases."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._aliases = {}
+
+    def command(self, *args, aliases=None, **kwargs):
+        """Decorator that registers aliases for commands."""
+
+        def decorator(f):
+            cmd = super(AliasedGroup, self).command(*args, **kwargs)(f)
+            if aliases:
+                for alias in aliases:
+                    self._aliases[alias] = cmd.name
+            return cmd
+
+        return decorator
+
+    def get_command(self, ctx, cmd_name):
+        """Resolve aliases to actual commands."""
+        cmd_name = self._aliases.get(cmd_name, cmd_name)
+        return super().get_command(ctx, cmd_name)
+
+    def format_commands(self, ctx, formatter):
+        """Format commands with aliases shown inline."""
+        commands = []
+        for subcommand in self.list_commands(ctx):
+            cmd = self.get_command(ctx, subcommand)
+            if cmd is None or cmd.hidden:
+                continue
+
+            # Find aliases for this command
+            aliases = [a for a, c in self._aliases.items() if c == subcommand]
+            if aliases:
+                name = f"{subcommand} ({', '.join(aliases)})"
+            else:
+                name = subcommand
+
+            help_text = cmd.get_short_help_str(limit=50)
+            commands.append((name, help_text))
+
+        if commands:
+            with formatter.section("Commands"):
+                formatter.write_dl(commands)
+
+
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
+
+def _print_recursive_help(ctx, param, value):
+    """Callback for --help-recursive flag."""
+    if not value or ctx.resilient_parsing:
+        return
+
+    def _print_command_help(cmd, prefix: str, parent_ctx):
+        """Recursively print help for a command and its subcommands."""
+        console.print(f"\n[bold cyan]━━━ {prefix} ━━━[/bold cyan]")
+        sub_ctx = click.Context(cmd, info_name=prefix.split()[-1], parent=parent_ctx)
+        console.print(cmd.get_help(sub_ctx))
+
+        if isinstance(cmd, click.Group):
+            for sub_name, sub_cmd in sorted(cmd.commands.items()):
+                _print_command_help(sub_cmd, f"{prefix} {sub_name}", sub_ctx)
+
+    # Print main help
+    console.print("[bold cyan]━━━ crossref-local ━━━[/bold cyan]")
+    console.print(ctx.get_help())
+
+    # Print all subcommands recursively
+    for name, cmd in sorted(cli.commands.items()):
+        _print_command_help(cmd, f"crossref-local {name}", ctx)
+
+    ctx.exit(0)
+
+
+@click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
+@click.version_option(version=__version__, prog_name="crossref-local")
+@click.option("--http", is_flag=True, help="Use HTTP API instead of direct database")
+@click.option(
+    "--api-url",
+    envvar="CROSSREF_LOCAL_API_URL",
+    help="API URL for http mode (default: auto-detect)",
+)
+@click.option(
+    "--help-recursive",
+    is_flag=True,
+    is_eager=True,
+    expose_value=False,
+    callback=_print_recursive_help,
+    help="Show help for all commands recursively.",
+)
+@click.pass_context
+def cli(ctx, http: bool, api_url: str):
+    """Local CrossRef database with 167M+ works and full-text search.
+
+    Supports both direct database access (db mode) and HTTP API (http mode).
+
+    \b
+    DB mode (default if database found):
+      crossref-local search "machine learning"
+
+    \b
+    HTTP mode (connect to API server):
+      crossref-local --http search "machine learning"
+    """
+    from .._core.config import Config
+
+    ctx.ensure_object(dict)
+
+    if api_url:
+        Config.set_api_url(api_url)
+    elif http:
+        Config.set_mode("http")
+
+
+def _get_if_fast(db, issn: str, cache: dict) -> Optional[float]:
+    """Fast IF lookup from pre-computed OpenAlex data."""
+    if issn in cache:
+        return cache[issn]
+    row = db.fetchone(
+        "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?",
+        (f"%{issn}%",),
+    )
+    cache[issn] = row["two_year_mean_citedness"] if row else None
+    return cache[issn]
+
+
+@cli.command("search", context_settings=CONTEXT_SETTINGS)
+@click.argument("query")
+@click.option(
+    "-n", "--number", "limit", default=10, show_default=True, help="Number of results"
+)
+@click.option("-o", "--offset", default=0, help="Skip first N results")
+@click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
+@click.option("-A", "--authors", is_flag=True, help="Show authors")
+@click.option(
+    "-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor"
+)
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def search_cmd(
+    query: str,
+    limit: int,
+    offset: int,
+    abstracts: bool,
+    authors: bool,
+    with_if: bool,
+    as_json: bool,
+):
+    """Search for works by title, abstract, or authors."""
+    from .._core.db import get_db
+
+    try:
+        results = search(query, limit=limit, offset=offset)
+    except ConnectionError as e:
+        click.secho(f"Error: {e}", fg="red", err=True)
+        sys.exit(1)
+
+    if_cache, db = {}, None
+    try:
+        db = get_db() if with_if else None
+    except FileNotFoundError:
+        pass  # HTTP mode: IF lookup unavailable
+
+    if as_json:
+        output = {
+            "query": results.query,
+            "total": results.total,
+            "elapsed_ms": results.elapsed_ms,
+            "works": [w.to_dict() for w in results.works],
+        }
+        click.echo(json.dumps(output, indent=2))
+    else:
+        click.secho(
+            f"Found {results.total:,} matches in {results.elapsed_ms:.1f}ms\n",
+            fg="green",
+        )
+        for i, work in enumerate(results.works, start=offset + 1):
+            title = _strip_xml_tags(work.title) if work.title else "Untitled"
+            year = f"({work.year})" if work.year else ""
+            click.secho(f"{i}. {title} {year}", fg="cyan", bold=True)
+            click.echo(f"   DOI: {work.doi or 'N/A'}")
+            if authors and work.authors:
+                authors_str = ", ".join(work.authors[:5])
+                if len(work.authors) > 5:
+                    authors_str += f" et al. ({len(work.authors)} total)"
+                click.echo(f"   Authors: {authors_str}")
+            journal_line = f"   Journal: {work.journal or 'N/A'}"
+            if db and work.issn and (if_val := _get_if_fast(db, work.issn, if_cache)):
+                journal_line += f" (IF: {if_val:.2f}, OpenAlex)"
+            click.echo(journal_line)
+            if abstracts and work.abstract:
+                abstract = _strip_xml_tags(work.abstract)[:500]
+                click.echo(
+                    f"   Abstract: {abstract}{'...' if len(work.abstract) > 500 else ''}"
+                )
+            click.echo()
+
+
+@cli.command("search-by-doi", context_settings=CONTEXT_SETTINGS)
+@click.argument("doi")
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+@click.option("--citation", is_flag=True, help="Output as citation")
+def search_by_doi_cmd(doi: str, as_json: bool, citation: bool):
+    """Search for a work by DOI."""
+    try:
+        work = get(doi)
+    except ConnectionError as e:
+        click.echo(f"Error: {e}", err=True)
+        click.echo("\nRun 'crossref-local status' to check configuration.", err=True)
+        sys.exit(1)
+
+    if work is None:
+        click.echo(f"DOI not found: {doi}", err=True)
+        sys.exit(1)
+
+    if as_json:
+        click.echo(json.dumps(work.to_dict(), indent=2))
+    elif citation:
+        click.echo(work.citation())
+    else:
+        click.echo(f"Title: {work.title}")
+        click.echo(f"Authors: {', '.join(work.authors)}")
+        click.echo(f"Year: {work.year}")
+        click.echo(f"Journal: {work.journal}")
+        click.echo(f"DOI: {work.doi}")
+        if work.citation_count:
+            click.echo(f"Citations: {work.citation_count}")
+
+
+@cli.command(context_settings=CONTEXT_SETTINGS)
+def status():
+    """Show status and configuration."""
+    from .._core.config import DEFAULT_DB_PATHS, DEFAULT_API_URLS
+    import os
+
+    click.echo("CrossRef Local - Status")
+    click.echo("=" * 50)
+    click.echo()
+
+    # Check environment variables
+    click.echo("Environment Variables:")
+    click.echo()
+
+    env_vars = [
+        (
+            "CROSSREF_LOCAL_DB",
+            "Path to SQLite database file",
+            os.environ.get("CROSSREF_LOCAL_DB"),
+        ),
+        (
+            "CROSSREF_LOCAL_API_URL",
+            "HTTP API URL (e.g., http://localhost:8333)",
+            os.environ.get("CROSSREF_LOCAL_API_URL"),
+        ),
+        (
+            "CROSSREF_LOCAL_MODE",
+            "Force mode: 'db', 'http', or 'auto'",
+            os.environ.get("CROSSREF_LOCAL_MODE"),
+        ),
+        (
+            "CROSSREF_LOCAL_HOST",
+            "Host for relay server (default: 0.0.0.0)",
+            os.environ.get("CROSSREF_LOCAL_HOST"),
+        ),
+        (
+            "CROSSREF_LOCAL_PORT",
+            "Port for relay server (default: 31291)",
+            os.environ.get("CROSSREF_LOCAL_PORT"),
+        ),
+    ]
+
+    for var_name, description, value in env_vars:
+        if value:
+            if var_name == "CROSSREF_LOCAL_DB":
+                status = " (OK)" if os.path.exists(value) else " (NOT FOUND)"
+            else:
+                status = ""
+            click.echo(f"  {var_name}={value}{status}")
+            click.echo(f"      | {description}")
+        else:
+            click.echo(f"  {var_name} (not set)")
+            click.echo(f"      | {description}")
+        click.echo()
+
+    click.echo()
+
+    # Check default database paths
+    click.echo("Local Database Locations:")
+    db_found = None
+    for path in DEFAULT_DB_PATHS:
+        if path.exists():
+            click.echo(f"  [OK] {path}")
+            if db_found is None:
+                db_found = path
+        else:
+            click.echo(f"  [ ] {path}")
+
+    click.echo()
+
+    # Check API servers
+    click.echo("API Servers:")
+    api_found = None
+    api_compatible = False
+    for url in DEFAULT_API_URLS:
+        try:
+            import urllib.request
+            import json as json_module
+
+            # Check root endpoint for version
+            req = urllib.request.Request(f"{url}/", method="GET")
+            req.add_header("Accept", "application/json")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                if resp.status == 200:
+                    data = json_module.loads(resp.read().decode())
+                    server_version = data.get("version", "unknown")
+
+                    # Check version compatibility
+                    if server_version == __version__:
+                        click.echo(f"  [OK] {url} (v{server_version})")
+                        api_compatible = True
+                    else:
+                        click.echo(
+                            f"  [WARN] {url} (v{server_version} != v{__version__})"
+                        )
+                        click.echo(
+                            f"         Server version mismatch - may be incompatible"
+                        )
+
+                    if api_found is None:
+                        api_found = url
+                else:
+                    click.echo(f"  [ ] {url}")
+        except Exception:
+            click.echo(f"  [ ] {url}")
+
+    click.echo()
+
+    # Summary and recommendations
+    if db_found:
+        click.echo(f"Local database: {db_found}")
+        try:
+            db_info = info()
+            click.echo(f"  Works: {db_info.get('works', 0):,}")
+            click.echo(f"  FTS indexed: {db_info.get('fts_indexed', 0):,}")
+        except Exception as e:
+            click.echo(f"  Error: {e}", err=True)
+        click.echo()
+        click.echo("Ready! Try:")
+        click.echo('  crossref-local search "machine learning"')
+    elif api_found:
+        click.echo(f"HTTP API available: {api_found}")
+        click.echo()
+        click.echo("Ready! Try:")
+        click.echo('  crossref-local --http search "machine learning"')
+        click.echo()
+        click.echo("Or set environment:")
+        click.echo("  export CROSSREF_LOCAL_MODE=http")
+    else:
+        click.echo("No database or API server found!")
+        click.echo()
+        click.echo("Options:")
+        click.echo("  1. Direct database access (db mode):")
+        click.echo("     export CROSSREF_LOCAL_DB=/path/to/crossref.db")
+        click.echo()
+        click.echo("  2. HTTP API (connect to server):")
+        click.echo("     crossref-local --http search 'query'")
+
+
+# Register MCP subcommand group
+from .mcp import mcp, run_mcp_server
+
+cli.add_command(mcp)
+
+
+# Backward compatibility alias (hidden)
+@cli.command("run-server-mcp", context_settings=CONTEXT_SETTINGS, hidden=True)
+@click.option(
+    "-t", "--transport", type=click.Choice(["stdio", "sse", "http"]), default="stdio"
+)
+@click.option("--host", default="localhost", envvar="CROSSREF_LOCAL_MCP_HOST")
+@click.option("--port", default=8082, type=int, envvar="CROSSREF_LOCAL_MCP_PORT")
+def serve_mcp(transport: str, host: str, port: int):
+    """Run MCP server (deprecated: use 'mcp start' instead)."""
+    click.echo(
+        "Note: 'run-server-mcp' is deprecated. Use 'crossref-local mcp start'.",
+        err=True,
+    )
+    run_mcp_server(transport, host, port)
+
+
+@cli.command("relay", context_settings=CONTEXT_SETTINGS)
+@click.option("--host", default=None, envvar="CROSSREF_LOCAL_HOST", help="Host to bind")
+@click.option(
+    "--port",
+    default=None,
+    type=int,
+    envvar="CROSSREF_LOCAL_PORT",
+    help="Port to listen on (default: 31291)",
+)
+def relay(host: str, port: int):
+    """Run HTTP relay server for remote database access.
+
+    \b
+    This runs a FastAPI server that provides proper full-text search
+    using FTS5 index across all 167M+ papers.
+
+    \b
+    Example:
+      crossref-local relay                  # Run on 0.0.0.0:31291
+      crossref-local relay --port 8080      # Custom port
+
+    \b
+    Then connect with http mode:
+      crossref-local --http search "CRISPR"
+      curl "http://localhost:8333/works?q=CRISPR&limit=10"
+    """
+    try:
+        from .server import run_server
+    except ImportError:
+        click.echo(
+            "API server requires fastapi and uvicorn. Install with:\n"
+            "  pip install fastapi uvicorn",
+            err=True,
+        )
+        sys.exit(1)
+
+    from .server import DEFAULT_HOST, DEFAULT_PORT
+
+    host = host or DEFAULT_HOST
+    port = port or DEFAULT_PORT
+    click.echo(f"Starting CrossRef Local relay server on {host}:{port}")
+    click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
+    click.echo(f"Docs: http://{host}:{port}/docs")
+    run_server(host=host, port=port)
+
+
+# Deprecated alias for backwards compatibility
+@cli.command("run-server-http", context_settings=CONTEXT_SETTINGS, hidden=True)
+@click.option("--host", default=None, envvar="CROSSREF_LOCAL_HOST")
+@click.option("--port", default=None, type=int, envvar="CROSSREF_LOCAL_PORT")
+@click.pass_context
+def run_server_http_deprecated(ctx, host: str, port: int):
+    """Deprecated: Use 'crossref-local relay' instead."""
+    click.echo(
+        "Note: 'run-server-http' is deprecated. Use 'crossref-local relay'.",
+        err=True,
+    )
+    ctx.invoke(relay, host=host, port=port)
+
+
+@cli.command("list-apis", context_settings=CONTEXT_SETTINGS)
+@click.option(
+    "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"
+)
+@click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def list_apis(verbose, max_depth, as_json):
+    """List Python APIs (alias for: scitex introspect api crossref_local)."""
+    try:
+        from scitex.cli.introspect import api
+        import click
+
+        ctx = click.Context(api)
+        ctx.invoke(
+            api,
+            dotted_path="crossref_local",
+            verbose=verbose,
+            max_depth=max_depth,
+            as_json=as_json,
+        )
+    except ImportError:
+        # Fallback if scitex not installed
+        click.echo("Install scitex for full API introspection:")
+        click.echo("  pip install scitex")
+        click.echo()
+        click.echo("Or use: scitex introspect api crossref_local")
+
+
+def main():
+    """Entry point for CLI."""
+    cli()
+
+
+if __name__ == "__main__":
+    main()

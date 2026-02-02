@@ -4,9 +4,9 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 
-from .. import fts
-from ..db import get_db
-from ..models import Work
+from .._core import fts
+from .._core.db import get_db
+from .._core.models import Work
 from .models import WorkResponse
 from .routes_works import get_work
 

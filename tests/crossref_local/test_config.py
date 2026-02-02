@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch
 
-from crossref_local.config import Config, get_db_path, DEFAULT_DB_PATHS, DEFAULT_API_URLS
+from crossref_local._core.config import Config, get_db_path, DEFAULT_DB_PATHS, DEFAULT_API_URLS
 
 
 class TestGetDbPath:

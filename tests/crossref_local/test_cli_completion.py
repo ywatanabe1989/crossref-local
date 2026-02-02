@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from crossref_local.cli_completion import (
+from crossref_local._cli.completion import (
     BASH_COMPLETION,
     COMPLETION_END_MARKER,
     COMPLETION_MARKER,
@@ -101,7 +101,7 @@ class TestCompletionScripts:
 class TestInstallCompletion:
     def test_install_bash(self, temp_home):
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [temp_home / ".bashrc"]},
         ):
             success, message = _install_completion("bash")
@@ -119,7 +119,7 @@ class TestInstallCompletion:
         bashrc.write_text(f"{COMPLETION_MARKER}\ntest\n{COMPLETION_END_MARKER}\n")
 
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [bashrc]},
         ):
             success, message = _install_completion("bash")
@@ -142,7 +142,7 @@ class TestUninstallCompletion:
         bashrc.write_text(original + completion_block + "# after\n")
 
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [bashrc]},
         ):
             success, message = _uninstall_completion("bash")
@@ -158,7 +158,7 @@ class TestUninstallCompletion:
         bashrc.write_text("# no completion installed\n")
 
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [bashrc]},
         ):
             success, message = _uninstall_completion("bash")
@@ -172,7 +172,7 @@ class TestIsInstalled:
         bashrc.write_text(f"{COMPLETION_MARKER}\ntest\n{COMPLETION_END_MARKER}\n")
 
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [bashrc]},
         ):
             installed, config_file = _is_installed("bash")
@@ -184,7 +184,7 @@ class TestIsInstalled:
         bashrc.write_text("# no completion\n")
 
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [bashrc]},
         ):
             installed, config_file = _is_installed("bash")
@@ -194,7 +194,7 @@ class TestIsInstalled:
 class TestGetConfigFile:
     def test_get_existing_config(self, temp_home):
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [temp_home / ".bashrc"]},
         ):
             config = _get_config_file("bash")
@@ -203,7 +203,7 @@ class TestGetConfigFile:
     def test_get_first_option_if_none_exist(self, tmp_path):
         nonexistent = tmp_path / ".nonexistent"
         with patch(
-            "crossref_local.cli_completion.SHELL_CONFIGS",
+            "crossref_local._cli.completion.SHELL_CONFIGS",
             {"bash": [nonexistent]},
         ):
             config = _get_config_file("bash")

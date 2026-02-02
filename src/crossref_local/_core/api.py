@@ -39,7 +39,7 @@ __all__ = [
 
 def _get_http_client():
     """Get HTTP client (lazy import to avoid circular dependency)."""
-    from .remote import RemoteClient  # Uses enhanced client with collections
+    from .._remote import RemoteClient  # Uses enhanced client with collections
 
     return RemoteClient(Config.get_api_url())
 
@@ -69,7 +69,7 @@ def search(
     """
     if Config.get_mode() == "http":
         client = _get_http_client()
-        return client.search(query=query, limit=limit)
+        return client.search(query=query, limit=limit, offset=offset)
     return fts.search(query, limit, offset)
 
 
