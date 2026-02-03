@@ -35,6 +35,8 @@ def search(
     limit: int = 10,
     offset: int = 0,
     with_abstracts: bool = False,
+    save_path: str | None = None,
+    save_format: str = "json",
 ) -> str:
     """Search for academic works by title, abstract, or authors.
 
@@ -46,6 +48,8 @@ def search(
         limit: Maximum number of results to return (default: 10)
         offset: Skip first N results for pagination (default: 0)
         with_abstracts: Include abstracts in results (default: False)
+        save_path: Optional file path to save results (e.g., "results.json", "papers.bib")
+        save_format: Output format for save_path: "text", "json", or "bibtex" (default: "json")
 
     Returns:
         JSON string with search results including total count and matching works.
@@ -54,8 +58,21 @@ def search(
         search("machine learning")
         search("CRISPR", limit=20)
         search("neural network AND memory", with_abstracts=True)
+        search("epilepsy", save_path="epilepsy.bib", save_format="bibtex")
     """
     results = _search(query, limit=limit, offset=offset)
+
+    # Save to file if requested
+    saved_path = None
+    if save_path:
+        from .._core.export import save as _save
+
+        try:
+            saved_path = _save(
+                results, save_path, format=save_format, include_abstract=with_abstracts
+            )
+        except Exception as e:
+            return json.dumps({"error": f"Failed to save: {e}"})
 
     works_data = []
     for work in results.works:
@@ -70,25 +87,34 @@ def search(
             work_dict["abstract"] = work.abstract
         works_data.append(work_dict)
 
-    return json.dumps(
-        {
-            "query": results.query,
-            "total": results.total,
-            "returned": len(works_data),
-            "elapsed_ms": round(results.elapsed_ms, 2),
-            "works": works_data,
-        },
-        indent=2,
-    )
+    result = {
+        "query": results.query,
+        "total": results.total,
+        "returned": len(works_data),
+        "elapsed_ms": round(results.elapsed_ms, 2),
+        "works": works_data,
+    }
+
+    if saved_path:
+        result["saved_to"] = saved_path
+
+    return json.dumps(result, indent=2)
 
 
 @mcp.tool()
-def search_by_doi(doi: str, as_citation: bool = False) -> str:
+def search_by_doi(
+    doi: str,
+    as_citation: bool = False,
+    save_path: str | None = None,
+    save_format: str = "json",
+) -> str:
     """Get detailed information about a work by DOI.
 
     Args:
         doi: Digital Object Identifier (e.g., "10.1038/nature12373")
         as_citation: Return formatted citation instead of full metadata
+        save_path: Optional file path to save result (e.g., "paper.json", "paper.bib")
+        save_format: Output format for save_path: "text", "json", or "bibtex" (default: "json")
 
     Returns:
         JSON string with work metadata, or formatted citation string.
@@ -96,16 +122,34 @@ def search_by_doi(doi: str, as_citation: bool = False) -> str:
     Examples:
         search_by_doi("10.1038/nature12373")
         search_by_doi("10.1126/science.aax0758", as_citation=True)
+        search_by_doi("10.1038/nature12373", save_path="paper.bib", save_format="bibtex")
     """
     work = _get(doi)
 
     if work is None:
         return json.dumps({"error": f"DOI not found: {doi}"})
 
-    if as_citation:
-        return work.citation()
+    # Save to file if requested
+    saved_path = None
+    if save_path:
+        from .._core.export import save as _save
 
-    return json.dumps(work.to_dict(), indent=2)
+        try:
+            saved_path = _save(work, save_path, format=save_format)
+        except Exception as e:
+            return json.dumps({"error": f"Failed to save: {e}"})
+
+    if as_citation:
+        result = work.citation()
+        if saved_path:
+            result += f"\n\n(Saved to: {saved_path})"
+        return result
+
+    result = work.to_dict()
+    if saved_path:
+        result["saved_to"] = saved_path
+
+    return json.dumps(result, indent=2)
 
 
 @mcp.tool()

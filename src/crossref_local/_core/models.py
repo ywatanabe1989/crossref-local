@@ -7,6 +7,7 @@ from typing import List, Optional
 __all__ = [
     "Work",
     "SearchResult",
+    "LimitInfo",
 ]
 
 
@@ -167,6 +168,84 @@ class Work:
 
         return ". ".join(filter(None, parts))
 
+    def to_text(self, include_abstract: bool = False) -> str:
+        """
+        Format as human-readable text.
+
+        Args:
+            include_abstract: Include abstract in output
+
+        Returns:
+            Formatted text string
+        """
+        from .export import work_to_text
+
+        return work_to_text(self, include_abstract=include_abstract)
+
+    def to_bibtex(self) -> str:
+        """
+        Format as BibTeX entry.
+
+        Returns:
+            BibTeX string
+        """
+        from .export import work_to_bibtex
+
+        return work_to_bibtex(self)
+
+    def save(self, path: str, format: str = "json") -> str:
+        """
+        Save work to file.
+
+        Args:
+            path: Output file path
+            format: Output format ("text", "json", "bibtex")
+
+        Returns:
+            Path to saved file
+
+        Examples:
+            >>> work = get("10.1038/nature12373")
+            >>> work.save("paper.json")
+            >>> work.save("paper.bib", format="bibtex")
+        """
+        from .export import save
+
+        return save(self, path, format=format)
+
+
+@_dataclass
+class LimitInfo:
+    """
+    Information about result limiting at each stage.
+
+    Attributes:
+        requested: Number of results requested
+        returned: Number of results actually returned
+        total_available: Total matches in database
+        capped: Whether results were capped
+        capped_reason: Why results were capped (if applicable)
+        stage: Which stage applied this limit (e.g., "crossref-local", "scitex", "django")
+    """
+
+    requested: int
+    returned: int
+    total_available: int
+    capped: bool = False
+    capped_reason: Optional[str] = None
+    stage: str = "crossref-local"
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary."""
+        return {
+            "requested": self.requested,
+            "returned": self.returned,
+            "total_available": self.total_available,
+            "capped": self.capped,
+            "capped_reason": self.capped_reason,
+            "stage": self.stage,
+        }
+
 
 @_dataclass
 class SearchResult:
@@ -178,12 +257,14 @@ class SearchResult:
         total: Total number of matches
         query: Original search query
         elapsed_ms: Search time in milliseconds
+        limit_info: Information about result limiting
     """
 
     works: List[Work]
     total: int
     query: str
     elapsed_ms: float
+    limit_info: Optional[LimitInfo] = None
 
     def __len__(self) -> int:
         return len(self.works)
@@ -193,3 +274,27 @@ class SearchResult:
 
     def __getitem__(self, idx):
         return self.works[idx]
+
+    def save(
+        self, path: str, format: str = "json", include_abstract: bool = True
+    ) -> str:
+        """
+        Save search results to file.
+
+        Args:
+            path: Output file path
+            format: Output format ("text", "json", "bibtex")
+            include_abstract: Include abstracts in text format
+
+        Returns:
+            Path to saved file
+
+        Examples:
+            >>> results = search("machine learning", limit=10)
+            >>> results.save("results.json")
+            >>> results.save("results.bib", format="bibtex")
+            >>> results.save("results.txt", format="text")
+        """
+        from .export import save
+
+        return save(self, path, format=format, include_abstract=include_abstract)
