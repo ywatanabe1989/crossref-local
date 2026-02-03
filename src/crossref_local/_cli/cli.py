@@ -442,7 +442,7 @@ def relay(host: str, port: int):
       curl "http://localhost:8333/works?q=CRISPR&limit=10"
     """
     try:
-        from .server import run_server
+        from .._server import run_server
     except ImportError:
         click.echo(
             "API server requires fastapi and uvicorn. Install with:\n"
@@ -451,7 +451,7 @@ def relay(host: str, port: int):
         )
         sys.exit(1)
 
-    from .server import DEFAULT_HOST, DEFAULT_PORT
+    from .._server import DEFAULT_HOST, DEFAULT_PORT
 
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
