@@ -17,10 +17,8 @@ def _strip_xml_tags(text: str) -> str:
     """Strip XML/JATS tags from abstract text."""
     if not text:
         return text
-    # Remove XML tags
-    text = re.sub(r"<[^>]+>", " ", text)
-    # Collapse multiple spaces
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"<[^>]+>", " ", text)  # Remove XML tags
+    text = re.sub(r"\s+", " ", text)  # Collapse multiple spaces
     return text.strip()
 
 
@@ -141,13 +139,11 @@ def cli(ctx, http: bool, api_url: str):
 
 
 def _get_if_fast(db, issn: str, cache: dict) -> Optional[float]:
-    """Fast IF lookup from pre-computed OpenAlex data."""
+    """Fast IF lookup from OpenAlex data."""
     if issn in cache:
         return cache[issn]
-    row = db.fetchone(
-        "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?",
-        (f"%{issn}%",),
-    )
+    q = "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?"
+    row = db.fetchone(q, (f"%{issn}%",))
     cache[issn] = row["two_year_mean_citedness"] if row else None
     return cache[issn]
 
@@ -175,18 +171,20 @@ def search_cmd(
 ):
     """Search for works by title, abstract, or authors."""
     from .._core.db import get_db
+    from .._core.config import Config
 
     try:
-        results = search(query, limit=limit, offset=offset)
+        results = search(query, limit=limit, offset=offset, with_if=with_if)
     except ConnectionError as e:
         click.secho(f"Error: {e}", fg="red", err=True)
         sys.exit(1)
-
+    # Local IF lookup only in DB mode (HTTP gets IF from API)
     if_cache, db = {}, None
-    try:
-        db = get_db() if with_if else None
-    except FileNotFoundError:
-        pass  # HTTP mode: IF lookup unavailable
+    if with_if and Config.get_mode() != "http":
+        try:
+            db = get_db()
+        except FileNotFoundError:
+            pass
 
     if as_json:
         output = {
@@ -212,7 +210,10 @@ def search_cmd(
                     authors_str += f" et al. ({len(work.authors)} total)"
                 click.echo(f"   Authors: {authors_str}")
             journal_line = f"   Journal: {work.journal or 'N/A'}"
-            if db and work.issn and (if_val := _get_if_fast(db, work.issn, if_cache)):
+            if_val = work.impact_factor or (
+                db and work.issn and _get_if_fast(db, work.issn, if_cache)
+            )
+            if if_val:
                 journal_line += f" (IF: {if_val:.2f}, OpenAlex)"
             click.echo(journal_line)
             if abstracts and work.abstract:

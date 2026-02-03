@@ -1,7 +1,7 @@
 """Work search and retrieval endpoints."""
 
 import time
-from typing import Optional
+from typing import Optional, Dict
 
 from fastapi import APIRouter, Query, HTTPException
 
@@ -12,12 +12,33 @@ from .models import WorkResponse, SearchResponse, BatchRequest, BatchResponse
 
 router = APIRouter(tags=["works"])
 
+# IF cache for performance
+_if_cache: Dict[str, Optional[float]] = {}
+
+
+def _get_impact_factor(db, issn: str) -> Optional[float]:
+    """Get impact factor from journals_openalex table."""
+    if not issn:
+        return None
+    if issn in _if_cache:
+        return _if_cache[issn]
+    try:
+        row = db.fetchone(
+            "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?",
+            (f"%{issn}%",),
+        )
+        _if_cache[issn] = row["two_year_mean_citedness"] if row else None
+    except Exception:
+        _if_cache[issn] = None
+    return _if_cache[issn]
+
 
 @router.get("/works", response_model=SearchResponse)
 def search_works(
     q: str = Query(..., description="Search query (FTS5 syntax supported)"),
     limit: int = Query(10, ge=1, description="Max results"),
     offset: int = Query(0, ge=0, description="Skip first N results"),
+    with_if: bool = Query(False, description="Include impact factor (OpenAlex)"),
 ):
     """
     Full-text search across works.
@@ -28,7 +49,7 @@ def search_works(
     Examples:
         /works?q=machine learning
         /works?q="neural network" AND hippocampus
-        /works?q=CRISPR&limit=20
+        /works?q=CRISPR&limit=20&with_if=true
     """
     start = time.perf_counter()
 
@@ -37,14 +58,13 @@ def search_works(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Search error: {e}")
 
-    elapsed_ms = (time.perf_counter() - start) * 1000
+    # Get IF if requested
+    db = get_db() if with_if else None
 
-    return SearchResponse(
-        query=q,
-        total=results.total,
-        returned=len(results.works),
-        elapsed_ms=round(elapsed_ms, 2),
-        results=[
+    work_responses = []
+    for w in results.works:
+        if_val = _get_impact_factor(db, w.issn) if db and w.issn else None
+        work_responses.append(
             WorkResponse(
                 doi=w.doi,
                 title=w.title,
@@ -57,9 +77,19 @@ def search_works(
                 page=w.page,
                 abstract=w.abstract,
                 citation_count=w.citation_count,
+                impact_factor=if_val,
+                impact_factor_source="OpenAlex" if if_val else None,
             )
-            for w in results.works
-        ],
+        )
+
+    elapsed_ms = (time.perf_counter() - start) * 1000
+
+    return SearchResponse(
+        query=q,
+        total=results.total,
+        returned=len(results.works),
+        elapsed_ms=round(elapsed_ms, 2),
+        results=work_responses,
     )
 
 

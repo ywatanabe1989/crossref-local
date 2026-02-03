@@ -48,6 +48,8 @@ class Work:
     url: Optional[str] = None
     citation_count: Optional[int] = None
     references: List[str] = _field(default_factory=list)
+    impact_factor: Optional[float] = None
+    impact_factor_source: Optional[str] = None
 
     @classmethod
     def from_metadata(cls, doi: str, metadata: dict) -> "Work":
@@ -130,6 +132,8 @@ class Work:
             "url": self.url,
             "citation_count": self.citation_count,
             "references": self.references,
+            "impact_factor": self.impact_factor,
+            "impact_factor_source": self.impact_factor_source,
         }
 
     def citation(self, style: str = "apa") -> str:

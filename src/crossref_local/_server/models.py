@@ -20,6 +20,8 @@ class WorkResponse(BaseModel):
     page: Optional[str] = None
     abstract: Optional[str] = None
     citation_count: Optional[int] = None
+    impact_factor: Optional[float] = None
+    impact_factor_source: Optional[str] = None
 
 
 class SearchResponse(BaseModel):

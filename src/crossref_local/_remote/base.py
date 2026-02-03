@@ -104,6 +104,7 @@ class RemoteClient:
         year: Optional[int] = None,
         limit: int = 10,
         offset: int = 0,
+        with_if: bool = False,
     ) -> SearchResult:
         """
         Search for papers.
@@ -116,6 +117,7 @@ class RemoteClient:
             year: Filter by publication year
             limit: Maximum results (default: 10)
             offset: Skip first N results for pagination
+            with_if: Include impact factor data (OpenAlex)
 
         Returns:
             SearchResult with matching works
@@ -127,6 +129,7 @@ class RemoteClient:
             "q": search_query,
             "limit": limit,
             "offset": offset,
+            "with_if": with_if,
         }
 
         data = self._request("/works", params)
@@ -142,11 +145,14 @@ class RemoteClient:
                 authors=item.get("authors", []),
                 year=item.get("year"),
                 journal=item.get("journal"),
+                issn=item.get("issn"),
                 volume=item.get("volume"),
                 issue=item.get("issue"),
                 page=item.get("page") or item.get("pages"),
                 abstract=item.get("abstract"),
                 citation_count=item.get("citation_count"),
+                impact_factor=item.get("impact_factor"),
+                impact_factor_source=item.get("impact_factor_source"),
             )
             works.append(work)
 
