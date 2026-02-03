@@ -43,7 +43,7 @@ def search(
 
     Args:
         query: Search query (e.g., "machine learning", "CRISPR", "neural network AND hippocampus")
-        limit: Maximum number of results to return (default: 10, max: 100)
+        limit: Maximum number of results to return (default: 10)
         offset: Skip first N results for pagination (default: 0)
         with_abstracts: Include abstracts in results (default: False)
 
@@ -55,7 +55,7 @@ def search(
         search("CRISPR", limit=20)
         search("neural network AND memory", with_abstracts=True)
     """
-    results = _search(query, limit=min(limit, 100), offset=offset)
+    results = _search(query, limit=limit, offset=offset)
 
     works_data = []
     for work in results.works:

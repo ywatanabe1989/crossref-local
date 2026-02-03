@@ -114,7 +114,7 @@ class RemoteClient:
             title: Search by title (explicit)
             authors: Search by author name
             year: Filter by publication year
-            limit: Maximum results (default: 10, max: 100)
+            limit: Maximum results (default: 10)
             offset: Skip first N results for pagination
 
         Returns:
@@ -125,7 +125,7 @@ class RemoteClient:
 
         params = {
             "q": search_query,
-            "limit": min(limit, 100),
+            "limit": limit,
             "offset": offset,
         }
 

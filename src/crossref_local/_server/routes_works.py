@@ -16,7 +16,7 @@ router = APIRouter(tags=["works"])
 @router.get("/works", response_model=SearchResponse)
 def search_works(
     q: str = Query(..., description="Search query (FTS5 syntax supported)"),
-    limit: int = Query(10, ge=1, le=100, description="Max results"),
+    limit: int = Query(10, ge=1, description="Max results"),
     offset: int = Query(0, ge=0, description="Skip first N results"),
 ):
     """
