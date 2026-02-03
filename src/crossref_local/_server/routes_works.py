@@ -8,7 +8,12 @@ from fastapi import APIRouter, Query, HTTPException
 from .._core import fts
 from .._core.db import get_db
 from .._core.models import Work
-from .models import WorkResponse, SearchResponse, BatchRequest, BatchResponse
+from .models import (
+    BatchRequest,
+    BatchResponse,
+    SearchResponse,
+    WorkResponse,
+)
 
 router = APIRouter(tags=["works"])
 
@@ -84,12 +89,27 @@ def search_works(
 
     elapsed_ms = (time.perf_counter() - start) * 1000
 
+    # Build limit_info from search result
+    limit_info = None
+    if results.limit_info:
+        from .models import LimitInfoResponse
+
+        limit_info = LimitInfoResponse(
+            requested=results.limit_info.requested,
+            returned=results.limit_info.returned,
+            total_available=results.limit_info.total_available,
+            capped=results.limit_info.capped,
+            capped_reason=results.limit_info.capped_reason,
+            stage=results.limit_info.stage,
+        )
+
     return SearchResponse(
         query=q,
         total=results.total,
         returned=len(results.works),
         elapsed_ms=round(elapsed_ms, 2),
         results=work_responses,
+        limit_info=limit_info,
     )
 
 

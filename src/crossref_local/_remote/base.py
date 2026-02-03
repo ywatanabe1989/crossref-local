@@ -10,7 +10,7 @@ import urllib.parse
 import urllib.error
 from typing import List, Optional, Dict, Any
 
-from .._core.models import Work, SearchResult
+from .._core.models import SearchResult, Work
 from .._core.config import DEFAULT_PORT
 
 # Default URL uses SCITEX port convention
@@ -156,11 +156,27 @@ class RemoteClient:
             )
             works.append(work)
 
+        # Parse limit_info from response
+        limit_info = None
+        if data.get("limit_info"):
+            from .._core.models import LimitInfo
+
+            li = data["limit_info"]
+            limit_info = LimitInfo(
+                requested=li.get("requested", limit),
+                returned=li.get("returned", len(works)),
+                total_available=li.get("total_available", data.get("total", 0)),
+                capped=li.get("capped", False),
+                capped_reason=li.get("capped_reason"),
+                stage=li.get("stage", "crossref-local-remote"),
+            )
+
         return SearchResult(
             works=works,
             total=data.get("total", len(works)),
             query=query or title or doi or "",
             elapsed_ms=data.get("elapsed_ms", 0.0),
+            limit_info=limit_info,
         )
 
     def get(self, doi: str) -> Optional[Work]:
