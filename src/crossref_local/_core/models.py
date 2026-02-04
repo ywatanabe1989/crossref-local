@@ -133,7 +133,9 @@ class Work:
             "url": self.url,
             "citation_count": self.citation_count,
             "references": self.references,
-            "impact_factor": self.impact_factor,
+            "impact_factor": round(self.impact_factor, 1)
+            if self.impact_factor is not None
+            else None,
             "impact_factor_source": self.impact_factor_source,
         }
 
