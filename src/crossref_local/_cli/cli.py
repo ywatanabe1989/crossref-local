@@ -302,7 +302,12 @@ def serve_mcp(transport: str, host: str, port: int):
     envvar="CROSSREF_LOCAL_PORT",
     help="Port to listen on (default: 31291)",
 )
-def relay(host: str, port: int):
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Kill existing process using the port if any",
+)
+def relay(host: str, port: int, force: bool):
     """Run HTTP relay server for remote database access.
 
     \b
@@ -313,6 +318,7 @@ def relay(host: str, port: int):
     Example:
       crossref-local relay                  # Run on 0.0.0.0:31291
       crossref-local relay --port 8080      # Custom port
+      crossref-local relay --force          # Kill existing process if port in use
 
     \b
     Then connect with http mode:
@@ -333,6 +339,13 @@ def relay(host: str, port: int):
 
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
+
+    # Handle force flag
+    if force:
+        from .utils import kill_process_on_port
+
+        kill_process_on_port(port)
+
     click.echo(f"Starting CrossRef Local relay server on {host}:{port}")
     click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
     click.echo(f"Docs: http://{host}:{port}/docs")

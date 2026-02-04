@@ -430,6 +430,7 @@ def run_server(
     transport: str = "stdio",
     host: str = "localhost",
     port: int = 8082,
+    force: bool = False,
 ) -> None:
     """Run the MCP server.
 
@@ -437,7 +438,14 @@ def run_server(
         transport: Transport protocol ("stdio", "sse", or "http")
         host: Host for HTTP/SSE transport
         port: Port for HTTP/SSE transport
+        force: Kill existing process using the port if any (http/sse only)
     """
+    # Handle force flag for http/sse transports
+    if force and transport in ("http", "sse"):
+        from .utils import kill_process_on_port
+
+        kill_process_on_port(port)
+
     if transport == "stdio":
         mcp.run(transport="stdio")
     elif transport == "sse":
