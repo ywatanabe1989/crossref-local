@@ -65,7 +65,12 @@ def mcp():
     envvar="CROSSREF_LOCAL_MCP_PORT",
     help="Port for HTTP/SSE transport",
 )
-def mcp_start(transport: str, host: str, port: int):
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Kill existing process using the port if any (http/sse only)",
+)
+def mcp_start(transport: str, host: str, port: int, force: bool):
     """Start the MCP server.
 
     \b
@@ -102,7 +107,7 @@ def mcp_start(transport: str, host: str, port: int):
     \b
     See docs/remote-deployment.md for systemd and Docker setup.
     """
-    run_mcp_server(transport, host, port)
+    run_mcp_server(transport, host, port, force)
 
 
 @mcp.command("doctor", context_settings=CONTEXT_SETTINGS)
@@ -331,7 +336,7 @@ def _format_signature(tool_obj, multiline: bool = False, indent: str = "  ") -> 
     return f"{indent}{name_s}({', '.join(params)}){ret_type}"
 
 
-def run_mcp_server(transport: str, host: str, port: int):
+def run_mcp_server(transport: str, host: str, port: int, force: bool = False):
     """Internal function to run MCP server."""
     try:
         from .mcp_server import run_server
@@ -343,7 +348,7 @@ def run_mcp_server(transport: str, host: str, port: int):
         )
         sys.exit(1)
 
-    run_server(transport=transport, host=host, port=port)
+    run_server(transport=transport, host=host, port=port, force=force)
 
 
 def register_mcp_commands(cli_group):

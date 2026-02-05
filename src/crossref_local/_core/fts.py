@@ -5,7 +5,7 @@ import time as _time
 from typing import List, Optional
 
 from .db import Database, get_db
-from .models import SearchResult, Work
+from .models import LimitInfo, SearchResult, Work
 
 __all__ = [
     "search",
@@ -102,11 +102,30 @@ def search(
         metadata = db._decompress_metadata(row["metadata"])
         works.append(Work.from_metadata(row["doi"], metadata))
 
+    # Build limit info
+    returned = len(works)
+    capped = returned < total and returned == limit
+    capped_reason = None
+    if capped:
+        capped_reason = (
+            f"crossref-local: Limited to {limit} results (total available: {total})"
+        )
+
+    limit_info = LimitInfo(
+        requested=limit,
+        returned=returned,
+        total_available=total,
+        capped=capped,
+        capped_reason=capped_reason,
+        stage="crossref-local",
+    )
+
     return SearchResult(
         works=works,
         total=total,
         query=query,
         elapsed_ms=elapsed_ms,
+        limit_info=limit_info,
     )
 
 

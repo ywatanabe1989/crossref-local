@@ -128,12 +128,24 @@ DEFAULT_HOST = os.environ.get(
 )
 
 
-def run_server(host: str = None, port: int = None):
-    """Run the FastAPI server."""
+def run_server(host: str = None, port: int = None, force: bool = False):
+    """Run the FastAPI server.
+
+    Args:
+        host: Host to bind to (default: 0.0.0.0)
+        port: Port to listen on (default: 31291)
+        force: If True, kill any existing process using the port
+    """
     import uvicorn
 
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
+
+    if force:
+        from .._cli.utils import kill_process_on_port
+
+        kill_process_on_port(port)
+
     uvicorn.run(app, host=host, port=port)
 
 

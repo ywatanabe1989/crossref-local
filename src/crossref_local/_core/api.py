@@ -48,6 +48,7 @@ def search(
     query: str,
     limit: int = 10,
     offset: int = 0,
+    with_if: bool = False,
 ) -> SearchResult:
     """
     Full-text search across works.
@@ -58,6 +59,7 @@ def search(
         query: Search query (supports FTS5 syntax)
         limit: Maximum results to return
         offset: Skip first N results (for pagination)
+        with_if: Include impact factor data (OpenAlex)
 
     Returns:
         SearchResult with matching works
@@ -69,7 +71,7 @@ def search(
     """
     if Config.get_mode() == "http":
         client = _get_http_client()
-        return client.search(query=query, limit=limit, offset=offset)
+        return client.search(query=query, limit=limit, offset=offset, with_if=with_if)
     return fts.search(query, limit, offset)
 
 

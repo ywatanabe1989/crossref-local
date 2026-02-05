@@ -64,7 +64,7 @@ Modules:
     aio - Async versions of all API functions
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.2"
 
 # Core API (from _core package)
 from ._core import (
@@ -89,6 +89,9 @@ from ._core import (
     get_cited,
     get_citation_count,
     CitationNetwork,
+    # Export
+    save,
+    SUPPORTED_FORMATS,
 )
 
 # Async API (public module)
@@ -134,6 +137,9 @@ __all__ = [
     "get_cited",
     "get_citation_count",
     "CitationNetwork",
+    # Export/Save
+    "save",
+    "SUPPORTED_FORMATS",
 ]
 
 

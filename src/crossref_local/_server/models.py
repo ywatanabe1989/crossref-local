@@ -20,6 +20,19 @@ class WorkResponse(BaseModel):
     page: Optional[str] = None
     abstract: Optional[str] = None
     citation_count: Optional[int] = None
+    impact_factor: Optional[float] = None
+    impact_factor_source: Optional[str] = None
+
+
+class LimitInfoResponse(BaseModel):
+    """Information about result limiting."""
+
+    requested: int
+    returned: int
+    total_available: int
+    capped: bool = False
+    capped_reason: Optional[str] = None
+    stage: str = "crossref-local"
 
 
 class SearchResponse(BaseModel):
@@ -30,6 +43,7 @@ class SearchResponse(BaseModel):
     returned: int
     elapsed_ms: float
     results: List[WorkResponse]
+    limit_info: Optional[LimitInfoResponse] = None
 
 
 class InfoResponse(BaseModel):
