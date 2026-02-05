@@ -130,7 +130,7 @@ def search_cmd(
                 db and work.issn and _get_if_fast(db, work.issn, if_cache)
             )
             if if_val:
-                journal_line += f" (IF: {if_val:.2f}, OpenAlex)"
+                journal_line += f" (IF: {if_val:.1f}, OpenAlex)"
             click.echo(journal_line)
             if abstracts and work.abstract:
                 abstract = _strip_xml_tags(work.abstract)[:500]
