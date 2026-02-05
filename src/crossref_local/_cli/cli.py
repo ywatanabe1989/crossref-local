@@ -366,13 +366,13 @@ def run_server_http_deprecated(ctx, host: str, port: int):
     ctx.invoke(relay, host=host, port=port)
 
 
-@cli.command("list-apis", context_settings=CONTEXT_SETTINGS)
+@cli.command("list-python-apis", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"
 )
 @click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def list_apis(verbose, max_depth, as_json):
+def list_python_apis(verbose, max_depth, as_json):
     """List Python APIs (alias for: scitex introspect api crossref_local)."""
     try:
         from scitex.cli.introspect import api
