@@ -10,7 +10,7 @@ import urllib.parse
 import urllib.error
 from typing import List, Optional, Dict, Any
 
-from .._core.models import Work, SearchResult
+from .._core.models import SearchResult, Work
 from .._core.config import DEFAULT_PORT
 
 # Default URL uses SCITEX port convention
@@ -104,6 +104,7 @@ class RemoteClient:
         year: Optional[int] = None,
         limit: int = 10,
         offset: int = 0,
+        with_if: bool = False,
     ) -> SearchResult:
         """
         Search for papers.
@@ -114,8 +115,9 @@ class RemoteClient:
             title: Search by title (explicit)
             authors: Search by author name
             year: Filter by publication year
-            limit: Maximum results (default: 10, max: 100)
+            limit: Maximum results (default: 10)
             offset: Skip first N results for pagination
+            with_if: Include impact factor data (OpenAlex)
 
         Returns:
             SearchResult with matching works
@@ -125,8 +127,9 @@ class RemoteClient:
 
         params = {
             "q": search_query,
-            "limit": min(limit, 100),
+            "limit": limit,
             "offset": offset,
+            "with_if": with_if,
         }
 
         data = self._request("/works", params)
@@ -142,19 +145,38 @@ class RemoteClient:
                 authors=item.get("authors", []),
                 year=item.get("year"),
                 journal=item.get("journal"),
+                issn=item.get("issn"),
                 volume=item.get("volume"),
                 issue=item.get("issue"),
                 page=item.get("page") or item.get("pages"),
                 abstract=item.get("abstract"),
                 citation_count=item.get("citation_count"),
+                impact_factor=item.get("impact_factor"),
+                impact_factor_source=item.get("impact_factor_source"),
             )
             works.append(work)
+
+        # Parse limit_info from response
+        limit_info = None
+        if data.get("limit_info"):
+            from .._core.models import LimitInfo
+
+            li = data["limit_info"]
+            limit_info = LimitInfo(
+                requested=li.get("requested", limit),
+                returned=li.get("returned", len(works)),
+                total_available=li.get("total_available", data.get("total", 0)),
+                capped=li.get("capped", False),
+                capped_reason=li.get("capped_reason"),
+                stage=li.get("stage", "crossref-local-remote"),
+            )
 
         return SearchResult(
             works=works,
             total=data.get("total", len(works)),
             query=query or title or doi or "",
             elapsed_ms=data.get("elapsed_ms", 0.0),
+            limit_info=limit_info,
         )
 
     def get(self, doi: str) -> Optional[Work]:

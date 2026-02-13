@@ -1,27 +1,13 @@
 """Command-line interface for crossref_local."""
 
-import click
-import json
-import re
 import sys
-from typing import Optional
 
+import click
 from rich.console import Console
 
-from .. import search, get, info, __version__
+from .. import __version__, info
 
 console = Console()
-
-
-def _strip_xml_tags(text: str) -> str:
-    """Strip XML/JATS tags from abstract text."""
-    if not text:
-        return text
-    # Remove XML tags
-    text = re.sub(r"<[^>]+>", " ", text)
-    # Collapse multiple spaces
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
 
 
 class AliasedGroup(click.Group):
@@ -140,125 +126,19 @@ def cli(ctx, http: bool, api_url: str):
         Config.set_mode("http")
 
 
-def _get_if_fast(db, issn: str, cache: dict) -> Optional[float]:
-    """Fast IF lookup from pre-computed OpenAlex data."""
-    if issn in cache:
-        return cache[issn]
-    row = db.fetchone(
-        "SELECT two_year_mean_citedness FROM journals_openalex WHERE issns LIKE ?",
-        (f"%{issn}%",),
-    )
-    cache[issn] = row["two_year_mean_citedness"] if row else None
-    return cache[issn]
+# Register search commands from search module
+from .search import search_by_doi_cmd, search_cmd
 
-
-@cli.command("search", context_settings=CONTEXT_SETTINGS)
-@click.argument("query")
-@click.option(
-    "-n", "--number", "limit", default=10, show_default=True, help="Number of results"
-)
-@click.option("-o", "--offset", default=0, help="Skip first N results")
-@click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
-@click.option("-A", "--authors", is_flag=True, help="Show authors")
-@click.option(
-    "-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor"
-)
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(
-    query: str,
-    limit: int,
-    offset: int,
-    abstracts: bool,
-    authors: bool,
-    with_if: bool,
-    as_json: bool,
-):
-    """Search for works by title, abstract, or authors."""
-    from .._core.db import get_db
-
-    try:
-        results = search(query, limit=limit, offset=offset)
-    except ConnectionError as e:
-        click.secho(f"Error: {e}", fg="red", err=True)
-        sys.exit(1)
-
-    if_cache, db = {}, None
-    try:
-        db = get_db() if with_if else None
-    except FileNotFoundError:
-        pass  # HTTP mode: IF lookup unavailable
-
-    if as_json:
-        output = {
-            "query": results.query,
-            "total": results.total,
-            "elapsed_ms": results.elapsed_ms,
-            "works": [w.to_dict() for w in results.works],
-        }
-        click.echo(json.dumps(output, indent=2))
-    else:
-        click.secho(
-            f"Found {results.total:,} matches in {results.elapsed_ms:.1f}ms\n",
-            fg="green",
-        )
-        for i, work in enumerate(results.works, start=offset + 1):
-            title = _strip_xml_tags(work.title) if work.title else "Untitled"
-            year = f"({work.year})" if work.year else ""
-            click.secho(f"{i}. {title} {year}", fg="cyan", bold=True)
-            click.echo(f"   DOI: {work.doi or 'N/A'}")
-            if authors and work.authors:
-                authors_str = ", ".join(work.authors[:5])
-                if len(work.authors) > 5:
-                    authors_str += f" et al. ({len(work.authors)} total)"
-                click.echo(f"   Authors: {authors_str}")
-            journal_line = f"   Journal: {work.journal or 'N/A'}"
-            if db and work.issn and (if_val := _get_if_fast(db, work.issn, if_cache)):
-                journal_line += f" (IF: {if_val:.2f}, OpenAlex)"
-            click.echo(journal_line)
-            if abstracts and work.abstract:
-                abstract = _strip_xml_tags(work.abstract)[:500]
-                click.echo(
-                    f"   Abstract: {abstract}{'...' if len(work.abstract) > 500 else ''}"
-                )
-            click.echo()
-
-
-@cli.command("search-by-doi", context_settings=CONTEXT_SETTINGS)
-@click.argument("doi")
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-@click.option("--citation", is_flag=True, help="Output as citation")
-def search_by_doi_cmd(doi: str, as_json: bool, citation: bool):
-    """Search for a work by DOI."""
-    try:
-        work = get(doi)
-    except ConnectionError as e:
-        click.echo(f"Error: {e}", err=True)
-        click.echo("\nRun 'crossref-local status' to check configuration.", err=True)
-        sys.exit(1)
-
-    if work is None:
-        click.echo(f"DOI not found: {doi}", err=True)
-        sys.exit(1)
-
-    if as_json:
-        click.echo(json.dumps(work.to_dict(), indent=2))
-    elif citation:
-        click.echo(work.citation())
-    else:
-        click.echo(f"Title: {work.title}")
-        click.echo(f"Authors: {', '.join(work.authors)}")
-        click.echo(f"Year: {work.year}")
-        click.echo(f"Journal: {work.journal}")
-        click.echo(f"DOI: {work.doi}")
-        if work.citation_count:
-            click.echo(f"Citations: {work.citation_count}")
+cli.add_command(search_cmd)
+cli.add_command(search_by_doi_cmd)
 
 
 @cli.command(context_settings=CONTEXT_SETTINGS)
 def status():
     """Show status and configuration."""
-    from .._core.config import DEFAULT_DB_PATHS, DEFAULT_API_URLS
     import os
+
+    from .._core.config import DEFAULT_API_URLS, DEFAULT_DB_PATHS
 
     click.echo("CrossRef Local - Status")
     click.echo("=" * 50)
@@ -299,10 +179,10 @@ def status():
     for var_name, description, value in env_vars:
         if value:
             if var_name == "CROSSREF_LOCAL_DB":
-                status = " (OK)" if os.path.exists(value) else " (NOT FOUND)"
+                stat = " (OK)" if os.path.exists(value) else " (NOT FOUND)"
             else:
-                status = ""
-            click.echo(f"  {var_name}={value}{status}")
+                stat = ""
+            click.echo(f"  {var_name}={value}{stat}")
             click.echo(f"      | {description}")
         else:
             click.echo(f"  {var_name} (not set)")
@@ -327,11 +207,10 @@ def status():
     # Check API servers
     click.echo("API Servers:")
     api_found = None
-    api_compatible = False
     for url in DEFAULT_API_URLS:
         try:
-            import urllib.request
             import json as json_module
+            import urllib.request
 
             # Check root endpoint for version
             req = urllib.request.Request(f"{url}/", method="GET")
@@ -344,13 +223,12 @@ def status():
                     # Check version compatibility
                     if server_version == __version__:
                         click.echo(f"  [OK] {url} (v{server_version})")
-                        api_compatible = True
                     else:
                         click.echo(
                             f"  [WARN] {url} (v{server_version} != v{__version__})"
                         )
                         click.echo(
-                            f"         Server version mismatch - may be incompatible"
+                            "         Server version mismatch - may be incompatible"
                         )
 
                     if api_found is None:
@@ -424,7 +302,12 @@ def serve_mcp(transport: str, host: str, port: int):
     envvar="CROSSREF_LOCAL_PORT",
     help="Port to listen on (default: 31291)",
 )
-def relay(host: str, port: int):
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Kill existing process using the port if any",
+)
+def relay(host: str, port: int, force: bool):
     """Run HTTP relay server for remote database access.
 
     \b
@@ -435,6 +318,7 @@ def relay(host: str, port: int):
     Example:
       crossref-local relay                  # Run on 0.0.0.0:31291
       crossref-local relay --port 8080      # Custom port
+      crossref-local relay --force          # Kill existing process if port in use
 
     \b
     Then connect with http mode:
@@ -442,7 +326,7 @@ def relay(host: str, port: int):
       curl "http://localhost:8333/works?q=CRISPR&limit=10"
     """
     try:
-        from .server import run_server
+        from .._server import run_server
     except ImportError:
         click.echo(
             "API server requires fastapi and uvicorn. Install with:\n"
@@ -451,10 +335,17 @@ def relay(host: str, port: int):
         )
         sys.exit(1)
 
-    from .server import DEFAULT_HOST, DEFAULT_PORT
+    from .._server import DEFAULT_HOST, DEFAULT_PORT
 
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
+
+    # Handle force flag
+    if force:
+        from .utils import kill_process_on_port
+
+        kill_process_on_port(port)
+
     click.echo(f"Starting CrossRef Local relay server on {host}:{port}")
     click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
     click.echo(f"Docs: http://{host}:{port}/docs")
@@ -475,17 +366,16 @@ def run_server_http_deprecated(ctx, host: str, port: int):
     ctx.invoke(relay, host=host, port=port)
 
 
-@cli.command("list-apis", context_settings=CONTEXT_SETTINGS)
+@cli.command("list-python-apis", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"
 )
 @click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def list_apis(verbose, max_depth, as_json):
+def list_python_apis(verbose, max_depth, as_json):
     """List Python APIs (alias for: scitex introspect api crossref_local)."""
     try:
         from scitex.cli.introspect import api
-        import click
 
         ctx = click.Context(api)
         ctx.invoke(

@@ -23,6 +23,7 @@ from .citations import (
 )
 from .config import Config
 from .db import Database, close_db, get_db
+from .export import SUPPORTED_FORMATS, save
 from .models import SearchResult, Work
 
 __all__ = [
@@ -53,6 +54,9 @@ __all__ = [
     "close_db",
     # Config
     "Config",
+    # Export
+    "save",
+    "SUPPORTED_FORMATS",
 ]
 
 # EOF

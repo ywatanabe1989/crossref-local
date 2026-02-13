@@ -24,14 +24,14 @@ Local CrossRef database with 167M+ scholarly works, full-text search, and impact
 
 <p align="center">
   <a href="https://scitex.ai/media/videos/crossref-local-v0.3.1-demo.mp4">
-    <img src="examples/demo_mcp_out/crossref-local-v0.3.1-demo-thumbnail_6m55s.png" alt="Demo Video Thumbnail" width="600"/>
+    <img src="examples/04_mcp_demo_out/crossref-local-v0.3.1-demo-thumbnail_6m55s.png" alt="Demo Video Thumbnail" width="600"/>
   </a>
 </p>
 
 Live demonstration of MCP server integration with Claude Code for `epilepsy seizure prediction` literature review:
 - Full-text search on title, abstracts, and keywords across 167M papers (22ms response)
 
-📄 [Full demo documentation](examples/demo_mcp.org) | 📊 [Generated diagrams](examples/demo_mcp_out/)
+📄 [Full demo documentation](examples/demo_mcp.org) | 📊 [Generated diagrams](examples/04_mcp_demo_out/)
 
 </details>
 
@@ -318,7 +318,7 @@ Searching 167M records in milliseconds via FTS5.
 <p align="center">
   <a href="https://scitex.ai"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
   <br>
-  AGPL-3.0 · ywatanabe@scitex.ai
+  AGPL-3.0
 </p>
 
 <!-- EOF -->
