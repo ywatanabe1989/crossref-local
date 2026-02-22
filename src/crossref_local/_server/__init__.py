@@ -92,17 +92,18 @@ def info():
 
     db = get_db()
 
-    row = db.fetchone("SELECT COUNT(*) as count FROM works")
+    # Use MAX(rowid) as fast O(1) approximation (COUNT(*) is too slow on 167M+ rows)
+    row = db.fetchone("SELECT MAX(rowid) as count FROM works")
     work_count = row["count"] if row else 0
 
     try:
-        row = db.fetchone("SELECT COUNT(*) as count FROM works_fts")
+        row = db.fetchone("SELECT MAX(rowid) as count FROM works_fts")
         fts_count = row["count"] if row else 0
     except Exception:
         fts_count = 0
 
     try:
-        row = db.fetchone("SELECT COUNT(*) as count FROM citations")
+        row = db.fetchone("SELECT MAX(rowid) as count FROM citations")
         citation_count = row["count"] if row else 0
     except Exception:
         citation_count = 0

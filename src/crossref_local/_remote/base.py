@@ -77,9 +77,22 @@ class RemoteClient:
                 f"Cannot connect to API at {self.base_url}: {e.reason}"
             ) from e
 
-    def health(self) -> Dict:
-        """Check API server health."""
-        return self._request("/health")
+    def health(self, timeout: int = 5) -> Dict:
+        """Check API server health with a short timeout."""
+        old_timeout = self.timeout
+        self.timeout = timeout
+        try:
+            return self._request("/health")
+        finally:
+            self.timeout = old_timeout
+
+    def is_reachable(self, timeout: int = 3) -> bool:
+        """Quick check if server is reachable."""
+        try:
+            self.health(timeout=timeout)
+            return True
+        except (ConnectionError, OSError):
+            return False
 
     def info(self) -> Dict:
         """Get database/API information."""

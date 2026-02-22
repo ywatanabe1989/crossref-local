@@ -24,7 +24,6 @@ DEFAULT_PORT = 31291
 # Default remote API URLs (checked in order)
 DEFAULT_API_URLS = [
     f"http://localhost:{DEFAULT_PORT}",  # SCITEX default
-    "http://localhost:8333",  # Legacy port (backwards compatibility)
 ]
 DEFAULT_API_URL = DEFAULT_API_URLS[0]
 

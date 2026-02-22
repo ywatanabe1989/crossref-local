@@ -64,7 +64,7 @@ Modules:
     aio - Async versions of all API functions
 """
 
-__version__ = "0.5.2"
+__version__ = "0.5.4"
 
 # Core API (from _core package)
 from ._core import (
@@ -92,6 +92,15 @@ from ._core import (
     # Export
     save,
     SUPPORTED_FORMATS,
+)
+
+# Checker
+from ._core.checker import (
+    check_citations,
+    check_bibtex,
+    check_doi_list,
+    CheckResult,
+    CitationEntry,
 )
 
 # Async API (public module)
@@ -140,6 +149,12 @@ __all__ = [
     # Export/Save
     "save",
     "SUPPORTED_FORMATS",
+    # Citation checking
+    "check_citations",
+    "check_bibtex",
+    "check_doi_list",
+    "CheckResult",
+    "CitationEntry",
 ]
 
 

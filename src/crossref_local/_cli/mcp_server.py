@@ -204,6 +204,50 @@ def enrich_dois(dois: list[str]) -> str:
 
 
 @mcp.tool()
+def check_citations(
+    identifiers: list[str],
+    validate_metadata: bool = True,
+    suggest_enrichment: bool = True,
+) -> str:
+    """Check citations against the local CrossRef database.
+
+    Validates whether DOIs exist in the database and checks metadata completeness.
+
+    Args:
+        identifiers: List of DOIs to check
+        validate_metadata: Check for incomplete metadata (default: True)
+        suggest_enrichment: Suggest metadata improvements (default: True)
+
+    Returns:
+        JSON with summary (total, found, missing, with_issues) and per-entry details.
+    """
+    from .._core.checker import check_citations as _check
+
+    result = _check(identifiers, validate_metadata, suggest_enrichment)
+    return json.dumps(result.to_dict(), indent=2)
+
+
+@mcp.tool()
+def check_bibtex_file(
+    file_path: str, validate_metadata: bool = True, suggest_enrichment: bool = True
+) -> str:
+    """Check all citations in a BibTeX file against the local database.
+
+    Args:
+        file_path: Absolute path to BibTeX file
+        validate_metadata: Check for incomplete metadata
+        suggest_enrichment: Suggest metadata improvements
+
+    Returns:
+        JSON with summary and per-entry details including source_key from BibTeX.
+    """
+    from .._core.checker import check_bibtex as _check
+
+    result = _check(file_path, validate_metadata, suggest_enrichment)
+    return json.dumps(result.to_dict(), indent=2)
+
+
+@mcp.tool()
 def cache_create(
     name: str,
     query: str,

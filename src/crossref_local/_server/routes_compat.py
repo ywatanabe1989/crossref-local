@@ -6,7 +6,6 @@ from fastapi import APIRouter, HTTPException
 
 from .._core import fts
 from .._core.db import get_db
-from .._core.models import Work
 from .models import WorkResponse
 from .routes_works import get_work
 
@@ -77,7 +76,7 @@ def api_stats_compat():
     """Backwards-compatible stats endpoint."""
     db = get_db()
 
-    row = db.fetchone("SELECT COUNT(*) as count FROM works")
+    row = db.fetchone("SELECT MAX(rowid) as count FROM works")
     work_count = row["count"] if row else 0
 
     # Get table names
