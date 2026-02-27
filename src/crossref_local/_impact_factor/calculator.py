@@ -45,19 +45,29 @@ class ImpactFactorCalculator:
             if not self.db_path.exists():
                 raise FileNotFoundError(f"Database not found: {db_path}")
 
-        self.conn = None
-        self._connect()
         self._journal_lookup = JournalLookup(str(self.db_path))
 
-    def _connect(self):
-        """Establish database connection."""
-        self.conn = sqlite3.connect(self.db_path)
-        self.conn.row_factory = sqlite3.Row
+    def _get_connection(self):
+        """Create a new database connection (context manager).
+
+        Creates a fresh connection for each query to ensure thread safety.
+        SQLite connections cannot be shared across threads.
+        """
+        from contextlib import contextmanager
+
+        @contextmanager
+        def connection():
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            try:
+                yield conn
+            finally:
+                conn.close()
+
+        return connection()
 
     def close(self):
-        """Close database connection."""
-        if self.conn:
-            self.conn.close()
+        """Close resources (no-op, connections are per-query now)."""
         if self._journal_lookup:
             self._journal_lookup.close()
 
@@ -129,8 +139,9 @@ class ImpactFactorCalculator:
             """
             params = (f"%{journal_identifier}%", year)
 
-        cursor = self.conn.execute(query, params)
-        return [row[0] for row in cursor]
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, params)
+            return [row[0] for row in cursor]
 
     def count_articles(
         self,
@@ -168,9 +179,10 @@ class ImpactFactorCalculator:
             """
             params = (f"%{journal_identifier}%", year)
 
-        cursor = self.conn.execute(query, params)
-        result = cursor.fetchone()
-        return result[0] if result else 0
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, params)
+            result = cursor.fetchone()
+            return result[0] if result else 0
 
     def get_citations_to_articles(
         self,
@@ -217,9 +229,10 @@ class ImpactFactorCalculator:
         """
 
         params = dois + [citation_year]
-        cursor = self.conn.execute(query, params)
-        result = cursor.fetchone()
-        return result[0] if result and result[0] else 0
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, params)
+            result = cursor.fetchone()
+            return result[0] if result and result[0] else 0
 
     def _count_citations_simple(self, dois: List[str], citation_year: int) -> int:
         """
@@ -239,9 +252,10 @@ class ImpactFactorCalculator:
         WHERE doi IN ({placeholders})
         """
 
-        cursor = self.conn.execute(query, dois)
-        result = cursor.fetchone()
-        return result[0] if result and result[0] else 0
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, dois)
+            result = cursor.fetchone()
+            return result[0] if result and result[0] else 0
 
     def _count_citations_from_graph(self, dois: List[str], citation_year: int) -> int:
         """
@@ -265,25 +279,26 @@ class ImpactFactorCalculator:
         AND json_extract(metadata, '$.reference') IS NOT NULL
         """
 
-        cursor = self.conn.execute(query, (citation_year,))
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, (citation_year,))
 
-        articles_checked = 0
-        for row in cursor:
-            articles_checked += 1
-            if articles_checked % 1000 == 0:
-                logger.info(f"  Checked {articles_checked} articles, found {citation_count} citations so far...")
+            articles_checked = 0
+            for row in cursor:
+                articles_checked += 1
+                if articles_checked % 1000 == 0:
+                    logger.info(f"  Checked {articles_checked} articles, found {citation_count} citations so far...")
 
-            metadata = json.loads(row['metadata'])
-            references = metadata.get('reference', [])
+                metadata = json.loads(row['metadata'])
+                references = metadata.get('reference', [])
 
-            # Check if any reference DOI matches our target DOIs
-            for ref in references:
-                ref_doi = ref.get('DOI', '').lower()
-                if ref_doi in target_dois:
-                    citation_count += 1
+                # Check if any reference DOI matches our target DOIs
+                for ref in references:
+                    ref_doi = ref.get('DOI', '').lower()
+                    if ref_doi in target_dois:
+                        citation_count += 1
 
-        logger.info(f"  Checked {articles_checked} total articles with references")
-        return citation_count
+            logger.info(f"  Checked {articles_checked} total articles with references")
+            return citation_count
 
     def calculate_impact_factor(
         self,
