@@ -285,8 +285,39 @@ def info() -> dict:
 
     if mode == "http":
         client = _get_http_client()
-        http_info = client.info()
-        return {"mode": "http", **http_info}
+        # Use /health (fast) instead of /info (slow COUNT(*) on large DBs)
+        try:
+            health = client.health(timeout=5)
+        except (ConnectionError, OSError):
+            return {
+                "mode": "http",
+                "status": "unreachable",
+                "api_url": client.base_url,
+                "error": f"Cannot connect to {client.base_url}",
+            }
+        result = {
+            "mode": "http",
+            "status": "ok" if health.get("status") == "healthy" else "degraded",
+            "api_url": client.base_url,
+            "db_path": health.get("database_path", "unknown"),
+        }
+        # Try /info with short timeout for counts
+        old_timeout = client.timeout
+        client.timeout = 5
+        try:
+            info_data = client._request("/info")
+            if info_data:
+                result["works"] = info_data.get("total_papers", 0)
+                result["fts_indexed"] = info_data.get("fts_indexed", 0)
+                result["citations"] = info_data.get("citations", 0)
+        except Exception:
+            result["works"] = 0
+            result["fts_indexed"] = 0
+            result["citations"] = 0
+            result["note"] = "/info timed out (server may need update)"
+        finally:
+            client.timeout = old_timeout
+        return result
 
     db = get_db()
 
@@ -310,6 +341,7 @@ def info() -> dict:
 
     return {
         "mode": "db",
+        "status": "ok",
         "db_path": str(Config.get_db_path()),
         "works": work_count,
         "fts_indexed": fts_count,

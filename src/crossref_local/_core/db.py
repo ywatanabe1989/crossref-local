@@ -104,24 +104,28 @@ class Database:
         return data
 
 
-# Singleton connection for convenience functions
-_db: Optional[Database] = None
+# Thread-local storage for database connections (SQLite is not thread-safe)
+import threading as _threading
+
+_local = _threading.local()
 
 
 def get_db() -> Database:
-    """Get or create singleton database connection."""
-    global _db
-    if _db is None:
-        _db = Database()
-    return _db
+    """Get or create thread-local database connection.
+
+    Each thread gets its own Database instance to avoid SQLite threading errors.
+    SQLite connections cannot be safely shared across threads.
+    """
+    if not hasattr(_local, 'db') or _local.db is None:
+        _local.db = Database()
+    return _local.db
 
 
 def close_db() -> None:
-    """Close singleton database connection."""
-    global _db
-    if _db:
-        _db.close()
-        _db = None
+    """Close thread-local database connection."""
+    if hasattr(_local, 'db') and _local.db:
+        _local.db.close()
+        _local.db = None
 
 
 @_contextmanager

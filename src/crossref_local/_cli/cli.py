@@ -132,66 +132,60 @@ from .search import search_by_doi_cmd, search_cmd
 cli.add_command(search_cmd)
 cli.add_command(search_by_doi_cmd)
 
+# Register check command
+from .check import check_cmd
+
+cli.add_command(check_cmd)
+
 
 @cli.command(context_settings=CONTEXT_SETTINGS)
-def status():
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def status(as_json):
     """Show status and configuration."""
+    import json as json_module
     import os
+    import sys
 
     from .._core.config import DEFAULT_API_URLS, DEFAULT_DB_PATHS
 
-    click.echo("CrossRef Local - Status")
+    if as_json:
+        try:
+            status_info = info()
+        except (FileNotFoundError, ConnectionError, OSError) as e:
+            click.echo(
+                json_module.dumps({"status": "error", "error": str(e)}, indent=2)
+            )
+            sys.exit(1)
+        click.echo(json_module.dumps(status_info, indent=2))
+        return
+
+    click.secho("CrossRef Local - Status", fg="cyan", bold=True)
     click.echo("=" * 50)
     click.echo()
 
-    # Check environment variables
+    # Environment variables
     click.echo("Environment Variables:")
     click.echo()
-
     env_vars = [
-        (
-            "CROSSREF_LOCAL_DB",
-            "Path to SQLite database file",
-            os.environ.get("CROSSREF_LOCAL_DB"),
-        ),
-        (
-            "CROSSREF_LOCAL_API_URL",
-            "HTTP API URL (e.g., http://localhost:8333)",
-            os.environ.get("CROSSREF_LOCAL_API_URL"),
-        ),
-        (
-            "CROSSREF_LOCAL_MODE",
-            "Force mode: 'db', 'http', or 'auto'",
-            os.environ.get("CROSSREF_LOCAL_MODE"),
-        ),
-        (
-            "CROSSREF_LOCAL_HOST",
-            "Host for relay server (default: 0.0.0.0)",
-            os.environ.get("CROSSREF_LOCAL_HOST"),
-        ),
-        (
-            "CROSSREF_LOCAL_PORT",
-            "Port for relay server (default: 31291)",
-            os.environ.get("CROSSREF_LOCAL_PORT"),
-        ),
+        ("CROSSREF_LOCAL_DB", "Path to SQLite database file"),
+        ("CROSSREF_LOCAL_API_URL", "HTTP API URL (e.g., http://localhost:31291)"),
+        ("CROSSREF_LOCAL_MODE", "Force mode: 'db', 'http', or 'auto'"),
+        ("CROSSREF_LOCAL_HOST", "Host for relay server (default: 0.0.0.0)"),
+        ("CROSSREF_LOCAL_PORT", "Port for relay server (default: 31291)"),
     ]
-
-    for var_name, description, value in env_vars:
+    for var_name, description in env_vars:
+        value = os.environ.get(var_name)
         if value:
+            stat = ""
             if var_name == "CROSSREF_LOCAL_DB":
                 stat = " (OK)" if os.path.exists(value) else " (NOT FOUND)"
-            else:
-                stat = ""
             click.echo(f"  {var_name}={value}{stat}")
-            click.echo(f"      | {description}")
         else:
             click.echo(f"  {var_name} (not set)")
-            click.echo(f"      | {description}")
+        click.echo(f"      | {description}")
         click.echo()
 
-    click.echo()
-
-    # Check default database paths
+    # Local database locations
     click.echo("Local Database Locations:")
     db_found = None
     for path in DEFAULT_DB_PATHS:
@@ -201,74 +195,65 @@ def status():
                 db_found = path
         else:
             click.echo(f"  [ ] {path}")
-
     click.echo()
 
-    # Check API servers
-    click.echo("API Servers:")
+    # API health checks
+    click.echo("API Health Checks:")
     api_found = None
     for url in DEFAULT_API_URLS:
+        health_url = f"{url}/health"
+        click.echo(f"  $ curl {health_url}")
         try:
-            import json as json_module
             import urllib.request
 
-            # Check root endpoint for version
-            req = urllib.request.Request(f"{url}/", method="GET")
+            req = urllib.request.Request(health_url, method="GET")
             req.add_header("Accept", "application/json")
             with urllib.request.urlopen(req, timeout=3) as resp:
                 if resp.status == 200:
                     data = json_module.loads(resp.read().decode())
-                    server_version = data.get("version", "unknown")
-
-                    # Check version compatibility
-                    if server_version == __version__:
-                        click.echo(f"  [OK] {url} (v{server_version})")
-                    else:
-                        click.echo(
-                            f"  [WARN] {url} (v{server_version} != v{__version__})"
-                        )
-                        click.echo(
-                            "         Server version mismatch - may be incompatible"
-                        )
-
+                    click.secho(f"    -> {data.get('status', 'ok')}", fg="green")
                     if api_found is None:
                         api_found = url
                 else:
-                    click.echo(f"  [ ] {url}")
-        except Exception:
-            click.echo(f"  [ ] {url}")
-
+                    click.secho(f"    -> HTTP {resp.status}", fg="red")
+        except Exception as e:
+            click.secho(f"    -> unreachable ({type(e).__name__})", fg="red")
     click.echo()
 
-    # Summary and recommendations
-    if db_found:
-        click.echo(f"Local database: {db_found}")
+    # Database info via /info endpoint
+    if api_found:
+        info_url = f"{api_found}/info"
+        click.echo(f"  $ curl {info_url}")
         try:
-            db_info = info()
-            click.echo(f"  Works: {db_info.get('works', 0):,}")
-            click.echo(f"  FTS indexed: {db_info.get('fts_indexed', 0):,}")
+            req = urllib.request.Request(info_url, method="GET")
+            req.add_header("Accept", "application/json")
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json_module.loads(resp.read().decode())
+                click.secho(f"    -> ok", fg="green")
+                click.echo(f"Works: {data.get('total_papers', 0):,}")
+                click.echo(f"FTS Indexed: {data.get('fts_indexed', 0):,}")
+                click.echo(f"Citations: {data.get('citations', 0):,}")
+        except Exception:
+            click.secho(f"    -> timed out (server may need update)", fg="yellow")
+            # Fallback to info() which uses health-first approach
+            try:
+                status_info = info()
+                if "works" in status_info:
+                    click.echo(f"Works: {status_info['works']:,}")
+                if "fts_indexed" in status_info:
+                    click.echo(f"FTS Indexed: {status_info['fts_indexed']:,}")
+                if "citations" in status_info:
+                    click.echo(f"Citations: {status_info['citations']:,}")
+            except Exception:
+                pass
+    elif db_found:
+        try:
+            status_info = info()
+            click.echo(f"Works: {status_info.get('works', 0):,}")
+            click.echo(f"FTS Indexed: {status_info.get('fts_indexed', 0):,}")
+            click.echo(f"Citations: {status_info.get('citations', 0):,}")
         except Exception as e:
-            click.echo(f"  Error: {e}", err=True)
-        click.echo()
-        click.echo("Ready! Try:")
-        click.echo('  crossref-local search "machine learning"')
-    elif api_found:
-        click.echo(f"HTTP API available: {api_found}")
-        click.echo()
-        click.echo("Ready! Try:")
-        click.echo('  crossref-local --http search "machine learning"')
-        click.echo()
-        click.echo("Or set environment:")
-        click.echo("  export CROSSREF_LOCAL_MODE=http")
-    else:
-        click.echo("No database or API server found!")
-        click.echo()
-        click.echo("Options:")
-        click.echo("  1. Direct database access (db mode):")
-        click.echo("     export CROSSREF_LOCAL_DB=/path/to/crossref.db")
-        click.echo()
-        click.echo("  2. HTTP API (connect to server):")
-        click.echo("     crossref-local --http search 'query'")
+            click.secho(f"Error: {e}", fg="red", err=True)
 
 
 # Register MCP subcommand group
