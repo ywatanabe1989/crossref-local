@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "crossref-local"
-version = "0.5.4"
+version = "0.5.5"
 description = "Local CrossRef database with 167M+ works and full-text search"
 readme = "README.md"
 license = "AGPL-3.0"
@@ -50,19 +50,29 @@ viz = [
     "matplotlib>=3.7",
 ]
 mcp = [
-    "fastmcp>=0.4",
+    "fastmcp>=2.0.0",
 ]
 api = [
     "fastapi>=0.100",
     "uvicorn>=0.20",
 ]
+docs = [
+    "sphinx>=7.0",
+    "sphinx-rtd-theme>=2.0",
+    "myst-parser>=2.0",
+    "sphinx-copybutton>=0.5",
+    "sphinx-autodoc-typehints>=1.25",
+]
 all = [
-    "crossref-local[dev,viz,mcp,api]",
+    "crossref-local[dev,viz,mcp,api,docs]",
 ]
 
 [project.scripts]
 crossref-local = "crossref_local.cli:main"
 crossref-local-mcp = "crossref_local.mcp_server:main"
+
+[project.entry-points."scitex_dev.docs"]
+crossref-local = "crossref_local"
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/crossref_local"
