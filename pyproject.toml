@@ -50,7 +50,7 @@ viz = [
     "matplotlib>=3.7",
 ]
 mcp = [
-    "fastmcp>=0.4",
+    "fastmcp>=2.0.0",
 ]
 api = [
     "fastapi>=0.100",
