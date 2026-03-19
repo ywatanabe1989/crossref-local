@@ -1,9 +1,16 @@
 """Tests for crossref_local.mcp_server module."""
 
-import json
+import asyncio
+
 import pytest
 
 from crossref_local.mcp_server import mcp
+
+
+def _get_tools():
+    """Get tools dict from FastMCP v2."""
+    tools = asyncio.run(mcp.list_tools())
+    return {t.name: t for t in tools}
 
 
 class TestMCPServerSetup:
@@ -15,17 +22,13 @@ class TestMCPServerSetup:
 
     def test_mcp_server_has_tools(self):
         """MCP server has registered tools."""
-        tools = list(mcp._tool_manager._tools.keys())
+        tools = _get_tools()
         assert len(tools) > 0
 
     def test_expected_tools_registered(self):
         """Expected tools are registered."""
-        tools = list(mcp._tool_manager._tools.keys())
-        expected = [
-            "search",
-            "search_by_doi",
-            "status",
-        ]
+        tools = _get_tools()
+        expected = ["search", "search_by_doi", "status"]
         for tool_name in expected:
             assert tool_name in tools, f"Missing tool: {tool_name}"
 
@@ -35,11 +38,11 @@ class TestSearchTool:
 
     def test_search_tool_exists(self):
         """search tool is registered."""
-        assert "search" in mcp._tool_manager._tools
+        assert "search" in _get_tools()
 
     def test_search_has_description(self):
         """search tool has description."""
-        tool = mcp._tool_manager._tools["search"]
+        tool = _get_tools()["search"]
         assert tool.description is not None
         assert len(tool.description) > 0
 
@@ -49,7 +52,7 @@ class TestSearchByDoiTool:
 
     def test_search_by_doi_tool_exists(self):
         """search_by_doi tool is registered."""
-        assert "search_by_doi" in mcp._tool_manager._tools
+        assert "search_by_doi" in _get_tools()
 
 
 class TestStatusTool:
@@ -57,7 +60,7 @@ class TestStatusTool:
 
     def test_status_tool_exists(self):
         """status tool is registered."""
-        assert "status" in mcp._tool_manager._tools
+        assert "status" in _get_tools()
 
 
 class TestRunServer:
