@@ -54,8 +54,6 @@ class TestCLIHelp:
         # Check all subcommands are included
         assert "search" in result.output
         assert "status" in result.output
-        assert "run-server-mcp" in result.output
-        assert "run-server-http" in result.output
         assert "search-by-doi" in result.output
         # Check formatted separators are present
         assert "━━━" in result.output
@@ -120,24 +118,37 @@ class TestStatusCommand:
         assert "Status" in result.output or "status" in result.output.lower()
 
 
-class TestRunServerMcpCommand:
-    """Tests for run-server-mcp command."""
+class TestRelayCommand:
+    """Tests for relay command."""
 
-    def test_run_server_mcp_help(self, runner):
-        """run-server-mcp --help shows MCP server options."""
-        result = runner.invoke(cli, ["run-server-mcp", "--help"])
+    def test_relay_help(self, runner):
+        """relay --help shows server options."""
+        result = runner.invoke(cli, ["relay", "--help"])
         assert result.exit_code == 0
-        assert "MCP" in result.output or "transport" in result.output.lower()
+        assert "relay" in result.output.lower() or "port" in result.output.lower()
 
-
-class TestRunServerHttpCommand:
-    """Tests for run-server-http command."""
-
-    def test_run_server_http_help(self, runner):
-        """run-server-http --help shows HTTP server options."""
-        result = runner.invoke(cli, ["run-server-http", "--help"])
+    def test_relay_dry_run(self, runner):
+        """relay --dry-run shows what would be started."""
+        result = runner.invoke(cli, ["relay", "--dry-run"])
         assert result.exit_code == 0
-        assert "HTTP" in result.output or "port" in result.output.lower()
+        assert "[dry-run]" in result.output
+
+
+class TestMcpCommand:
+    """Tests for mcp subcommands."""
+
+    def test_mcp_help(self, runner):
+        """mcp --help shows subcommands."""
+        result = runner.invoke(cli, ["mcp", "--help"])
+        assert result.exit_code == 0
+        assert "start" in result.output
+        assert "doctor" in result.output
+
+    def test_mcp_start_dry_run(self, runner):
+        """mcp start --dry-run shows what would be started."""
+        result = runner.invoke(cli, ["mcp", "start", "--dry-run"])
+        assert result.exit_code == 0
+        assert "[dry-run]" in result.output
 
 
 if __name__ == "__main__":
