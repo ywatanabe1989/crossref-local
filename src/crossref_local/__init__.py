@@ -64,7 +64,7 @@ Modules:
     aio - Async versions of all API functions
 """
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 # Core API (from _core package)
 from ._core import (
