@@ -378,6 +378,16 @@ def list_python_apis(verbose, max_depth, as_json):
         click.echo("Or use: scitex introspect api crossref_local")
 
 
+# Register docs and skills subcommands (from scitex-dev)
+try:
+    from scitex_dev.cli import docs_click_group, skills_click_group
+
+    cli.add_command(docs_click_group(package="crossref-local"))
+    cli.add_command(skills_click_group(package="crossref-local"))
+except ImportError:
+    pass
+
+
 def main():
     """Entry point for CLI."""
     cli()
