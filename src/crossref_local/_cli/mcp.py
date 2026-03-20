@@ -70,7 +70,12 @@ def mcp():
     is_flag=True,
     help="Kill existing process using the port if any (http/sse only)",
 )
-def mcp_start(transport: str, host: str, port: int, force: bool):
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be started without starting",
+)
+def mcp_start(transport: str, host: str, port: int, force: bool, dry_run: bool):
     """Start the MCP server.
 
     \b
@@ -107,6 +112,12 @@ def mcp_start(transport: str, host: str, port: int, force: bool):
     \b
     See docs/remote-deployment.md for systemd and Docker setup.
     """
+    if dry_run:
+        click.echo(f"[dry-run] Would start MCP server with transport={transport}")
+        if transport != "stdio":
+            click.echo(f"[dry-run] Host: {host}, Port: {port}")
+        return
+
     run_mcp_server(transport, host, port, force)
 
 
