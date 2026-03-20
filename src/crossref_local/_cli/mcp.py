@@ -70,7 +70,12 @@ def mcp():
     is_flag=True,
     help="Kill existing process using the port if any (http/sse only)",
 )
-def mcp_start(transport: str, host: str, port: int, force: bool):
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be started without starting",
+)
+def mcp_start(transport: str, host: str, port: int, force: bool, dry_run: bool):
     """Start the MCP server.
 
     \b
@@ -107,6 +112,12 @@ def mcp_start(transport: str, host: str, port: int, force: bool):
     \b
     See docs/remote-deployment.md for systemd and Docker setup.
     """
+    if dry_run:
+        click.echo(f"[dry-run] Would start MCP server with transport={transport}")
+        if transport != "stdio":
+            click.echo(f"[dry-run] Host: {host}, Port: {port}")
+        return
+
     run_mcp_server(transport, host, port, force)
 
 
@@ -214,7 +225,9 @@ def mcp_list_tools(verbose: int, compact: bool, as_json: bool):
         raise SystemExit(1)
 
     # Get tools grouped by prefix
-    tools_dict = getattr(mcp_server._tool_manager, "_tools", {})
+    from scitex_dev import get_tools_sync
+
+    tools_dict = get_tools_sync(mcp_server)
     modules = {}
     for name in sorted(tools_dict.keys()):
         prefix = name.split("_")[0]

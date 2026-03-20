@@ -4,9 +4,15 @@
 !-- File: /home/ywatanabe/proj/crossref-local/README.md
 !-- --- -->
 
-# CrossRef Local
+# CrossRef Local (<code>crossref-local</code>)
 
-Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation.
+<p align="center">
+  <a href="https://scitex.ai">
+    <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
+  </a>
+</p>
+
+<p align="center"><b>Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation</b></p>
 
 [![PyPI version](https://badge.fury.io/py/crossref-local.svg)](https://badge.fury.io/py/crossref-local)
 [![Documentation](https://readthedocs.org/projects/crossref-local/badge/?version=latest)](https://crossref-local.readthedocs.io/en/latest/)
@@ -316,9 +322,38 @@ Searching 167M records in milliseconds via FTS5.
 ---
 
 <p align="center">
-  <a href="https://scitex.ai"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
-  <br>
-  AGPL-3.0
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+</p>
+
+## Part of SciTeX
+
+CrossRef Local is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, DOI resolution and citation checking integrate seamlessly:
+
+```python
+import scitex
+
+# Resolve DOIs and enrich bibliography
+scitex.scholar.enrich_bibtex("references.bib")
+
+# Check citation accuracy
+scitex.scholar.check_citations("manuscript.tex")
+```
+
+The SciTeX system follows the Four Freedoms for Research below, inspired by [the Free Software Definition](https://www.gnu.org/philosophy/free-sw.en.html):
+
+>Four Freedoms for Research
+>
+>0. The freedom to **run** your research anywhere — your machine, your terms.
+>1. The freedom to **study** how every step works — from raw data to final manuscript.
+>2. The freedom to **redistribute** your workflows, not just your papers.
+>3. The freedom to **modify** any module and share improvements with the community.
+>
+>AGPL-3.0 — because we believe research infrastructure deserves the same freedoms as the software it runs on.
+
+---
+
+<p align="center">
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
 </p>
 
 <!-- EOF -->

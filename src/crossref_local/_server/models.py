@@ -55,7 +55,7 @@ class InfoResponse(BaseModel):
     mode: str = "local"
     total_papers: int
     fts_indexed: int
-    citations: int
+    citations: Optional[int] = 0
     database_path: str
 
 

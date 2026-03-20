@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "crossref-local"
-version = "0.5.5"
+version = "0.6.0"
 description = "Local CrossRef database with 167M+ works and full-text search"
 readme = "README.md"
 license = "AGPL-3.0"
 requires-python = ">=3.10"
 authors = [
-    { name = "Yusuke Watanabe" }
+    { name = "Yusuke Watanabe", email = "ywatanabe@scitex.ai" }
 ]
 keywords = [
     "crossref",
@@ -21,6 +21,7 @@ keywords = [
     "full-text-search",
     "fts5",
     "impact-factor",
+    "scitex",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -36,6 +37,7 @@ classifiers = [
 dependencies = [
     "click>=8.0",
     "rich>=13.0",
+    "scitex-dev>=0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -74,12 +76,18 @@ crossref-local-mcp = "crossref_local.mcp_server:main"
 [project.entry-points."scitex_dev.docs"]
 crossref-local = "crossref_local"
 
+[project.entry-points."scitex_dev.skills"]
+crossref-local = "crossref_local"
+
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/crossref_local"
 Repository = "https://github.com/ywatanabe1989/crossref_local"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/crossref_local"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/crossref_local/skills" = "crossref_local/skills"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

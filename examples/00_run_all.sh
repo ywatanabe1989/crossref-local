@@ -17,12 +17,12 @@ echo "=== 01_quickstart.py ==="
 python3 01_quickstart.py
 echo ""
 
-echo "=== impact_factor/run_all_demos.sh ==="
-cd impact_factor && ./run_all_demos.sh && cd ..
+echo "=== 03_impact_factor/run_all_demos.sh ==="
+cd 03_impact_factor && ./run_all_demos.sh && cd ..
 echo ""
 
-echo "=== citation_network/01_generate_visualization.py ==="
-python3 citation_network/01_generate_visualization.py
+echo "=== 02_citation_network/01_generate_visualization.py ==="
+python3 02_citation_network/01_generate_visualization.py
 echo ""
 
 echo "All examples completed successfully."

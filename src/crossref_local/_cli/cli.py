@@ -257,25 +257,9 @@ def status(as_json):
 
 
 # Register MCP subcommand group
-from .mcp import mcp, run_mcp_server
+from .mcp import mcp
 
 cli.add_command(mcp)
-
-
-# Backward compatibility alias (hidden)
-@cli.command("run-server-mcp", context_settings=CONTEXT_SETTINGS, hidden=True)
-@click.option(
-    "-t", "--transport", type=click.Choice(["stdio", "sse", "http"]), default="stdio"
-)
-@click.option("--host", default="localhost", envvar="CROSSREF_LOCAL_MCP_HOST")
-@click.option("--port", default=8082, type=int, envvar="CROSSREF_LOCAL_MCP_PORT")
-def serve_mcp(transport: str, host: str, port: int):
-    """Run MCP server (deprecated: use 'mcp start' instead)."""
-    click.echo(
-        "Note: 'run-server-mcp' is deprecated. Use 'crossref-local mcp start'.",
-        err=True,
-    )
-    run_mcp_server(transport, host, port)
 
 
 @cli.command("relay", context_settings=CONTEXT_SETTINGS)
@@ -292,7 +276,12 @@ def serve_mcp(transport: str, host: str, port: int):
     is_flag=True,
     help="Kill existing process using the port if any",
 )
-def relay(host: str, port: int, force: bool):
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be started without starting",
+)
+def relay(host: str, port: int, force: bool, dry_run: bool):
     """Run HTTP relay server for remote database access.
 
     \b
@@ -325,6 +314,12 @@ def relay(host: str, port: int, force: bool):
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
 
+    if dry_run:
+        click.echo(f"[dry-run] Would start relay server on {host}:{port}")
+        click.echo(f"[dry-run] Search endpoint: http://{host}:{port}/works?q=<query>")
+        click.echo(f"[dry-run] Docs: http://{host}:{port}/docs")
+        return
+
     # Handle force flag
     if force:
         from .utils import kill_process_on_port
@@ -335,20 +330,6 @@ def relay(host: str, port: int, force: bool):
     click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
     click.echo(f"Docs: http://{host}:{port}/docs")
     run_server(host=host, port=port)
-
-
-# Deprecated alias for backwards compatibility
-@cli.command("run-server-http", context_settings=CONTEXT_SETTINGS, hidden=True)
-@click.option("--host", default=None, envvar="CROSSREF_LOCAL_HOST")
-@click.option("--port", default=None, type=int, envvar="CROSSREF_LOCAL_PORT")
-@click.pass_context
-def run_server_http_deprecated(ctx, host: str, port: int):
-    """Deprecated: Use 'crossref-local relay' instead."""
-    click.echo(
-        "Note: 'run-server-http' is deprecated. Use 'crossref-local relay'.",
-        err=True,
-    )
-    ctx.invoke(relay, host=host, port=port)
 
 
 @cli.command("list-python-apis", context_settings=CONTEXT_SETTINGS)
@@ -376,6 +357,16 @@ def list_python_apis(verbose, max_depth, as_json):
         click.echo("  pip install scitex")
         click.echo()
         click.echo("Or use: scitex introspect api crossref_local")
+
+
+# Register docs and skills subcommands (from scitex-dev)
+try:
+    from scitex_dev.cli import docs_click_group, skills_click_group
+
+    cli.add_command(docs_click_group(package="crossref-local"))
+    cli.add_command(skills_click_group(package="crossref-local"))
+except ImportError:
+    pass
 
 
 def main():

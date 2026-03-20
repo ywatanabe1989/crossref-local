@@ -64,7 +64,7 @@ Modules:
     aio - Async versions of all API functions
 """
 
-__version__ = "0.5.4"
+__version__ = "0.6.0"
 
 # Core API (from _core package)
 from ._core import (
@@ -111,6 +111,25 @@ from . import cache
 
 # Jobs module (public)
 from . import jobs
+
+# Apply @supports_return_as decorator to key API functions
+try:
+    from scitex_dev.decorators import supports_return_as as _supports_return_as
+
+    search = _supports_return_as(search)
+    count = _supports_return_as(count)
+    get = _supports_return_as(get)
+    get_many = _supports_return_as(get_many)
+    enrich_dois = _supports_return_as(enrich_dois)
+    info = _supports_return_as(info)
+    get_citing = _supports_return_as(get_citing)
+    get_cited = _supports_return_as(get_cited)
+    get_citation_count = _supports_return_as(get_citation_count)
+    check_citations = _supports_return_as(check_citations)
+    check_bibtex = _supports_return_as(check_bibtex)
+    check_doi_list = _supports_return_as(check_doi_list)
+except ImportError:
+    pass
 
 
 # Public API - what users should import

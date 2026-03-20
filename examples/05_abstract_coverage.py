@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Timestamp: "2026-02-10 (ywatanabe)"
-# File: /home/ywatanabe/proj/crossref-local/examples/11_abstract_coverage.py
+# File: /home/ywatanabe/proj/crossref-local/examples/05_abstract_coverage.py
 
 """Calculate abstract coverage statistics for Crossref Local database.
 
@@ -12,7 +12,6 @@ This script calculates:
 4. Per-year coverage
 """
 
-import json
 import sqlite3
 from pathlib import Path
 
@@ -61,8 +60,8 @@ def main(
     """)
     result = cursor.fetchone()
 
-    total = result['total']
-    with_abstract = result['with_abstract']
+    total = result["total"]
+    with_abstract = result["with_abstract"]
     ratio = (with_abstract / total) * 100
 
     logger.info(f"\nGlobal Statistics:")
@@ -76,7 +75,9 @@ def main(
     logger.info("\n" + "-" * 70)
     logger.info("Coverage by Work Type")
     logger.info("-" * 70)
-    logger.info("(Note: book-review, editorial, letter, etc. often lack abstracts by design)")
+    logger.info(
+        "(Note: book-review, editorial, letter, etc. often lack abstracts by design)"
+    )
 
     cursor.execute("""
         SELECT
@@ -95,8 +96,12 @@ def main(
     logger.info(f"\n{'Work Type':<35} {'Total':>15} {'Abstract':>15} {'Coverage':>10}")
     logger.info("-" * 77)
     for row in types:
-        coverage = (row['with_abstract'] / row['total']) * 100 if row['total'] > 0 else 0
-        logger.info(f"{row['type']:<35} {row['total']:>15,} {row['with_abstract']:>15,} {coverage:>9.1f}%")
+        coverage = (
+            (row["with_abstract"] / row["total"]) * 100 if row["total"] > 0 else 0
+        )
+        logger.info(
+            f"{row['type']:<35} {row['total']:>15,} {row['with_abstract']:>15,} {coverage:>9.1f}%"
+        )
 
     # Highlight journal-article specifically
     cursor.execute("""
@@ -108,9 +113,13 @@ def main(
         WHERE type = 'journal-article'
     """)
     journal_article = cursor.fetchone()
-    if journal_article and journal_article['total'] > 0:
-        ja_coverage = (journal_article['with_abstract'] / journal_article['total']) * 100
-        logger.info(f"\n>>> Journal-article coverage: {ja_coverage:.1f}% ({journal_article['with_abstract']:,} / {journal_article['total']:,})")
+    if journal_article and journal_article["total"] > 0:
+        ja_coverage = (
+            journal_article["with_abstract"] / journal_article["total"]
+        ) * 100
+        logger.info(
+            f"\n>>> Journal-article coverage: {ja_coverage:.1f}% ({journal_article['with_abstract']:,} / {journal_article['total']:,})"
+        )
 
     # =========================================================================
     # 2. Per-Member/Publisher Coverage (Top N)
@@ -137,8 +146,12 @@ def main(
     logger.info(f"\n{'Member ID':<15} {'Total':>15} {'Abstract':>15} {'Coverage':>10}")
     logger.info("-" * 57)
     for row in members:
-        coverage = (row['with_abstract'] / row['total']) * 100 if row['total'] > 0 else 0
-        logger.info(f"{row['member']:<15} {row['total']:>15,} {row['with_abstract']:>15,} {coverage:>9.1f}%")
+        coverage = (
+            (row["with_abstract"] / row["total"]) * 100 if row["total"] > 0 else 0
+        )
+        logger.info(
+            f"{row['member']:<15} {row['total']:>15,} {row['with_abstract']:>15,} {coverage:>9.1f}%"
+        )
 
     # =========================================================================
     # 3. Coverage by Year
@@ -165,8 +178,12 @@ def main(
     logger.info(f"\n{'Year':<10} {'Total':>15} {'Abstract':>15} {'Coverage':>10}")
     logger.info("-" * 52)
     for row in years:
-        coverage = (row['with_abstract'] / row['total']) * 100 if row['total'] > 0 else 0
-        logger.info(f"{row['year']:<10} {row['total']:>15,} {row['with_abstract']:>15,} {coverage:>9.1f}%")
+        coverage = (
+            (row["with_abstract"] / row["total"]) * 100 if row["total"] > 0 else 0
+        )
+        logger.info(
+            f"{row['year']:<10} {row['total']:>15,} {row['with_abstract']:>15,} {coverage:>9.1f}%"
+        )
 
     # =========================================================================
     # 4. Summary
@@ -181,16 +198,32 @@ def main(
     import pandas as pd
 
     # Type coverage
-    type_data = [{"type": row['type'], "total": row['total'], "with_abstract": row['with_abstract'],
-                  "coverage": round((row['with_abstract'] / row['total']) * 100, 1) if row['total'] > 0 else 0}
-                 for row in types]
+    type_data = [
+        {
+            "type": row["type"],
+            "total": row["total"],
+            "with_abstract": row["with_abstract"],
+            "coverage": round((row["with_abstract"] / row["total"]) * 100, 1)
+            if row["total"] > 0
+            else 0,
+        }
+        for row in types
+    ]
     df_type = pd.DataFrame(type_data)
     stx.io.save(df_type, "type_coverage.csv")
 
     # Year coverage
-    year_data = [{"year": row['year'], "total": row['total'], "with_abstract": row['with_abstract'],
-                  "coverage": round((row['with_abstract'] / row['total']) * 100, 1) if row['total'] > 0 else 0}
-                 for row in years]
+    year_data = [
+        {
+            "year": row["year"],
+            "total": row["total"],
+            "with_abstract": row["with_abstract"],
+            "coverage": round((row["with_abstract"] / row["total"]) * 100, 1)
+            if row["total"] > 0
+            else 0,
+        }
+        for row in years
+    ]
     df_year = pd.DataFrame(year_data)
     stx.io.save(df_year, "year_coverage.csv")
 
