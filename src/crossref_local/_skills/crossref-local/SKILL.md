@@ -1,5 +1,4 @@
 ---
-name: crossref-local
 description: Local CrossRef database with 167M+ works and full-text search. Use when resolving DOIs, searching publications, enriching bibliographies, checking citations, or calculating impact factors.
 allowed-tools: mcp__scitex__crossref_*
 ---
