@@ -5,6 +5,14 @@ allowed-tools: mcp__scitex__crossref_*
 
 # Local CrossRef with crossref-local
 
+## Installation
+
+```bash
+pip install crossref-local
+# Development:
+pip install -e /home/ywatanabe/proj/crossref-local
+```
+
 Local CrossRef database with 167M+ works and full-text search via FTS5.
 Search publications in milliseconds, resolve DOIs, enrich bibliographies,
 check citations, and calculate impact factors.
