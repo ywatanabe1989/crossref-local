@@ -154,7 +154,7 @@ def search_by_doi(
 
 @mcp.tool()
 def status() -> str:
-    """Get database statistics and status.
+    """Report local CrossRef database status — path, work count (~167M), FTS5 index size, citation-graph edge count, and access mode (DB vs HTTP). Use when the user asks "is the CrossRef db ready?", "how many papers do I have?", "check crossref-local status", or before running a search to confirm the db is usable.
 
     Returns:
         JSON string with database path, work count, FTS index count, and citation count.
