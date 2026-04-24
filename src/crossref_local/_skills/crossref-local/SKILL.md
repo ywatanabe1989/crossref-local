@@ -46,3 +46,8 @@ This package does not ship as a submodule of the `scitex` umbrella.
 
 - [10_cli.md](10_cli.md) — `crossref-local` CLI (search, check, relay, mcp)
 - [11_mcp.md](11_mcp.md) — MCP server, tools reference, client config
+
+
+## Environment
+
+- [12_env-vars.md](12_env-vars.md) — SCITEX_* env vars read by crossref-local at runtime
