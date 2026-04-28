@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "crossref-local"
-version = "0.7.2"
+version = "0.7.3"
 description = "Local CrossRef database with 167M+ works and full-text search"
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -26,7 +26,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
