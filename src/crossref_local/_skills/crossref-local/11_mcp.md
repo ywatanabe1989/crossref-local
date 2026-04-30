@@ -1,6 +1,9 @@
 ---
 package: crossref-local
 skill: mcp
+name: mcp
+tags: [crossref-local, scitex-package]
+description: MCP Server — Exposes crossref-local as Model Context Protocol tools for Claude Desktop,
 ---
 
 # MCP Server

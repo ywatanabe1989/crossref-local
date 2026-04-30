@@ -1,6 +1,9 @@
 ---
 package: crossref-local
 skill: citations
+name: citations
+tags: [crossref-local, scitex-package]
+description: Citation Analysis — Build and visualize citation networks from the local database.
 ---
 
 # Citation Analysis

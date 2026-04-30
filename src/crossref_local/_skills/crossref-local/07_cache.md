@@ -1,6 +1,9 @@
 ---
 package: crossref-local
 skill: cache
+name: cache
+tags: [crossref-local, scitex-package]
+description: Paper Cache — Disk-based caching of paper metadata for efficient re-querying and reduced
 ---
 
 # Paper Cache
