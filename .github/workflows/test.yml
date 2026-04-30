@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, develop]
 
+  schedule:
+    - cron: "0 7 * * *"  # nightly 07:00 UTC
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest

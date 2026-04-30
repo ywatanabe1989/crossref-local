@@ -1,6 +1,9 @@
 ---
 package: crossref-local
 skill: checker
+name: checker
+tags: [crossref-local, scitex-package]
+description: Citation Checker — Validate that DOIs exist in the local database and check metadata completeness.
 ---
 
 # Citation Checker

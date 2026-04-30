@@ -325,6 +325,13 @@ Searching 167M records in milliseconds via FTS5.
   <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
 </p>
 
+## Problem and Solution
+
+
+| # | Problem | Solution |
+|---|---------|----------|
+| 1 | **CrossRef public API is rate-limited + requires internet + slow for bulk queries** -- 167M works is the bottleneck for literature tools | **Local SQLite + FTS5** -- full CrossRef dump (~60 GB) queryable offline; `crossref_search` returns in milliseconds |
+
 ## Part of SciTeX
 
 CrossRef Local is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, DOI resolution and citation checking integrate seamlessly:

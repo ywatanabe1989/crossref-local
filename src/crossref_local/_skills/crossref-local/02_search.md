@@ -1,6 +1,9 @@
 ---
 package: crossref-local
 skill: search
+name: search
+tags: [crossref-local, scitex-package]
+description: Search — Full-text search across titles, abstracts, and authors using SQLite FTS5 index.
 ---
 
 # Search

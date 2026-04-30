@@ -1,6 +1,9 @@
 ---
 package: crossref-local
 skill: cli
+name: cli
+tags: [crossref-local, scitex-package]
+description: Command-Line Interface — Entry point: `crossref-local` (installs from `crossref_local.cli:main`)
 ---
 
 # Command-Line Interface

@@ -64,8 +64,17 @@ Modules:
     aio - Async versions of all API functions
 """
 
-__version__ = "0.6.4"
+from __future__ import annotations
 
+try:
+    from importlib.metadata import version as _v, PackageNotFoundError
+    try:
+        __version__ = _v("crossref-local")
+    except PackageNotFoundError:
+        __version__ = "0.0.0+local"
+    del _v, PackageNotFoundError
+except ImportError:  # pragma: no cover — only on ancient Pythons
+    __version__ = "0.0.0+local"
 # Core API (from _core package)
 from ._core import (
     # Functions

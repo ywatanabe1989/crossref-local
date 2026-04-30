@@ -1,17 +1,54 @@
 ---
 name: crossref-local
-description: Local CrossRef database with 167M+ works and full-text search. Use when resolving DOIs, searching publications, enriching bibliographies, checking citations, or calculating impact factors.
+description: Offline, zero-API-key DOI lookup + full-text search over the CrossRef corpus — 167M+ scholarly works in a local SQLite + FTS5 mirror, millisecond queries, no rate limits. Public API — search / count / exists (FTS5), get / get_many (by DOI), enrich / enrich_dois (batch metadata fill), get_citing / get_cited / get_citation_count / CitationNetwork (citation graph), check_citations / check_bibtex / check_doi_list (validate .bib / manuscripts — find missing DOIs, broken references), save (JSON / BibTeX / text export), configure / configure_http (DB mode vs HTTP relay). Plus `aio` (async), `cache` (per-topic subsets — create/query/stats/plots/export), and `jobs` submodules. 15 MCP tools: core (`crossref_search`, `crossref_search_by_doi`, `crossref_enrich_dois`, `crossref_status`), checker (`crossref_check_citations`, `crossref_check_bibtex_file`), cache (`crossref_cache_*` family incl. scatter/network plots). Drop-in replacement for `habanero.Crossref()`, `crossrefapi`, raw `requests` against `api.crossref.org`, `doi.org` resolver calls, and `bibtexparser`+manual DOI lookup loops. Use whenever the user asks to "look up a DOI", "resolve DOI to BibTeX", "find a paper by DOI", "enrich BibTeX with missing fields", "check my .bib file", "validate citations in this manuscript", "find citing papers", "build a citation network", "search CrossRef offline", "top-cited papers on X", or mentions CrossRef, DOI resolver, BibTeX enrichment, citation checking.
 allowed-tools: mcp__scitex__crossref_*
+primary_interface: python
+interfaces:
+  python: 3
+  cli: 2
+  mcp: 2
+  skills: 2
+  hook: 0
+  http: 0
+tags: [crossref-local, scitex-package]
 ---
 
-# Local CrossRef with crossref-local
+# crossref-local
 
-Local CrossRef database with 167M+ works and full-text search via FTS5.
-Search publications in milliseconds, resolve DOIs, enrich bibliographies,
-check citations, and calculate impact factors.
+> **Interfaces:** Python ⭐⭐⭐ (primary) · CLI ⭐⭐ · MCP ⭐⭐ · Skills ⭐⭐ · Hook — · HTTP —
 
-- For quick start and output formats, see [quick-start.md](quick-start.md)
-- For common workflows (search, citations, validation, impact factors), see [workflows.md](workflows.md)
-- For CLI commands, see [cli-reference.md](cli-reference.md)
-- For MCP tools (AI agents), see [mcp-tools.md](mcp-tools.md)
-- For performance benchmarks, see [performance.md](performance.md)
+Local mirror of the CrossRef database with FTS5 full-text search across
+167M+ scholarly works — offline, millisecond queries, no rate limits. Also
+exposes citation networks, per-topic caches, and an HTTP/MCP relay.
+
+## Installation & import
+
+`pip install crossref-local` installs the standalone:
+
+```python
+import crossref_local
+```
+
+This package does not ship as a submodule of the `scitex` umbrella.
+
+## Core concepts
+
+- [01_configuration.md](01_configuration.md) — env vars, DB vs HTTP mode, relay server
+- [02_search.md](02_search.md) — `search()`, `count()`, `exists()`, FTS5 syntax
+- [03_retrieval.md](03_retrieval.md) — `get()`, `get_many()`, `enrich()`, `enrich_dois()`
+- [04_models.md](04_models.md) — `Work`, `SearchResult` dataclasses
+- [05_citations.md](05_citations.md) — `get_citing()`, `get_cited()`, `CitationNetwork`
+- [06_checker.md](06_checker.md) — `check_citations()`, `check_bibtex()`, `check_doi_list()`
+- [07_cache.md](07_cache.md) — topic caches: create, query, stats, plots, export
+- [08_export.md](08_export.md) — `save()` with json / bibtex / text formats
+- [09_async.md](09_async.md) — `aio.search()`, `aio.count_many()`
+
+## Interfaces
+
+- [10_cli.md](10_cli.md) — `crossref-local` CLI (search, check, relay, mcp)
+- [11_mcp.md](11_mcp.md) — MCP server, tools reference, client config
+
+
+## Environment
+
+- [12_env-vars.md](12_env-vars.md) — SCITEX_* env vars read by crossref-local at runtime
