@@ -87,12 +87,31 @@ def _print_recursive_help(ctx, param, value):
 
 
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
-@click.version_option(version=__version__, prog_name="crossref-local")
+@click.version_option(
+    version=__version__, prog_name="crossref-local", message="%(prog)s %(version)s"
+)
+@click.option(
+    "-V",
+    "--show-version",
+    is_flag=True,
+    is_eager=True,
+    expose_value=False,
+    callback=lambda ctx, _p, v: (click.echo(__version__), ctx.exit(0))
+    if v and not ctx.resilient_parsing
+    else None,
+    help="Show the version and exit.",
+)
 @click.option("--http", is_flag=True, help="Use HTTP API instead of direct database")
 @click.option(
     "--api-url",
     envvar="CROSSREF_LOCAL_API_URL",
     help="API URL for http mode (default: auto-detect)",
+)
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Emit machine-readable JSON output (propagated to subcommands).",
 )
 @click.option(
     "--help-recursive",
@@ -103,10 +122,14 @@ def _print_recursive_help(ctx, param, value):
     help="Show help for all commands recursively.",
 )
 @click.pass_context
-def cli(ctx, http: bool, api_url: str):
+def cli(ctx, http: bool, api_url: str, as_json: bool):
     """Local CrossRef database with 167M+ works and full-text search.
 
     Supports both direct database access (db mode) and HTTP API (http mode).
+
+    \b
+    Configuration precedence:
+      ./config.yaml -> $CROSSREF_LOCAL_CONFIG -> ~/.scitex/crossref-local/config.yaml -> defaults
 
     \b
     DB mode (default if database found):
@@ -119,6 +142,7 @@ def cli(ctx, http: bool, api_url: str):
     from .._core.config import Config
 
     ctx.ensure_object(dict)
+    ctx.obj["as_json"] = as_json
 
     if api_url:
         Config.set_api_url(api_url)
@@ -141,7 +165,13 @@ cli.add_command(check_cmd)
 @cli.command(context_settings=CONTEXT_SETTINGS)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def status(as_json):
-    """Show status and configuration."""
+    """Show status and configuration.
+
+    \b
+    Example:
+      $ crossref-local status
+      $ crossref-local status --json
+    """
     import json as json_module
     import os
     import sys
@@ -339,7 +369,14 @@ def relay(host: str, port: int, force: bool, dry_run: bool):
 @click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def list_python_apis(verbose, max_depth, as_json):
-    """List Python APIs (alias for: scitex introspect api crossref_local)."""
+    """List Python APIs (alias for: scitex introspect api crossref_local).
+
+    \b
+    Example:
+      $ crossref-local list-python-apis
+      $ crossref-local list-python-apis -vv
+      $ crossref-local list-python-apis --json
+    """
     try:
         from scitex.cli.introspect import api
 
