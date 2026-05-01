@@ -80,7 +80,9 @@ crossref-local = "crossref_local"
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/crossref_local"
+Documentation = "https://crossref-local.readthedocs.io"
 Repository = "https://github.com/ywatanabe1989/crossref_local"
+Issues = "https://github.com/ywatanabe1989/crossref_local/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/crossref_local"]

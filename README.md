@@ -325,6 +325,61 @@ Searching 167M records in milliseconds via FTS5.
   <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
 </p>
 
+## Installation
+
+```bash
+pip install crossref-local              # core
+pip install crossref-local[mcp]         # + MCP server
+```
+
+## 4 Interfaces
+
+<details open>
+<summary><strong>Python API</strong></summary>
+
+<br>
+
+```python
+from crossref_local import crossref_search, get_work
+
+results = crossref_search("deep learning EEG", limit=10)
+work = get_work("10.1038/nature12373")
+```
+
+</details>
+
+<details>
+<summary><strong>CLI</strong></summary>
+
+<br>
+
+```bash
+crossref-local search "query"
+crossref-local doi 10.1038/nature12373
+```
+
+</details>
+
+<details>
+<summary><strong>MCP Server</strong></summary>
+
+<br>
+
+```bash
+crossref-local mcp start
+```
+
+</details>
+
+<details>
+<summary><strong>Skills</strong></summary>
+
+<br>
+
+Agent skill pages live under `src/crossref_local/_skills/crossref-local/`.
+
+</details>
+
 ## Problem and Solution
 
 
@@ -334,19 +389,18 @@ Searching 167M records in milliseconds via FTS5.
 
 ## Part of SciTeX
 
-CrossRef Local is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, DOI resolution and citation checking integrate seamlessly:
+`crossref-local` is part of [**SciTeX**](https://scitex.ai). Install via
+the umbrella with `pip install scitex[scholar]` to use as
+`scitex.scholar` (Python) or `scitex scholar ...` (CLI) — `crossref-local`
+provides the local CrossRef backing for `scholar`'s DOI resolution.
 
 ```python
 import scitex
 
-# Resolve DOIs and enrich bibliography
 scitex.scholar.enrich_bibtex("references.bib")
-
-# Check citation accuracy
 scitex.scholar.check_citations("manuscript.tex")
 ```
 
-The SciTeX system follows the Four Freedoms for Research below, inspired by [the Free Software Definition](https://www.gnu.org/philosophy/free-sw.en.html):
 
 >Four Freedoms for Research
 >
