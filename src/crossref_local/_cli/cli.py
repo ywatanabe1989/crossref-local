@@ -87,6 +87,7 @@ def _print_recursive_help(ctx, param, value):
 
 
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
+@click.help_option("-h", "--help")
 @click.version_option(
     version=__version__, prog_name="crossref-local", message="%(prog)s %(version)s"
 )
@@ -160,17 +161,20 @@ cli.add_command(search_by_doi_cmd)
 from .check import check_cmd
 
 cli.add_command(check_cmd)
+# Backward-compat alias: `check` -> `check-citations`
+cli._aliases["check"] = check_cmd.name
 
 
-@cli.command(context_settings=CONTEXT_SETTINGS)
+@cli.command("show-status", aliases=["status"], context_settings=CONTEXT_SETTINGS)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def status(as_json):
+def show_status(as_json):
     """Show status and configuration.
 
     \b
     Example:
-      $ crossref-local status
-      $ crossref-local status --json
+      $ crossref-local show-status
+      $ crossref-local show-status --json
+      $ crossref-local status              # alias
     """
     import json as json_module
     import os

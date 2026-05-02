@@ -29,7 +29,7 @@ mcp = FastMCP(
 )
 
 
-@mcp.tool()
+@mcp.tool(name="search_works")
 def search(
     query: str,
     limit: int = 10,
@@ -152,7 +152,7 @@ def search_by_doi(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool()
+@mcp.tool(name="get_status")
 def status() -> str:
     """Report local CrossRef database status — path, work count (~167M), FTS5 index size, citation-graph edge count, and access mode (DB vs HTTP). Use when the user asks "is the CrossRef db ready?", "how many papers do I have?", "check crossref-local status", or before running a search to confirm the db is usable.
 
@@ -227,7 +227,7 @@ def check_citations(
     return json.dumps(result.to_dict(), indent=2)
 
 
-@mcp.tool()
+@mcp.tool(name="check_bibtex")
 def check_bibtex_file(
     file_path: str, validate_metadata: bool = True, suggest_enrichment: bool = True
 ) -> str:
