@@ -1,10 +1,12 @@
 ---
+description: |
+  [TOPIC] Export
+  [DETAILS] Save `Work`, `SearchResult`, or lists of `Work` objects to files.
+tags: [crossref-local-export, crossref-local]
 package: crossref-local
 skill: export
-name: export
-tags: [crossref-local, scitex-package]
-description: Export — Save `Work`, `SearchResult`, or lists of `Work` objects to files.
 ---
+
 
 # Export
 

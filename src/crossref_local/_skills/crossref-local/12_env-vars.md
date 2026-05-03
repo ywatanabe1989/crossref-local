@@ -1,8 +1,10 @@
 ---
-name: crossref-local-env-vars
-description: Environment variables read by crossref-local at import / runtime. Follow SCITEX_<MODULE>_* convention — see general/10_arch-environment-variables.md.
-tags: [crossref-local, scitex-package]
+description: |
+  [TOPIC] Env Vars
+  [DETAILS] see general/10_arch-environment-variables.md.
+tags: [crossref-local-env-vars, crossref-local]
 ---
+
 
 # crossref-local — Environment Variables
 

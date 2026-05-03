@@ -1,10 +1,12 @@
 ---
+description: |
+  [TOPIC] Configuration
+  [DETAILS] crossref-local supports two access modes: direct SQLite (`db`) and HTTP API
+tags: [crossref-local-configuration, crossref-local]
 package: crossref-local
 skill: configuration
-name: configuration
-tags: [crossref-local, scitex-package]
-description: Configuration — crossref-local supports two access modes: direct SQLite (`db`) and HTTP API
 ---
+
 
 # Configuration
 

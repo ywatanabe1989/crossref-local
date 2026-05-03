@@ -1,10 +1,12 @@
 ---
+description: |
+  [TOPIC] Async
+  [DETAILS] The `crossref_local.aio` module provides async versions of all core API
+tags: [crossref-local-async, crossref-local]
 package: crossref-local
 skill: async
-name: async
-tags: [crossref-local, scitex-package]
-description: Async API — The `crossref_local.aio` module provides async versions of all core API
 ---
+
 
 # Async API
 

@@ -1,6 +1,10 @@
 ---
 name: crossref-local
-description: Offline, zero-API-key DOI lookup + full-text search over the CrossRef corpus — 167M+ scholarly works in a local SQLite + FTS5 mirror, millisecond queries, no rate limits. Public API — search / count / exists (FTS5), get / get_many (by DOI), enrich / enrich_dois (batch metadata fill), get_citing / get_cited / get_citation_count / CitationNetwork (citation graph), check_citations / check_bibtex / check_doi_list (validate .bib / manuscripts — find missing DOIs, broken references), save (JSON / BibTeX / text export), configure / configure_http (DB mode vs HTTP relay). Plus `aio` (async), `cache` (per-topic subsets — create/query/stats/plots/export), and `jobs` submodules. 15 MCP tools: core (`crossref_search`, `crossref_search_by_doi`, `crossref_enrich_dois`, `crossref_status`), checker (`crossref_check_citations`, `crossref_check_bibtex_file`), cache (`crossref_cache_*` family incl. scatter/network plots). Drop-in replacement for `habanero.Crossref()`, `crossrefapi`, raw `requests` against `api.crossref.org`, `doi.org` resolver calls, and `bibtexparser`+manual DOI lookup loops. Use whenever the user asks to "look up a DOI", "resolve DOI to BibTeX", "find a paper by DOI", "enrich BibTeX with missing fields", "check my .bib file", "validate citations in this manuscript", "find citing papers", "build a citation network", "search CrossRef offline", "top-cited papers on X", or mentions CrossRef, DOI resolver, BibTeX enrichment, citation checking.
+description: |
+  [WHAT] Offline, zero-API-key DOI lookup + full-text search over the CrossRef corpus.
+  [WHEN] Use when the user asks to "look up a DOI", "resolve DOI to BibTeX", "find a paper by DOI", "enrich BibTeX with missing fields".
+  [HOW] `import crossref_local` then call `habanero.Crossref()`.
+tags: [crossref-local]
 allowed-tools: mcp__scitex__crossref_*
 primary_interface: python
 interfaces:
@@ -10,8 +14,8 @@ interfaces:
   skills: 2
   hook: 0
   http: 0
-tags: [crossref-local, scitex-package]
 ---
+
 
 # crossref-local
 
