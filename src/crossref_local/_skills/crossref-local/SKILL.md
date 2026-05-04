@@ -35,12 +35,19 @@ import crossref_local
 
 This package does not ship as a submodule of the `scitex` umbrella.
 
-## Core concepts
+## Mandatory
 
-- [01_configuration.md](01_configuration.md) — env vars, DB vs HTTP mode, relay server
-- [02_search.md](02_search.md) — `search()`, `count()`, `exists()`, FTS5 syntax
-- [03_retrieval.md](03_retrieval.md) — `get()`, `get_many()`, `enrich()`, `enrich_dois()`
-- [04_models.md](04_models.md) — `Work`, `SearchResult` dataclasses
+- [01_installation.md](01_installation.md) — pip install + extras + verify
+- [02_quick-start.md](02_quick-start.md) — search / get / enrich / relay
+- [03_python-api.md](03_python-api.md) — Public callables grouped by area
+- [04_cli-reference.md](04_cli-reference.md) — `crossref-local` console entry
+
+## Deep-dive
+
+- [13_configuration.md](13_configuration.md) — env vars, DB vs HTTP mode, relay server
+- [14_search.md](14_search.md) — `search()`, `count()`, `exists()`, FTS5 syntax
+- [15_retrieval.md](15_retrieval.md) — `get()`, `get_many()`, `enrich()`, `enrich_dois()`
+- [16_models.md](16_models.md) — `Work`, `SearchResult` dataclasses
 - [05_citations.md](05_citations.md) — `get_citing()`, `get_cited()`, `CitationNetwork`
 - [06_checker.md](06_checker.md) — `check_citations()`, `check_bibtex()`, `check_doi_list()`
 - [07_cache.md](07_cache.md) — topic caches: create, query, stats, plots, export
