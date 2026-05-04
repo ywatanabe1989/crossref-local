@@ -58,6 +58,7 @@ This package does not ship as a submodule of the `scitex` umbrella.
 
 - [10_cli.md](10_cli.md) — `crossref-local` CLI (search, check, relay, mcp)
 - [11_mcp.md](11_mcp.md) — MCP server, tools reference, client config
+- [06_http-api.md](06_http-api.md) — FastAPI routes (works, citations, collections, compat)
 
 
 ## Environment
