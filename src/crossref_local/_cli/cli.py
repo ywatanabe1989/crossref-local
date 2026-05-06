@@ -415,5 +415,17 @@ def main():
     cli()
 
 
+# audit §4 — inject version into root --help. `main` is a thin
+# wrapper; the click Group is `cli`.
+try:
+    from importlib.metadata import version as _v
+
+    cli.help = (
+        f"crossref-local (v{_v('crossref-local')}) — " + (cli.help or "").lstrip()
+    )
+except Exception:
+    pass
+
+
 if __name__ == "__main__":
     main()
