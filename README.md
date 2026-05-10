@@ -370,6 +370,12 @@ Searching 167M records in milliseconds via FTS5.
 
 ## Installation
 
+> **Recommended**: `uv pip install crossref-local[all]` —
+> uv's Rust resolver handles the SciTeX dep set in 1-3 min where
+> pip's serial backtracker can take 30+ min on the full extras.
+> Plain `pip install` still works; the install block below shows both.
+
+
 ```bash
 pip install crossref-local              # core
 pip install crossref-local[mcp]         # + MCP server
