@@ -410,6 +410,18 @@ except ImportError:
     pass
 
 
+# Wire canonical install-shell-completion + print-shell-completion
+# (§1a — required top-level commands). The helper writes a static
+# completion cache file rather than emitting an eval-the-binary line,
+# so `source ~/.bashrc` stays microsecond-fast (PS-147).
+try:
+    from scitex_dev._cli._completion import attach_shell_completion
+
+    attach_shell_completion(cli, prog_name="crossref-local")
+except ImportError:
+    pass
+
+
 def main():
     """Entry point for CLI."""
     cli()

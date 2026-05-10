@@ -85,5 +85,5 @@ import crossref_local as crl
 
 ## See also
 
-- [05_citations.md](05_citations.md), [06_checker.md](06_checker.md), [07_cache.md](07_cache.md), [08_export.md](08_export.md), [09_async.md](09_async.md) — per-area deep-dives
+- [05_citations.md](05_citations.md), [17_checker.md](17_checker.md), [07_cache.md](07_cache.md), [08_export.md](08_export.md), [09_async.md](09_async.md) — per-area deep-dives
 - [04_cli-reference.md](04_cli-reference.md) — CLI mirror of this surface

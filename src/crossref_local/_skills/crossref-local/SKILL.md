@@ -49,7 +49,7 @@ This package does not ship as a submodule of the `scitex` umbrella.
 - [15_retrieval.md](15_retrieval.md) — `get()`, `get_many()`, `enrich()`, `enrich_dois()`
 - [16_models.md](16_models.md) — `Work`, `SearchResult` dataclasses
 - [05_citations.md](05_citations.md) — `get_citing()`, `get_cited()`, `CitationNetwork`
-- [06_checker.md](06_checker.md) — `check_citations()`, `check_bibtex()`, `check_doi_list()`
+- [17_checker.md](17_checker.md) — `check_citations()`, `check_bibtex()`, `check_doi_list()`
 - [07_cache.md](07_cache.md) — topic caches: create, query, stats, plots, export
 - [08_export.md](08_export.md) — `save()` with json / bibtex / text formats
 - [09_async.md](09_async.md) — `aio.search()`, `aio.count_many()`

@@ -14,16 +14,59 @@
 
 <p align="center"><b>Local CrossRef database with 167M+ scholarly works, full-text search, and impact factor calculation</b></p>
 
+## Demo
+
+<p align="center">
+  <img src="examples/readme_figure.png" alt="CrossRef Local Demo" width="800"/>
+</p>
+
+```bash
+# Search 167M papers locally — no API rate limits, ~22 ms full-text query
+crossref-local search "epilepsy seizure prediction"
+
+# Resolve a DOI to full record (title, abstract, citations, journal IF)
+crossref-local search-by-doi 10.1038/nature11247
+
+# Drive from MCP / Claude Code
+crossref-local mcp serve
+```
+
+The image is a live capture against the local DB; the `<details>`
+block below has a 6m55s MCP-driven demo video.
+
+## Architecture
+
+```
+┌──────────────────────────┐    ┌──────────────────────────┐
+│ CrossRef public dump     │    │ JCR / OpenAlex IF tables │
+│ (~100 GB compressed)     │    │                          │
+└──────────────┬───────────┘    └──────────────┬───────────┘
+               │ dois2sqlite                   │
+               ▼                               ▼
+       ┌─────────────────┐               ┌──────────────┐
+       │ crossref.db     │ ◀── joins ──▶ │ impact-factor│
+       │ (SQLite + FTS5) │               │ table        │
+       └────────┬────────┘               └──────────────┘
+                │
+                ▼
+   ┌──────────────────────────────────┐
+   │ crossref-local — Python / CLI / MCP │
+   │   search · search-by-doi · cache    │
+   │   stats · check-citations · relay   │
+   └──────────────────────────────────┘
+```
+
+The DB lives entirely on disk; `crossref-local` is a thin facade over
+SQLite + FTS5 + a small impact-factor table. No network calls during
+queries; rebuild scripts under `make fts-build-screen` /
+`citations-build-screen` are the only producers of state.
+
 [![PyPI version](https://badge.fury.io/py/crossref-local.svg)](https://badge.fury.io/py/crossref-local)
 [![Documentation](https://readthedocs.org/projects/crossref-local/badge/?version=latest)](https://crossref-local.readthedocs.io/en/latest/)
 [![Tests](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/crossref-local/actions/workflows/test.yml)
 [![Coverage](https://codecov.io/gh/ywatanabe1989/crossref-local/branch/main/graph/badge.svg)](https://codecov.io/gh/ywatanabe1989/crossref-local)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-
-<p align="center">
-  <img src="examples/readme_figure.png" alt="CrossRef Local Demo" width="800"/>
-</p>
 
 <details>
 <summary><strong>MCP Demo Video</strong></summary>
