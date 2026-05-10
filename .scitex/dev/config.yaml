@@ -1,0 +1,12 @@
+# scitex-dev project-type config
+# vendor/ holds two pre-pip-install vendored projects (dois2sqlite,
+# labs-data-file-api) used as build-time references. Not imported by
+# src/, not shipped in the wheel.
+
+project-type:
+  - pip
+
+audit:
+  root-whitelist:
+    dirs:
+      - vendor
