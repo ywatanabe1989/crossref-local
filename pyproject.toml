@@ -41,7 +41,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "fastapi>=0.100",
+    "fastapi>=0.100,<0.116",
     "fastmcp>=2.0.0",
     "matplotlib>=3.7",
     "networkx>=3.0",
@@ -60,7 +60,7 @@ mcp = [
     "fastmcp>=2.0.0",
 ]
 api = [
-    "fastapi>=0.100",
+    "fastapi>=0.100,<0.116",
     "uvicorn>=0.20",
 ]
 docs = [
