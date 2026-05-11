@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Timestamp: "2026-01-07 22:45:01 (ywatanabe)"
-# File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/examples/impact_factor/00_calculate_impact_factor.py
+# File: examples/03_impact_factor/00_calculate_impact_factor.py
 
 
 """
@@ -49,9 +49,7 @@ Examples:
         default=2,
         help="Citation window in years (default: 2)",
     )
-    parser.add_argument(
-        "--db", default=DB_PATH, help="Path to CrossRef database"
-    )
+    parser.add_argument("--db", default=DB_PATH, help="Path to CrossRef database")
     args = parser.parse_args()
 
     print("=" * 60)

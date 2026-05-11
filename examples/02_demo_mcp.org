@@ -1,5 +1,5 @@
 # Timestamp: "2026-01-16 08:40:32 (ywatanabe)"
-# File: /ssh:nas:/home/ywatanabe/proj/crossref-local/examples/demo_mcp.org
+# File: examples/02_demo_mcp.org
 
 * CrossRef Local MCP Server + Claude Code Demo
 

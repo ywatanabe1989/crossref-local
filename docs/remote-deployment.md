@@ -153,11 +153,15 @@ You can configure both local and remote servers:
       }
     },
     "crossref-remote": {
-      "url": "http://nas:8082/mcp"
+      "url": "http://db-host:8082/mcp"
     }
   }
 }
 ```
+
+> Replace `db-host` with the actual hostname or IP of the machine
+> that owns the CrossRef SQLite DB (any SSH-reachable Linux box —
+> commonly a NAS or workstation; the package is host-agnostic).
 
 ## Security Considerations
 
@@ -234,14 +238,14 @@ If using SSH transport and experiencing hangs, switch to HTTP:
 {
   "crossref-remote": {
     "command": "ssh",
-    "args": ["nas", "crossref-local", "run-server-mcp"]
+    "args": ["db-host", "crossref-local", "run-server-mcp"]
   }
 }
 
 // After (HTTP - recommended)
 {
   "crossref-remote": {
-    "url": "http://nas:8082/mcp"
+    "url": "http://db-host:8082/mcp"
   }
 }
 ```
