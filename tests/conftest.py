@@ -1,8 +1,34 @@
 """Pytest configuration and fixtures for crossref_local tests."""
 
 import os
+import sysconfig
 import pytest
 from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Subprocess coverage wiring (TODO §0). Force-set (NOT setdefault — that is a
+# silent no-op when the env var is empty) so child Python interpreters spawned
+# by tests (subprocess.run, click CliRunner via fresh interpreter, etc.)
+# inherit coverage. See:
+#   ~/proj/scitex-dev/src/scitex_dev/_skills/general/
+#     05_development_06_subprocess-coverage.md
+# ---------------------------------------------------------------------------
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+os.environ["COVERAGE_PROCESS_START"] = str(_REPO_ROOT / "pyproject.toml")
+os.environ["COVERAGE_FILE"] = str(_REPO_ROOT / ".coverage")
+
+# Idempotent .pth shim: ensures `coverage.process_startup()` runs on
+# every child interpreter import.
+try:
+    _SITE = Path(sysconfig.get_paths()["purelib"])
+    _PTH = _SITE / "coverage_subprocess.pth"
+    _SHIM = "import coverage; coverage.process_startup()"
+    if not _PTH.exists() or _PTH.read_text().strip() != _SHIM:
+        _PTH.write_text(_SHIM + "\n")
+except Exception:
+    # Best-effort: failure here only loses subprocess coverage; do not
+    # break the test run.
+    pass
 
 # Test database path
 TEST_DB_PATH = Path(__file__).parent / "fixtures" / "test_crossref.db"

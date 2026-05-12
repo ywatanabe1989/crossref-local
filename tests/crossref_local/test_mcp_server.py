@@ -4,6 +4,11 @@ import asyncio
 
 import pytest
 
+# PA-303: fastmcp is in [mcp]/[dev] extras, not [project] dependencies.
+# `crossref_local.mcp_server` re-exports from `._cli.mcp_server`, which
+# does `from fastmcp import FastMCP` at module top.
+fastmcp = pytest.importorskip("fastmcp")
+
 from crossref_local.mcp_server import mcp
 
 
