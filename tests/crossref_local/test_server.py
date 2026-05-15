@@ -1,8 +1,9 @@
 """Tests for crossref_local.server module (FastAPI HTTP server)."""
 
-import json
 import pytest
 
+# PA-303: fastapi is in [api]/[dev] extras, not [project] dependencies
+fastapi = pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
 
 from crossref_local.server import app

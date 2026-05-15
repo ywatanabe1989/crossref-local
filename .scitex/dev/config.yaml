@@ -10,3 +10,5 @@ audit:
   root-whitelist:
     dirs:
       - vendor
+    files:
+      - codecov.yml

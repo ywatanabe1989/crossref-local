@@ -97,3 +97,11 @@ packages = ["src/crossref_local"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+parallel = true
+source = ["crossref_local"]
+concurrency = ["multiprocessing", "thread"]
+
+[tool.coverage.paths]
+source = ["src/crossref_local", "*/site-packages/crossref_local"]
