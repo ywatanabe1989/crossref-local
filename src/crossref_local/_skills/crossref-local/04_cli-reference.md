@@ -29,7 +29,7 @@ Two console entries are shipped: `crossref-local` (main) and
 ## Configuration precedence
 
 ```
-./config.yaml -> $CROSSREF_LOCAL_CONFIG -> ~/.scitex/crossref-local/config.yaml -> defaults
+./config.yaml -> $CROSSREF_LOCAL_CONFIG -> ~/.scitex/crossref-local/runtime/config.yaml -> defaults
 ```
 
 ## Commands by category
