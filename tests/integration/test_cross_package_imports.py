@@ -13,6 +13,7 @@ import pytest
 
 CROSS_PACKAGE_IMPORTS = [
     "scitex.cli.introspect",
+    "scitex_config",
     "scitex_dev",
     "scitex_dev._cli._completion",
     "scitex_dev.cli",
@@ -21,6 +22,11 @@ CROSS_PACKAGE_IMPORTS = [
 
 
 @pytest.mark.parametrize("module_path", CROSS_PACKAGE_IMPORTS)
-def test_cross_package_import(module_path: str) -> None:
+def test_cross_package_import_resolves_module(module_path: str) -> None:
     """Each cross-package import resolves cleanly when the peer is installed."""
-    pytest.importorskip(module_path)
+    # Arrange
+    name = module_path
+    # Act
+    mod = pytest.importorskip(name)
+    # Assert
+    assert mod.__name__ == name or mod.__name__.startswith(name.split(".", 1)[0])
