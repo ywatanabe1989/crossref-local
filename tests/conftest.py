@@ -42,6 +42,7 @@ _DB_OPTIONAL_TEST_MODULES = frozenset(
         "test_mcp_server",
         "test_cross_package_imports",
         "test_audit",
+        "test_paths_runtime",
     }
 )
 
@@ -132,8 +133,8 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture
-def test_db_path():
-    """Return path to test database."""
+def fixture_test_db_path():
+    """Return path to the test-database fixture."""
     return TEST_DB_PATH
 
 

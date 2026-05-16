@@ -130,7 +130,7 @@ def cli(ctx, http: bool, api_url: str, as_json: bool):
 
     \b
     Configuration precedence:
-      ./config.yaml -> $CROSSREF_LOCAL_CONFIG -> ~/.scitex/crossref-local/config.yaml -> defaults
+      ./config.yaml -> $CROSSREF_LOCAL_CONFIG -> ~/.scitex/crossref-local/runtime/config.yaml -> defaults
 
     \b
     DB mode (default if database found):
