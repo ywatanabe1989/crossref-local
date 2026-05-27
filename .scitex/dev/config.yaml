@@ -10,5 +10,10 @@ audit:
   root-whitelist:
     dirs:
       - vendor
+      # CI-side install artefacts that `pip install -e ".[all]"`
+      # creates on the GitHub Actions runner and not in the wheel.
+      # They are .gitignored but the auditor walks the filesystem.
+      - lib
+      - lib64
     files:
       - codecov.yml
