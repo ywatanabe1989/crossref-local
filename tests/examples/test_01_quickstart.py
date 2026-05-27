@@ -7,11 +7,19 @@ from pathlib import Path
 EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "01_quickstart.py"
 
 
-def test_exists():
-    assert EXAMPLE.exists(), f"missing example: {EXAMPLE}"
+def test_quickstart_example_file_exists_on_disk():
+    # Arrange
+    target = EXAMPLE
+    # Act
+    present = target.exists()
+    # Assert
+    assert present, f"missing example: {target}"
 
 
-def test_compiles():
-    subprocess.run(
-        [sys.executable, "-m", "py_compile", str(EXAMPLE)], check=True
-    )
+def test_quickstart_example_compiles_with_py_compile_cleanly():
+    # Arrange
+    cmd = [sys.executable, "-m", "py_compile", str(EXAMPLE)]
+    # Act
+    completed = subprocess.run(cmd, check=False, capture_output=True)
+    # Assert
+    assert completed.returncode == 0, completed.stderr.decode()

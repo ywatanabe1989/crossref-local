@@ -25,6 +25,7 @@ Work
 .. autoclass:: crossref_local.Work
    :members:
    :undoc-members:
+   :no-index:
 
 SearchResult
 ~~~~~~~~~~~~
@@ -32,3 +33,4 @@ SearchResult
 .. autoclass:: crossref_local.SearchResult
    :members:
    :undoc-members:
+   :no-index:

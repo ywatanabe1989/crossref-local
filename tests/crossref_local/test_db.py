@@ -1,137 +1,248 @@
 """Tests for crossref_local.db module."""
 
-import pytest
 import sqlite3
 from pathlib import Path
 
-from crossref_local._core.db import Database, get_db, close_db, connection
+import pytest
+
+from crossref_local._core.db import (
+    Database,
+    close_db,
+    connection,
+    get_db,
+)
 
 
-class TestDatabase:
-    """Tests for Database class."""
-
-    def test_database_connects_successfully(self):
-        """Database() establishes connection."""
-        db = get_db()
-        assert db is not None
-        assert db.conn is not None
-
-    def test_database_has_db_path(self):
-        """Database has db_path attribute."""
-        db = get_db()
-        assert hasattr(db, "db_path")
-        assert isinstance(db.db_path, Path)
-        assert db.db_path.exists()
-
-    def test_execute_returns_cursor(self):
-        """execute() returns sqlite3.Cursor."""
-        db = get_db()
-        cursor = db.execute("SELECT 1")
-        assert isinstance(cursor, sqlite3.Cursor)
-
-    def test_fetchone_returns_row(self):
-        """fetchone() returns a row."""
-        db = get_db()
-        row = db.fetchone("SELECT 1 as value")
-        assert row is not None
-        assert row["value"] == 1
-
-    def test_fetchone_returns_none_for_no_results(self):
-        """fetchone() returns None when no results."""
-        db = get_db()
-        row = db.fetchone("SELECT 1 WHERE 0 = 1")
-        assert row is None
-
-    def test_fetchall_returns_list(self):
-        """fetchall() returns a list of rows."""
-        db = get_db()
-        rows = db.fetchall("SELECT 1 as value UNION SELECT 2")
-        assert isinstance(rows, list)
-        assert len(rows) == 2
+@pytest.fixture
+def db():
+    """Singleton Database handle for the test session DB."""
+    return get_db()
 
 
-class TestGetMetadata:
-    """Tests for Database.get_metadata()."""
-
-    def test_get_metadata_returns_dict_for_valid_doi(self):
-        """get_metadata() returns dict for existing DOI."""
-        db = get_db()
-        # Find any DOI in database
-        row = db.fetchone("SELECT doi FROM works LIMIT 1")
-        if row:
-            metadata = db.get_metadata(row["doi"])
-            assert metadata is not None
-            assert isinstance(metadata, dict)
-
-    def test_get_metadata_returns_none_for_invalid_doi(self):
-        """get_metadata() returns None for nonexistent DOI."""
-        db = get_db()
-        metadata = db.get_metadata("10.9999/nonexistent.doi")
-        assert metadata is None
-
-    def test_metadata_contains_expected_fields(self):
-        """Metadata dict contains expected CrossRef fields."""
-        db = get_db()
-        row = db.fetchone("SELECT doi FROM works LIMIT 1")
-        if row:
-            metadata = db.get_metadata(row["doi"])
-            # CrossRef metadata should have at least DOI
-            assert metadata is not None
+# ---------- Database singleton ----------
 
 
-class TestDatabaseContextManager:
-    """Tests for Database context manager."""
-
-    def test_context_manager_provides_database(self):
-        """connection() context manager yields Database."""
-        with connection() as db:
-            assert isinstance(db, Database)
-            assert db.conn is not None
-
-    def test_context_manager_closes_connection(self):
-        """connection() closes database on exit."""
-        with connection() as db:
-            conn = db.conn
-        # After context exit, connection should be closed
-        assert db.conn is None
+def test_get_db_returns_non_none_database_handle(db):
+    # Arrange
+    # Act
+    handle = db
+    # Assert
+    assert handle is not None
 
 
-class TestSingleton:
-    """Tests for singleton database functions."""
-
-    def test_get_db_returns_same_instance(self):
-        """get_db() returns singleton instance."""
-        db1 = get_db()
-        db2 = get_db()
-        assert db1 is db2
-
-    def test_close_db_clears_singleton(self):
-        """close_db() clears the singleton."""
-        db1 = get_db()
-        close_db()
-        db2 = get_db()
-        # After close_db, should get new instance
-        assert db1 is not db2
+def test_get_db_handle_has_open_sqlite_connection(db):
+    # Arrange
+    # Act
+    conn = db.conn
+    # Assert
+    assert conn is not None
 
 
-class TestWorksTable:
-    """Tests for works table access."""
+def test_get_db_handle_exposes_db_path_attribute(db):
+    # Arrange
+    # Act
+    has_attr = hasattr(db, "db_path")
+    # Assert
+    assert has_attr
 
-    def test_works_table_exists(self):
-        """Works table exists in database."""
-        db = get_db()
-        row = db.fetchone(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='works'"
-        )
-        assert row is not None
 
-    def test_works_table_has_expected_columns(self):
-        """Works table has doi and metadata columns."""
-        db = get_db()
-        rows = db.fetchall("PRAGMA table_info(works)")
-        columns = {row["name"] for row in rows}
-        assert "doi" in columns
-        assert "metadata" in columns
+def test_get_db_handle_db_path_is_pathlib_path(db):
+    # Arrange
+    # Act
+    path = db.db_path
+    # Assert
+    assert isinstance(path, Path)
+
+
+def test_get_db_handle_db_path_exists_on_disk(db):
+    # Arrange
+    path = db.db_path
+    # Act
+    present = path.exists()
+    # Assert
+    assert present
+
+
+# ---------- execute / fetchone / fetchall ----------
+
+
+def test_database_execute_returns_sqlite_cursor_instance(db):
+    # Arrange
+    # Act
+    cursor = db.execute("SELECT 1")
+    # Assert
+    assert isinstance(cursor, sqlite3.Cursor)
+
+
+def test_database_fetchone_returns_row_for_matching_query(db):
+    # Arrange
+    sql = "SELECT 1 as value"
+    # Act
+    row = db.fetchone(sql)
+    # Assert
+    assert row is not None
+
+
+def test_database_fetchone_row_supports_column_indexing_by_name(db):
+    # Arrange
+    sql = "SELECT 1 as value"
+    # Act
+    row = db.fetchone(sql)
+    # Assert
+    assert row["value"] == 1
+
+
+def test_database_fetchone_returns_none_when_no_rows_match(db):
+    # Arrange
+    sql = "SELECT 1 WHERE 0 = 1"
+    # Act
+    row = db.fetchone(sql)
+    # Assert
+    assert row is None
+
+
+def test_database_fetchall_returns_list_instance(db):
+    # Arrange
+    sql = "SELECT 1 as value UNION SELECT 2"
+    # Act
+    rows = db.fetchall(sql)
+    # Assert
+    assert isinstance(rows, list)
+
+
+def test_database_fetchall_returns_one_row_per_union_branch(db):
+    # Arrange
+    sql = "SELECT 1 as value UNION SELECT 2"
+    # Act
+    rows = db.fetchall(sql)
+    # Assert
+    assert len(rows) == 2
+
+
+# ---------- get_metadata ----------
+
+
+@pytest.fixture
+def any_existing_doi(db):
+    """A real DOI from the test DB, or skip if the DB has none."""
+    row = db.fetchone("SELECT doi FROM works LIMIT 1")
+    if row is None:
+        pytest.skip("test DB contains no works")
+    return row["doi"]
+
+
+def test_get_metadata_returns_dict_for_doi_present_in_database(
+    db, any_existing_doi
+):
+    # Arrange
+    doi = any_existing_doi
+    # Act
+    metadata = db.get_metadata(doi)
+    # Assert
+    assert isinstance(metadata, dict)
+
+
+def test_get_metadata_returns_none_for_doi_not_present_in_database(db):
+    # Arrange
+    doi = "10.9999/nonexistent.doi"
+    # Act
+    metadata = db.get_metadata(doi)
+    # Assert
+    assert metadata is None
+
+
+def test_get_metadata_returns_truthy_payload_for_known_doi(
+    db, any_existing_doi
+):
+    # Arrange
+    doi = any_existing_doi
+    # Act
+    metadata = db.get_metadata(doi)
+    # Assert
+    assert metadata is not None
+
+
+# ---------- connection() context manager ----------
+
+
+def test_connection_context_yields_database_instance():
+    # Arrange
+    # Act
+    with connection() as db:
+        is_db = isinstance(db, Database)
+    # Assert
+    assert is_db
+
+
+def test_connection_context_provides_open_sqlite_connection():
+    # Arrange
+    # Act
+    with connection() as db:
+        conn = db.conn
+    # Assert
+    assert conn is not None
+
+
+def test_connection_context_closes_handle_on_exit():
+    # Arrange
+    with connection() as db:
+        pass
+    # Act
+    conn = db.conn
+    # Assert
+    assert conn is None
+
+
+# ---------- get_db / close_db singleton semantics ----------
+
+
+def test_get_db_returns_same_instance_on_repeat_call():
+    # Arrange
+    first = get_db()
+    # Act
+    second = get_db()
+    # Assert
+    assert first is second
+
+
+def test_close_db_drops_singleton_so_next_get_db_is_fresh():
+    # Arrange
+    first = get_db()
+    # Act
+    close_db()
+    second = get_db()
+    # Assert
+    assert first is not second
+
+
+# ---------- schema sanity ----------
+
+
+def test_database_schema_includes_a_works_table(db):
+    # Arrange
+    sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='works'"
+    # Act
+    row = db.fetchone(sql)
+    # Assert
+    assert row is not None
+
+
+def test_works_table_has_doi_column(db):
+    # Arrange
+    rows = db.fetchall("PRAGMA table_info(works)")
+    # Act
+    columns = {row["name"] for row in rows}
+    # Assert
+    assert "doi" in columns
+
+
+def test_works_table_has_metadata_column(db):
+    # Arrange
+    rows = db.fetchall("PRAGMA table_info(works)")
+    # Act
+    columns = {row["name"] for row in rows}
+    # Assert
+    assert "metadata" in columns
 
 
 if __name__ == "__main__":

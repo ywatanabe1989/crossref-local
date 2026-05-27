@@ -3,248 +3,478 @@
 import pytest
 
 from crossref_local._core.citations import (
-    get_citing,
-    get_cited,
-    get_citation_count,
-    CitationNode,
     CitationEdge,
     CitationNetwork,
+    CitationNode,
+    get_citation_count,
+    get_cited,
+    get_citing,
 )
 
 
-class TestGetCiting:
-    """Tests for get_citing function."""
-
-    def test_get_citing_returns_list(self, sample_doi):
-        """get_citing() returns a list."""
-        citing = get_citing(sample_doi)
-        assert isinstance(citing, list)
-
-    def test_get_citing_returns_strings(self, sample_doi):
-        """get_citing() returns list of DOI strings."""
-        citing = get_citing(sample_doi, limit=5)
-        for doi in citing:
-            assert isinstance(doi, str)
-
-    def test_get_citing_respects_limit(self, sample_doi):
-        """get_citing() respects limit parameter."""
-        citing = get_citing(sample_doi, limit=3)
-        assert len(citing) <= 3
-
-    def test_get_citing_nonexistent_doi(self):
-        """get_citing() returns empty list for nonexistent DOI."""
-        citing = get_citing("10.0000/nonexistent")
-        assert citing == []
+# ---------- get_citing ----------
 
 
-class TestGetCited:
-    """Tests for get_cited function."""
-
-    def test_get_cited_returns_list(self, sample_doi):
-        """get_cited() returns a list."""
-        cited = get_cited(sample_doi)
-        assert isinstance(cited, list)
-
-    def test_get_cited_returns_strings(self, sample_doi):
-        """get_cited() returns list of DOI strings."""
-        cited = get_cited(sample_doi, limit=5)
-        for doi in cited:
-            assert isinstance(doi, str)
-
-    def test_get_cited_respects_limit(self, sample_doi):
-        """get_cited() respects limit parameter."""
-        cited = get_cited(sample_doi, limit=3)
-        assert len(cited) <= 3
-
-    def test_get_cited_nonexistent_doi(self):
-        """get_cited() returns empty list for nonexistent DOI."""
-        cited = get_cited("10.0000/nonexistent")
-        assert cited == []
+def test_get_citing_returns_list_instance_for_sample_doi(sample_doi):
+    # Arrange
+    # Act
+    citing = get_citing(sample_doi)
+    # Assert
+    assert isinstance(citing, list)
 
 
-class TestGetCitationCount:
-    """Tests for get_citation_count function."""
-
-    def test_get_citation_count_returns_int(self, sample_doi):
-        """get_citation_count() returns an integer."""
-        count = get_citation_count(sample_doi)
-        assert isinstance(count, int)
-
-    def test_get_citation_count_non_negative(self, sample_doi):
-        """get_citation_count() returns non-negative value."""
-        count = get_citation_count(sample_doi)
-        assert count >= 0
-
-    def test_get_citation_count_nonexistent_doi(self):
-        """get_citation_count() returns 0 for nonexistent DOI."""
-        count = get_citation_count("10.0000/nonexistent")
-        assert count == 0
+def test_get_citing_returns_only_string_dois_for_sample_doi(sample_doi):
+    # Arrange
+    # Act
+    citing = get_citing(sample_doi, limit=5)
+    # Assert
+    assert all(isinstance(d, str) for d in citing)
 
 
-class TestCitationNode:
-    """Tests for CitationNode dataclass."""
-
-    def test_citation_node_creation(self):
-        """CitationNode can be created with required fields."""
-        node = CitationNode(doi="10.1234/test")
-        assert node.doi == "10.1234/test"
-
-    def test_citation_node_defaults(self):
-        """CitationNode has sensible defaults."""
-        node = CitationNode(doi="10.1234/test")
-        assert node.title == ""
-        assert node.authors == []
-        assert node.year is None
-        assert node.journal == ""
-        assert node.citation_count == 0
-        assert node.depth == 0
-
-    def test_citation_node_full_creation(self):
-        """CitationNode can be created with all fields."""
-        node = CitationNode(
-            doi="10.1234/test",
-            title="Test Paper",
-            authors=["Author One", "Author Two"],
-            year=2023,
-            journal="Test Journal",
-            citation_count=42,
-            depth=1,
-        )
-        assert node.doi == "10.1234/test"
-        assert node.title == "Test Paper"
-        assert len(node.authors) == 2
-        assert node.year == 2023
-        assert node.journal == "Test Journal"
-        assert node.citation_count == 42
-        assert node.depth == 1
-
-    def test_citation_node_to_dict(self):
-        """CitationNode.to_dict() returns dict."""
-        node = CitationNode(
-            doi="10.1234/test",
-            title="Test",
-            year=2023,
-        )
-        d = node.to_dict()
-        assert isinstance(d, dict)
-        assert d["doi"] == "10.1234/test"
-        assert d["title"] == "Test"
-        assert d["year"] == 2023
+def test_get_citing_respects_limit_argument(sample_doi):
+    # Arrange
+    limit = 3
+    # Act
+    citing = get_citing(sample_doi, limit=limit)
+    # Assert
+    assert len(citing) <= limit
 
 
-class TestCitationEdge:
-    """Tests for CitationEdge dataclass."""
-
-    def test_citation_edge_creation(self):
-        """CitationEdge can be created."""
-        edge = CitationEdge(citing_doi="10.1234/citing", cited_doi="10.1234/cited")
-        assert edge.citing_doi == "10.1234/citing"
-        assert edge.cited_doi == "10.1234/cited"
-
-    def test_citation_edge_with_year(self):
-        """CitationEdge can have year."""
-        edge = CitationEdge(
-            citing_doi="10.1234/citing",
-            cited_doi="10.1234/cited",
-            year=2023,
-        )
-        assert edge.year == 2023
+def test_get_citing_returns_empty_list_for_unknown_doi():
+    # Arrange
+    # Act
+    citing = get_citing("10.0000/nonexistent")
+    # Assert
+    assert citing == []
 
 
-class TestCitationNetwork:
-    """Tests for CitationNetwork class."""
-
-    def test_network_creation(self, sample_doi):
-        """CitationNetwork can be created."""
-        network = CitationNetwork(sample_doi, depth=1, max_citing=5, max_cited=5)
-        assert network.center_doi == sample_doi
-        assert network.depth == 1
-
-    def test_network_has_nodes(self, sample_doi):
-        """CitationNetwork has nodes dict."""
-        network = CitationNetwork(sample_doi, depth=1, max_citing=3, max_cited=3)
-        assert isinstance(network.nodes, dict)
-
-    def test_network_has_edges(self, sample_doi):
-        """CitationNetwork has edges list."""
-        network = CitationNetwork(sample_doi, depth=1, max_citing=3, max_cited=3)
-        assert isinstance(network.edges, list)
-
-    def test_network_center_in_nodes(self, sample_doi):
-        """CitationNetwork includes center DOI in nodes."""
-        network = CitationNetwork(sample_doi, depth=1, max_citing=3, max_cited=3)
-        assert sample_doi in network.nodes
-
-    def test_network_to_dict(self, sample_doi):
-        """CitationNetwork.to_dict() returns dict."""
-        network = CitationNetwork(sample_doi, depth=1, max_citing=3, max_cited=3)
-        d = network.to_dict()
-        assert isinstance(d, dict)
-        assert d["center_doi"] == sample_doi
-        assert "nodes" in d
-        assert "edges" in d
-        assert "stats" in d
-
-    def test_network_repr(self, sample_doi):
-        """CitationNetwork has repr."""
-        network = CitationNetwork(sample_doi, depth=1, max_citing=3, max_cited=3)
-        r = repr(network)
-        assert "CitationNetwork" in r
-        assert sample_doi in r
-
-    def test_network_depth_zero(self, sample_doi):
-        """CitationNetwork with depth=0 only has center node."""
-        network = CitationNetwork(sample_doi, depth=0)
-        # Should have at least the center node
-        assert sample_doi in network.nodes
+# ---------- get_cited ----------
 
 
-class TestCitationNetworkVisualization:
-    """Tests for CitationNetwork visualization methods."""
-
-    def test_to_networkx_import_error(self, sample_doi):
-        """to_networkx() raises ImportError if networkx not installed."""
-        network = CitationNetwork(sample_doi, depth=0)
-        try:
-            G = network.to_networkx()
-            # networkx is available
-            import networkx as nx
-            assert isinstance(G, nx.DiGraph)
-        except ImportError:
-            # networkx not installed, which is fine
-            pass
-
-    def test_save_html_import_error(self, sample_doi, tmp_path):
-        """save_html() raises ImportError if pyvis not installed."""
-        network = CitationNetwork(sample_doi, depth=0)
-        output_path = tmp_path / "test_network.html"
-        try:
-            network.save_html(str(output_path))
-            assert output_path.exists()
-        except ImportError:
-            # pyvis not installed, which is fine
-            pass
-
-    def test_save_png_import_error(self, sample_doi, tmp_path):
-        """save_png() raises ImportError if matplotlib not installed."""
-        network = CitationNetwork(sample_doi, depth=0)
-        output_path = tmp_path / "test_network.png"
-        try:
-            network.save_png(str(output_path))
-            assert output_path.exists()
-        except ImportError:
-            # matplotlib/networkx not installed, which is fine
-            pass
+def test_get_cited_returns_list_instance_for_sample_doi(sample_doi):
+    # Arrange
+    # Act
+    cited = get_cited(sample_doi)
+    # Assert
+    assert isinstance(cited, list)
 
 
-class TestCitationNetworkStats:
-    """Tests for CitationNetwork statistics."""
+def test_get_cited_returns_only_string_dois_for_sample_doi(sample_doi):
+    # Arrange
+    # Act
+    cited = get_cited(sample_doi, limit=5)
+    # Assert
+    assert all(isinstance(d, str) for d in cited)
 
-    def test_network_stats_in_dict(self, sample_doi):
-        """Network stats include node and edge counts."""
-        network = CitationNetwork(sample_doi, depth=1, max_citing=3, max_cited=3)
-        d = network.to_dict()
-        assert "total_nodes" in d["stats"]
-        assert "total_edges" in d["stats"]
-        assert d["stats"]["total_nodes"] == len(network.nodes)
-        assert d["stats"]["total_edges"] == len(network.edges)
+
+def test_get_cited_respects_limit_argument(sample_doi):
+    # Arrange
+    limit = 3
+    # Act
+    cited = get_cited(sample_doi, limit=limit)
+    # Assert
+    assert len(cited) <= limit
+
+
+def test_get_cited_returns_empty_list_for_unknown_doi():
+    # Arrange
+    # Act
+    cited = get_cited("10.0000/nonexistent")
+    # Assert
+    assert cited == []
+
+
+# ---------- get_citation_count ----------
+
+
+def test_get_citation_count_returns_integer_type_for_sample_doi(sample_doi):
+    # Arrange
+    # Act
+    n = get_citation_count(sample_doi)
+    # Assert
+    assert isinstance(n, int)
+
+
+def test_get_citation_count_returns_nonnegative_for_sample_doi(sample_doi):
+    # Arrange
+    # Act
+    n = get_citation_count(sample_doi)
+    # Assert
+    assert n >= 0
+
+
+def test_get_citation_count_returns_zero_for_unknown_doi():
+    # Arrange
+    # Act
+    n = get_citation_count("10.0000/nonexistent")
+    # Assert
+    assert n == 0
+
+
+# ---------- CitationNode ----------
+
+
+def test_citation_node_constructor_stores_doi_with_minimal_args():
+    # Arrange
+    doi = "10.1234/test"
+    # Act
+    node = CitationNode(doi=doi)
+    # Assert
+    assert node.doi == doi
+
+
+def test_citation_node_default_title_is_empty_string():
+    # Arrange
+    # Act
+    node = CitationNode(doi="10.1234/test")
+    # Assert
+    assert node.title == ""
+
+
+def test_citation_node_default_authors_is_empty_list():
+    # Arrange
+    # Act
+    node = CitationNode(doi="10.1234/test")
+    # Assert
+    assert node.authors == []
+
+
+def test_citation_node_default_year_is_none():
+    # Arrange
+    # Act
+    node = CitationNode(doi="10.1234/test")
+    # Assert
+    assert node.year is None
+
+
+def test_citation_node_default_journal_is_empty_string():
+    # Arrange
+    # Act
+    node = CitationNode(doi="10.1234/test")
+    # Assert
+    assert node.journal == ""
+
+
+def test_citation_node_default_citation_count_is_zero():
+    # Arrange
+    # Act
+    node = CitationNode(doi="10.1234/test")
+    # Assert
+    assert node.citation_count == 0
+
+
+def test_citation_node_default_depth_is_zero():
+    # Arrange
+    # Act
+    node = CitationNode(doi="10.1234/test")
+    # Assert
+    assert node.depth == 0
+
+
+@pytest.fixture
+def _full_citation_node():
+    return CitationNode(
+        doi="10.1234/test",
+        title="Test Paper",
+        authors=["Author One", "Author Two"],
+        year=2023,
+        journal="Test Journal",
+        citation_count=42,
+        depth=1,
+    )
+
+
+def test_citation_node_full_constructor_preserves_title(_full_citation_node):
+    # Arrange
+    node = _full_citation_node
+    # Act
+    # Assert
+    assert node.title == "Test Paper"
+
+
+def test_citation_node_full_constructor_preserves_author_count(_full_citation_node):
+    # Arrange
+    node = _full_citation_node
+    # Act
+    # Assert
+    assert len(node.authors) == 2
+
+
+def test_citation_node_full_constructor_preserves_year(_full_citation_node):
+    # Arrange
+    node = _full_citation_node
+    # Act
+    # Assert
+    assert node.year == 2023
+
+
+def test_citation_node_full_constructor_preserves_journal(_full_citation_node):
+    # Arrange
+    node = _full_citation_node
+    # Act
+    # Assert
+    assert node.journal == "Test Journal"
+
+
+def test_citation_node_full_constructor_preserves_citation_count(_full_citation_node):
+    # Arrange
+    node = _full_citation_node
+    # Act
+    # Assert
+    assert node.citation_count == 42
+
+
+def test_citation_node_full_constructor_preserves_depth(_full_citation_node):
+    # Arrange
+    node = _full_citation_node
+    # Act
+    # Assert
+    assert node.depth == 1
+
+
+@pytest.fixture
+def _simple_node_dict():
+    node = CitationNode(doi="10.1234/test", title="Test", year=2023)
+    return node.to_dict()
+
+
+def test_citation_node_to_dict_returns_dict_instance(_simple_node_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert isinstance(_simple_node_dict, dict)
+
+
+def test_citation_node_to_dict_serialises_doi(_simple_node_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert _simple_node_dict["doi"] == "10.1234/test"
+
+
+def test_citation_node_to_dict_serialises_title(_simple_node_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert _simple_node_dict["title"] == "Test"
+
+
+def test_citation_node_to_dict_serialises_year(_simple_node_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert _simple_node_dict["year"] == 2023
+
+
+# ---------- CitationEdge ----------
+
+
+def test_citation_edge_constructor_stores_citing_doi():
+    # Arrange
+    # Act
+    edge = CitationEdge(citing_doi="10.1234/citing", cited_doi="10.1234/cited")
+    # Assert
+    assert edge.citing_doi == "10.1234/citing"
+
+
+def test_citation_edge_constructor_stores_cited_doi():
+    # Arrange
+    # Act
+    edge = CitationEdge(citing_doi="10.1234/citing", cited_doi="10.1234/cited")
+    # Assert
+    assert edge.cited_doi == "10.1234/cited"
+
+
+def test_citation_edge_constructor_stores_optional_year():
+    # Arrange
+    # Act
+    edge = CitationEdge(
+        citing_doi="10.1234/citing",
+        cited_doi="10.1234/cited",
+        year=2023,
+    )
+    # Assert
+    assert edge.year == 2023
+
+
+# ---------- CitationNetwork ----------
+
+
+@pytest.fixture
+def _depth_one_network(sample_doi):
+    return CitationNetwork(sample_doi, depth=1, max_citing=3, max_cited=3)
+
+
+def test_citation_network_constructor_stores_center_doi(sample_doi):
+    # Arrange
+    # Act
+    network = CitationNetwork(sample_doi, depth=1, max_citing=5, max_cited=5)
+    # Assert
+    assert network.center_doi == sample_doi
+
+
+def test_citation_network_constructor_stores_depth(sample_doi):
+    # Arrange
+    # Act
+    network = CitationNetwork(sample_doi, depth=1, max_citing=5, max_cited=5)
+    # Assert
+    assert network.depth == 1
+
+
+def test_citation_network_nodes_attribute_is_dict_instance(_depth_one_network):
+    # Arrange
+    # Act
+    nodes = _depth_one_network.nodes
+    # Assert
+    assert isinstance(nodes, dict)
+
+
+def test_citation_network_edges_attribute_is_list_instance(_depth_one_network):
+    # Arrange
+    # Act
+    edges = _depth_one_network.edges
+    # Assert
+    assert isinstance(edges, list)
+
+
+def test_citation_network_nodes_dict_contains_center_doi_key(
+    _depth_one_network, sample_doi
+):
+    # Arrange
+    # Act
+    # Assert
+    assert sample_doi in _depth_one_network.nodes
+
+
+@pytest.fixture
+def _depth_one_network_dict(_depth_one_network):
+    return _depth_one_network.to_dict()
+
+
+def test_citation_network_to_dict_returns_dict_instance(_depth_one_network_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert isinstance(_depth_one_network_dict, dict)
+
+
+def test_citation_network_to_dict_serialises_center_doi(
+    _depth_one_network_dict, sample_doi
+):
+    # Arrange
+    # Act
+    # Assert
+    assert _depth_one_network_dict["center_doi"] == sample_doi
+
+
+def test_citation_network_to_dict_contains_nodes_field(_depth_one_network_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert "nodes" in _depth_one_network_dict
+
+
+def test_citation_network_to_dict_contains_edges_field(_depth_one_network_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert "edges" in _depth_one_network_dict
+
+
+def test_citation_network_to_dict_contains_stats_field(_depth_one_network_dict):
+    # Arrange
+    # Act
+    # Assert
+    assert "stats" in _depth_one_network_dict
+
+
+def test_citation_network_repr_mentions_class_name(_depth_one_network):
+    # Arrange
+    # Act
+    rendered = repr(_depth_one_network)
+    # Assert
+    assert "CitationNetwork" in rendered
+
+
+def test_citation_network_repr_includes_center_doi(_depth_one_network, sample_doi):
+    # Arrange
+    # Act
+    rendered = repr(_depth_one_network)
+    # Assert
+    assert sample_doi in rendered
+
+
+def test_citation_network_depth_zero_still_contains_center_doi(sample_doi):
+    # Arrange
+    # Act
+    network = CitationNetwork(sample_doi, depth=0)
+    # Assert
+    assert sample_doi in network.nodes
+
+
+# ---------- CitationNetwork visualization (best-effort) ----------
+
+
+def test_citation_network_to_networkx_returns_digraph_when_networkx_available(
+    sample_doi,
+):
+    # Arrange
+    nx = pytest.importorskip("networkx")
+    network = CitationNetwork(sample_doi, depth=0)
+    # Act
+    graph = network.to_networkx()
+    # Assert
+    assert isinstance(graph, nx.DiGraph)
+
+
+def test_citation_network_save_html_writes_output_when_pyvis_available(
+    sample_doi, tmp_path
+):
+    # Arrange
+    pytest.importorskip("pyvis")
+    pytest.importorskip("networkx")
+    network = CitationNetwork(sample_doi, depth=0)
+    output = tmp_path / "test_network.html"
+    # Act
+    network.save_html(str(output))
+    # Assert
+    assert output.exists()
+
+
+def test_citation_network_save_png_writes_output_when_matplotlib_available(
+    sample_doi, tmp_path
+):
+    # Arrange
+    pytest.importorskip("matplotlib")
+    pytest.importorskip("networkx")
+    network = CitationNetwork(sample_doi, depth=0)
+    output = tmp_path / "test_network.png"
+    # Act
+    network.save_png(str(output))
+    # Assert
+    assert output.exists()
+
+
+# ---------- CitationNetwork stats ----------
+
+
+def test_citation_network_stats_total_nodes_matches_nodes_dict_length(
+    _depth_one_network,
+):
+    # Arrange
+    network = _depth_one_network
+    # Act
+    stats = network.to_dict()["stats"]
+    # Assert
+    assert stats["total_nodes"] == len(network.nodes)
+
+
+def test_citation_network_stats_total_edges_matches_edges_list_length(
+    _depth_one_network,
+):
+    # Arrange
+    network = _depth_one_network
+    # Act
+    stats = network.to_dict()["stats"]
+    # Assert
+    assert stats["total_edges"] == len(network.edges)

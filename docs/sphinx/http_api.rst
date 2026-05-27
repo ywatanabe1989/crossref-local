@@ -18,7 +18,7 @@ Endpoints
 Root
 ~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /
 
@@ -27,7 +27,7 @@ Returns API information and available endpoints.
 Health Check
 ~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /health
 
@@ -36,7 +36,7 @@ Returns server health status.
 Database Info
 ~~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /info
 
@@ -45,7 +45,7 @@ Returns database statistics (total works, FTS indexed count).
 Search Works
 ~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /works?q=<query>&limit=<n>&offset=<n>
 
@@ -85,7 +85,7 @@ Response:
 Get Work by DOI
 ~~~~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /works/{doi}
 
@@ -98,7 +98,7 @@ Example:
 Batch Lookup
 ~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     POST /works/batch
 
@@ -116,7 +116,7 @@ Citations
 Get Citing Papers
 ~~~~~~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /citations/{doi}/citing?limit=<n>
 
@@ -125,7 +125,7 @@ Returns DOIs of papers that cite the given work.
 Get Cited Papers
 ~~~~~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /citations/{doi}/cited?limit=<n>
 
@@ -134,7 +134,7 @@ Returns DOIs of papers that the given work cites (references).
 Citation Count
 ~~~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /citations/{doi}/count
 
@@ -143,7 +143,7 @@ Returns the number of citations for a work.
 Citation Network
 ~~~~~~~~~~~~~~~~
 
-.. code-block:: http
+.. code-block:: text
 
     GET /citations/{doi}/network?depth=<n>&max_citing=<n>&max_cited=<n>
 

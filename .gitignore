@@ -679,7 +679,7 @@ flycheck_*.el
 slurm_logs
 GITIGNORED/
 # Test fixtures (generated)
-tests/fixtures/*.db
-tests/fixtures/*.json
+tests/crossref_local/fixtures/*.db
+tests/crossref_local/fixtures/*.json
 _.venv/
 .coverage
