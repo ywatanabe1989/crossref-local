@@ -71,7 +71,14 @@ def search_cmd(
     save_path: Optional[str],
     save_format: str,
 ):
-    """Search for works by title, abstract, or authors."""
+    """Search for works by title, abstract, or authors.
+
+    \b
+    Example:
+      $ crossref-local search "machine learning"
+      $ crossref-local search "CRISPR" -n 5 --json
+      $ crossref-local search "neural network" --save results.json
+    """
     from .._core.config import Config
     from .._core.db import get_db
 
@@ -164,7 +171,14 @@ def search_by_doi_cmd(
     save_path: Optional[str],
     save_format: str,
 ):
-    """Search for a work by DOI."""
+    """Search for a work by DOI.
+
+    \b
+    Example:
+      $ crossref-local search-by-doi 10.1126/science.aax0758
+      $ crossref-local search-by-doi 10.1038/nature12373 --json
+      $ crossref-local search-by-doi 10.1038/nature12373 --citation
+    """
     try:
         work = get(doi)
     except ConnectionError as e:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Timestamp: "2026-01-07 22:37:13 (ywatanabe)"
-# File: /ssh:ywatanabe@nas:/home/ywatanabe/proj/crossref_local/examples/impact_factor/01_compare_jcr.py
+# File: examples/03_impact_factor/01_compare_jcr.py
 
 
 """
@@ -150,9 +150,7 @@ def compare_journals(journals, calc, jcr_df, target_year=2023):
                     "citations": citations,
                     "calc_if": round(calc_if, 2),
                     "jcr_if": round(jcr_if, 1) if jcr_if else None,
-                    "openalex_if": (
-                        round(openalex_if, 2) if openalex_if else None
-                    ),
+                    "openalex_if": (round(openalex_if, 2) if openalex_if else None),
                     "ratio": round(ratio, 2) if ratio else None,
                     "coverage_pct": round(coverage, 1),
                     "match": match,
@@ -200,16 +198,8 @@ def print_summary(results, category):
     print()
 
     # Split by coverage
-    good = [
-        r
-        for r in results
-        if r.get("coverage_pct", 0) > 10 and "error" not in r
-    ]
-    poor = [
-        r
-        for r in results
-        if r.get("coverage_pct", 0) <= 10 and "error" not in r
-    ]
+    good = [r for r in results if r.get("coverage_pct", 0) > 10 and "error" not in r]
+    poor = [r for r in results if r.get("coverage_pct", 0) <= 10 and "error" not in r]
 
     if good:
         print("  Journals with Good Citation Coverage (>10%):")
@@ -234,13 +224,9 @@ def print_summary(results, category):
 
     if poor:
         print()
-        print(
-            "  Journals with Low Citation Coverage (<10%) - USE WITH CAUTION:"
-        )
+        print("  Journals with Low Citation Coverage (<10%) - USE WITH CAUTION:")
         print("-" * 100)
-        print(
-            f"{'Journal':<40} {'Coverage':>10} {'Calc IF':>10} {'JCR IF':>10}"
-        )
+        print(f"{'Journal':<40} {'Coverage':>10} {'Calc IF':>10} {'JCR IF':>10}")
         print("-" * 100)
 
         for r in poor:

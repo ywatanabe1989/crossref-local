@@ -1,10 +1,12 @@
 ---
+description: |
+  [TOPIC] Models
+  [DETAILS] Represents a single scholarly work from CrossRef.
+tags: [crossref-local-models, crossref-local]
 package: crossref-local
 skill: models
-name: models
-tags: [crossref-local, scitex-package]
-description: Data Models — Represents a single scholarly work from CrossRef.
 ---
+
 
 # Data Models
 

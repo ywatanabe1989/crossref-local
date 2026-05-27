@@ -152,14 +152,19 @@ def register_cache_commands(cli_group):
 
     @cache.command("delete")
     @click.argument("name")
-    @click.option("--yes", is_flag=True, help="Skip confirmation")
+    @click.option("-y", "--yes", is_flag=True, help="Confirm deletion. Required.")
     def cache_delete(name, yes):
-        """Delete a cache."""
+        """Delete a cache. Refuses without --yes/-y (no interactive prompt)."""
+        import sys
+
         from . import cache as cache_module
 
         if not yes:
-            if not click.confirm(f"Delete cache '{name}'?"):
-                return
+            click.echo(
+                f"error: refusing to delete cache '{name}' without --yes/-y",
+                err=True,
+            )
+            sys.exit(2)
 
         if cache_module.delete(name):
             click.echo(f"Deleted: {name}")

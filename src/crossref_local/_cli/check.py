@@ -11,7 +11,9 @@ from rich.table import Table
 console = Console()
 
 
-@click.command("check", context_settings={"help_option_names": ["-h", "--help"]})
+@click.command(
+    "check-citations", context_settings={"help_option_names": ["-h", "--help"]}
+)
 @click.argument("input", type=click.Path(), required=False)
 @click.option("-d", "--doi", multiple=True, help="Check specific DOI(s)")
 @click.option(
@@ -41,11 +43,12 @@ def check_cmd(
 
     \b
     Examples:
-      crossref-local check bibliography.bib
-      crossref-local check dois.txt
-      crossref-local check -d 10.1038/nature12373
-      crossref-local check bibliography.bib --json
-      crossref-local check bibliography.bib --save report.json
+      crossref-local check-citations bibliography.bib
+      crossref-local check-citations dois.txt
+      crossref-local check-citations -d 10.1038/nature12373
+      crossref-local check-citations bibliography.bib --json
+      crossref-local check-citations bibliography.bib --save report.json
+      crossref-local check bibliography.bib       # alias
     """
     from .._core.checker import check_bibtex, check_citations, check_doi_list
 

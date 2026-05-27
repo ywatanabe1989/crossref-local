@@ -22,8 +22,8 @@ from urllib.parse import quote
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
-TEST_DB_PATH = PROJECT_ROOT / "tests" / "fixtures" / "test_crossref.db"
-SAMPLE_JSON_PATH = PROJECT_ROOT / "tests" / "fixtures" / "sample_works.json"
+TEST_DB_PATH = PROJECT_ROOT / "tests" / "crossref_local" / "fixtures" / "test_crossref.db"
+SAMPLE_JSON_PATH = PROJECT_ROOT / "tests" / "crossref_local" / "fixtures" / "sample_works.json"
 
 # CrossRef API
 CROSSREF_API = "https://api.crossref.org/works"

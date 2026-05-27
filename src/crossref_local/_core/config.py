@@ -11,9 +11,18 @@ __all__ = [
     "DEFAULT_API_URL",
 ]
 
-# Default database locations (checked in order)
+# Default database locations (checked in order). Anchored on multiple
+# roots so the DB is found regardless of which directory the caller
+# (pytest, CLI, MCP server) is invoked from.
 DEFAULT_DB_PATHS = [
+    # CWD-relative — works when the user runs commands from the repo root.
     _Path.cwd() / "data" / "crossref.db",
+    # Repo-relative — works regardless of CWD (e.g. when scitex-dev
+    # invokes crossref-local from `~/proj/scitex-dev/`). Anchored on
+    # this source file: <repo>/src/crossref_local/_core/config.py.
+    _Path(__file__).resolve().parents[3] / "data" / "crossref.db",
+    # User-state dir (private cache; checked last so a repo-local DB
+    # always wins).
     _Path.home() / ".crossref_local" / "crossref.db",
 ]
 

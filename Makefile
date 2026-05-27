@@ -57,10 +57,10 @@ test-db-create: venv ## Download CrossRef samples and create test database
 	@echo "Test database created. Run: make test"
 
 test-db-status: ## Check test database status
-	@if [ -f "tests/fixtures/test_crossref.db" ]; then \
-		echo "Test database: tests/fixtures/test_crossref.db"; \
-		echo "Size: $$(du -h tests/fixtures/test_crossref.db | cut -f1)"; \
-		$(PYTHON) -c "import sqlite3; c=sqlite3.connect('tests/fixtures/test_crossref.db'); print(f'Works: {c.execute(\"SELECT COUNT(*) FROM works\").fetchone()[0]}')"; \
+	@if [ -f "tests/crossref_local/fixtures/test_crossref.db" ]; then \
+		echo "Test database: tests/crossref_local/fixtures/test_crossref.db"; \
+		echo "Size: $$(du -h tests/crossref_local/fixtures/test_crossref.db | cut -f1)"; \
+		$(PYTHON) -c "import sqlite3; c=sqlite3.connect('tests/crossref_local/fixtures/test_crossref.db'); print(f'Works: {c.execute(\"SELECT COUNT(*) FROM works\").fetchone()[0]}')"; \
 	else \
 		echo "Test database not found. Run: make test-db-create"; \
 	fi

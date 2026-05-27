@@ -1,113 +1,201 @@
-"""Tests for crossref_local.config module."""
+"""Tests for crossref_local.config module.
+
+No mocks: env vars are managed by a yield-based save/restore fixture
+and DB paths are real files under ``tmp_path``.
+"""
 
 import os
-import pytest
 from pathlib import Path
-from unittest.mock import patch
 
-from crossref_local._core.config import Config, get_db_path, DEFAULT_DB_PATHS, DEFAULT_API_URLS
+import pytest
 
-
-class TestGetDbPath:
-    """Tests for get_db_path function."""
-
-    def test_returns_path_from_env_variable(self, tmp_path):
-        """get_db_path() uses CROSSREF_LOCAL_DB env variable when set."""
-        # Create a temporary database file
-        db_file = tmp_path / "test.db"
-        db_file.touch()
-
-        with patch.dict(os.environ, {"CROSSREF_LOCAL_DB": str(db_file)}):
-            Config.reset()
-            result = get_db_path()
-            assert result == db_file
-
-    def test_raises_when_env_path_not_found(self):
-        """get_db_path() raises FileNotFoundError for invalid env path."""
-        with patch.dict(os.environ, {"CROSSREF_LOCAL_DB": "/nonexistent/path.db"}):
-            Config.reset()
-            with pytest.raises(FileNotFoundError) as exc_info:
-                get_db_path()
-            assert "/nonexistent/path.db" in str(exc_info.value)
-
-    def test_autodetects_from_default_paths(self):
-        """get_db_path() finds database from default paths."""
-        # This test relies on the actual database being available
-        # Skip if no database exists
-        Config.reset()
-        try:
-            path = get_db_path()
-            assert path.exists()
-            assert path.suffix == ".db"
-        except FileNotFoundError:
-            pytest.skip("No database available for auto-detection test")
+from crossref_local._core.config import (
+    DEFAULT_API_URLS,
+    DEFAULT_DB_PATHS,
+    Config,
+    get_db_path,
+)
 
 
-class TestConfig:
-    """Tests for Config class."""
+@pytest.fixture
+def crossref_local_db_env():
+    """Yield-based env save/restore for CROSSREF_LOCAL_DB."""
+    # Arrange
+    saved = os.environ.get("CROSSREF_LOCAL_DB")
 
-    def setup_method(self):
-        """Reset Config before each test."""
+    def setter(value: str) -> None:
+        os.environ["CROSSREF_LOCAL_DB"] = value
         Config.reset()
 
-    def test_get_db_path_caches_result(self):
-        """Config.get_db_path() caches the path."""
-        try:
-            path1 = Config.get_db_path()
-            path2 = Config.get_db_path()
-            assert path1 == path2
-        except FileNotFoundError:
-            pytest.skip("No database available")
-
-    def test_set_db_path_with_valid_path(self, tmp_path):
-        """Config.set_db_path() accepts valid path."""
-        db_file = tmp_path / "custom.db"
-        db_file.touch()
-
-        Config.set_db_path(db_file)
-        assert Config.get_db_path() == db_file
-
-    def test_set_db_path_with_invalid_path(self):
-        """Config.set_db_path() raises for nonexistent path."""
-        with pytest.raises(FileNotFoundError):
-            Config.set_db_path("/nonexistent/database.db")
-
-    def test_reset_clears_cached_path(self, tmp_path):
-        """Config.reset() clears the cached path."""
-        db_file = tmp_path / "test.db"
-        db_file.touch()
-
-        Config.set_db_path(db_file)
-        assert Config._db_path is not None
-
+    try:
+        yield setter
+    finally:
+        if saved is None:
+            os.environ.pop("CROSSREF_LOCAL_DB", None)
+        else:
+            os.environ["CROSSREF_LOCAL_DB"] = saved
         Config.reset()
-        assert Config._db_path is None
-
-    def test_set_mode_to_http(self):
-        """Config.set_mode("http") switches to http mode."""
-        Config.set_mode("http")
-        assert Config.get_mode() == "http"
-
-    def test_set_api_url(self):
-        """Config.set_api_url() sets the API URL."""
-        Config.set_api_url("http://example.com:8333")
-        assert Config.get_api_url() == "http://example.com:8333"
-        assert Config.get_mode() == "http"
 
 
-class TestDefaultPaths:
-    """Tests for default configuration values."""
+# ---------- get_db_path ----------
 
-    def test_default_db_paths_are_pathlib_paths(self):
-        """DEFAULT_DB_PATHS contains Path objects."""
-        for path in DEFAULT_DB_PATHS:
-            assert isinstance(path, Path)
 
-    def test_default_api_urls_are_strings(self):
-        """DEFAULT_API_URLS contains string URLs."""
-        for url in DEFAULT_API_URLS:
-            assert isinstance(url, str)
-            assert url.startswith("http")
+def test_get_db_path_returns_path_from_env_variable(tmp_path, crossref_local_db_env):
+    # Arrange
+    db_file = tmp_path / "test.db"
+    db_file.touch()
+    crossref_local_db_env(str(db_file))
+    # Act
+    result = get_db_path()
+    # Assert
+    assert result == db_file
+
+
+def test_get_db_path_raises_filenotfound_for_nonexistent_env_path(
+    crossref_local_db_env,
+):
+    # Arrange
+    crossref_local_db_env("/nonexistent/path.db")
+    # Act
+    ctx = pytest.raises(FileNotFoundError)
+    # Assert
+    with ctx:
+        get_db_path()
+
+
+def test_get_db_path_includes_offending_path_in_error_message(crossref_local_db_env):
+    # Arrange
+    crossref_local_db_env("/nonexistent/path.db")
+    # Act
+    try:
+        get_db_path()
+        raise AssertionError("expected FileNotFoundError")
+    except FileNotFoundError as exc:
+        msg = str(exc)
+    # Assert
+    assert "/nonexistent/path.db" in msg
+
+
+@pytest.fixture
+def _auto_detected_db_path():
+    """Return the auto-detected DB path, or skip if none available."""
+    Config.reset()
+    try:
+        return get_db_path()
+    except FileNotFoundError:
+        pytest.skip("No database available for auto-detection test")
+
+
+def test_get_db_path_autodetects_existing_default_database(_auto_detected_db_path):
+    # Arrange
+    path = _auto_detected_db_path
+    # Act
+    exists = path.exists()
+    # Assert
+    assert exists
+
+
+# ---------- Config ----------
+
+
+@pytest.fixture
+def _first_resolved_db_path():
+    """Return Config.get_db_path() once; skip if no DB available."""
+    Config.reset()
+    try:
+        return Config.get_db_path()
+    except FileNotFoundError:
+        pytest.skip("No database available")
+
+
+def test_config_get_db_path_caches_result_across_calls(_first_resolved_db_path):
+    # Arrange
+    first = _first_resolved_db_path
+    # Act
+    second = Config.get_db_path()
+    # Assert
+    assert first == second
+
+
+def test_config_set_db_path_accepts_existing_file(tmp_path):
+    # Arrange
+    Config.reset()
+    db_file = tmp_path / "custom.db"
+    db_file.touch()
+    # Act
+    Config.set_db_path(db_file)
+    # Assert
+    assert Config.get_db_path() == db_file
+
+
+def test_config_set_db_path_raises_filenotfound_for_invalid_path():
+    # Arrange
+    Config.reset()
+    # Act
+    ctx = pytest.raises(FileNotFoundError)
+    # Assert
+    with ctx:
+        Config.set_db_path("/nonexistent/database.db")
+
+
+def test_config_reset_clears_cached_db_path(tmp_path):
+    # Arrange
+    Config.reset()
+    db_file = tmp_path / "test.db"
+    db_file.touch()
+    Config.set_db_path(db_file)
+    # Act
+    Config.reset()
+    # Assert
+    assert Config._db_path is None
+
+
+def test_config_set_mode_switches_to_http_mode():
+    # Arrange
+    Config.reset()
+    # Act
+    Config.set_mode("http")
+    # Assert
+    assert Config.get_mode() == "http"
+
+
+def test_config_set_api_url_stores_supplied_url():
+    # Arrange
+    Config.reset()
+    # Act
+    Config.set_api_url("http://example.com:8333")
+    # Assert
+    assert Config.get_api_url() == "http://example.com:8333"
+
+
+def test_config_set_api_url_implicitly_enables_http_mode():
+    # Arrange
+    Config.reset()
+    # Act
+    Config.set_api_url("http://example.com:8333")
+    # Assert
+    assert Config.get_mode() == "http"
+
+
+# ---------- defaults ----------
+
+
+def test_default_db_paths_are_all_pathlib_path_instances():
+    # Arrange
+    paths = DEFAULT_DB_PATHS
+    # Act
+    non_paths = [p for p in paths if not isinstance(p, Path)]
+    # Assert
+    assert non_paths == []
+
+
+def test_default_api_urls_are_all_http_or_https_strings():
+    # Arrange
+    urls = DEFAULT_API_URLS
+    # Act
+    bad = [u for u in urls if not (isinstance(u, str) and u.startswith("http"))]
+    # Assert
+    assert bad == []
 
 
 if __name__ == "__main__":

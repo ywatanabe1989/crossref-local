@@ -50,20 +50,33 @@ def _detect_shell() -> str:
     return "bash"
 
 
-def _get_config_file(shell: str) -> Path | None:
-    """Get the appropriate config file for the shell."""
-    configs = SHELL_CONFIGS.get(shell, [])
-    for config in configs:
+def _get_config_file(
+    shell: str, *, configs: dict[str, list[Path]] | None = None
+) -> Path | None:
+    """Get the appropriate config file for the shell.
+
+    The ``configs`` keyword arg is a DI seam: production callers leave
+    it ``None`` (we fall back to the module-level ``SHELL_CONFIGS``);
+    tests pass a dict pointing at real files under ``tmp_path``.
+    """
+    if configs is None:
+        configs = SHELL_CONFIGS
+    candidates = configs.get(shell, [])
+    for config in candidates:
         if config.exists():
             return config
     # Return first option for creation
-    return configs[0] if configs else None
+    return candidates[0] if candidates else None
 
 
-def _is_installed(shell: str) -> tuple[bool, Path | None]:
+def _is_installed(
+    shell: str, *, configs: dict[str, list[Path]] | None = None
+) -> tuple[bool, Path | None]:
     """Check if completion is already installed for a shell."""
-    configs = SHELL_CONFIGS.get(shell, [])
-    for config in configs:
+    if configs is None:
+        configs = SHELL_CONFIGS
+    candidates = configs.get(shell, [])
+    for config in candidates:
         if config.exists():
             content = config.read_text()
             if COMPLETION_MARKER in content:
@@ -71,13 +84,15 @@ def _is_installed(shell: str) -> tuple[bool, Path | None]:
     return False, None
 
 
-def _install_completion(shell: str) -> tuple[bool, str]:
+def _install_completion(
+    shell: str, *, configs: dict[str, list[Path]] | None = None
+) -> tuple[bool, str]:
     """Install completion for a shell. Returns (success, message)."""
-    installed, existing_file = _is_installed(shell)
+    installed, existing_file = _is_installed(shell, configs=configs)
     if installed:
         return True, f"Already installed in {existing_file}"
 
-    config_file = _get_config_file(shell)
+    config_file = _get_config_file(shell, configs=configs)
     if config_file is None:
         return False, f"Could not find config file for {shell}"
 
@@ -97,9 +112,11 @@ def _install_completion(shell: str) -> tuple[bool, str]:
     return True, f"Installed to {config_file}"
 
 
-def _uninstall_completion(shell: str) -> tuple[bool, str]:
+def _uninstall_completion(
+    shell: str, *, configs: dict[str, list[Path]] | None = None
+) -> tuple[bool, str]:
     """Uninstall completion for a shell. Returns (success, message)."""
-    installed, config_file = _is_installed(shell)
+    installed, config_file = _is_installed(shell, configs=configs)
     if not installed:
         return True, f"Not installed for {shell}"
 

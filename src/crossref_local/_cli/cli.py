@@ -87,12 +87,32 @@ def _print_recursive_help(ctx, param, value):
 
 
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
-@click.version_option(version=__version__, prog_name="crossref-local")
+@click.help_option("-h", "--help")
+@click.version_option(
+    version=__version__, prog_name="crossref-local", message="%(prog)s %(version)s"
+)
+@click.option(
+    "-V",
+    "--show-version",
+    is_flag=True,
+    is_eager=True,
+    expose_value=False,
+    callback=lambda ctx, _p, v: (click.echo(__version__), ctx.exit(0))
+    if v and not ctx.resilient_parsing
+    else None,
+    help="Show the version and exit.",
+)
 @click.option("--http", is_flag=True, help="Use HTTP API instead of direct database")
 @click.option(
     "--api-url",
     envvar="CROSSREF_LOCAL_API_URL",
     help="API URL for http mode (default: auto-detect)",
+)
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Emit machine-readable JSON output (propagated to subcommands).",
 )
 @click.option(
     "--help-recursive",
@@ -103,10 +123,14 @@ def _print_recursive_help(ctx, param, value):
     help="Show help for all commands recursively.",
 )
 @click.pass_context
-def cli(ctx, http: bool, api_url: str):
+def cli(ctx, http: bool, api_url: str, as_json: bool):
     """Local CrossRef database with 167M+ works and full-text search.
 
     Supports both direct database access (db mode) and HTTP API (http mode).
+
+    \b
+    Configuration precedence:
+      ./config.yaml -> $CROSSREF_LOCAL_CONFIG -> ~/.scitex/crossref-local/runtime/config.yaml -> defaults
 
     \b
     DB mode (default if database found):
@@ -119,6 +143,7 @@ def cli(ctx, http: bool, api_url: str):
     from .._core.config import Config
 
     ctx.ensure_object(dict)
+    ctx.obj["as_json"] = as_json
 
     if api_url:
         Config.set_api_url(api_url)
@@ -136,12 +161,21 @@ cli.add_command(search_by_doi_cmd)
 from .check import check_cmd
 
 cli.add_command(check_cmd)
+# Backward-compat alias: `check` -> `check-citations`
+cli._aliases["check"] = check_cmd.name
 
 
-@cli.command(context_settings=CONTEXT_SETTINGS)
+@cli.command("show-status", aliases=["status"], context_settings=CONTEXT_SETTINGS)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def status(as_json):
-    """Show status and configuration."""
+def show_status(as_json):
+    """Show status and configuration.
+
+    \b
+    Example:
+      $ crossref-local show-status
+      $ crossref-local show-status --json
+      $ crossref-local status              # alias
+    """
     import json as json_module
     import os
     import sys
@@ -339,7 +373,14 @@ def relay(host: str, port: int, force: bool, dry_run: bool):
 @click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def list_python_apis(verbose, max_depth, as_json):
-    """List Python APIs (alias for: scitex introspect api crossref_local)."""
+    """List Python APIs (alias for: scitex introspect api crossref_local).
+
+    \b
+    Example:
+      $ crossref-local list-python-apis
+      $ crossref-local list-python-apis -vv
+      $ crossref-local list-python-apis --json
+    """
     try:
         from scitex.cli.introspect import api
 
@@ -369,9 +410,33 @@ except ImportError:
     pass
 
 
+# Wire canonical install-shell-completion + print-shell-completion
+# (§1a — required top-level commands). The helper writes a static
+# completion cache file rather than emitting an eval-the-binary line,
+# so `source ~/.bashrc` stays microsecond-fast (PS-147).
+try:
+    from scitex_dev._cli._completion import attach_shell_completion
+
+    attach_shell_completion(cli, prog_name="crossref-local")
+except ImportError:
+    pass
+
+
 def main():
     """Entry point for CLI."""
     cli()
+
+
+# audit §4 — inject version into root --help. `main` is a thin
+# wrapper; the click Group is `cli`.
+try:
+    from importlib.metadata import version as _v
+
+    cli.help = (
+        f"crossref-local (v{_v('crossref-local')}) — " + (cli.help or "").lstrip()
+    )
+except Exception:
+    pass
 
 
 if __name__ == "__main__":

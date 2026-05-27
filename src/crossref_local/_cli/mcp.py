@@ -75,7 +75,20 @@ def mcp():
     is_flag=True,
     help="Show what would be started without starting",
 )
-def mcp_start(transport: str, host: str, port: int, force: bool, dry_run: bool):
+@click.option(
+    "-y",
+    "--yes",
+    is_flag=True,
+    help="Skip interactive confirmations.",
+)
+def mcp_start(
+    transport: str,
+    host: str,
+    port: int,
+    force: bool,
+    dry_run: bool,
+    yes: bool,
+):
     """Start the MCP server.
 
     \b
@@ -111,6 +124,12 @@ def mcp_start(transport: str, host: str, port: int, force: bool, dry_run: bool):
 
     \b
     See docs/remote-deployment.md for systemd and Docker setup.
+
+    \b
+    Example:
+      $ crossref-local mcp start
+      $ crossref-local mcp start -t http --host 0.0.0.0 --port 8082
+      $ crossref-local mcp start --dry-run
     """
     if dry_run:
         click.echo(f"[dry-run] Would start MCP server with transport={transport}")
@@ -118,12 +137,18 @@ def mcp_start(transport: str, host: str, port: int, force: bool, dry_run: bool):
             click.echo(f"[dry-run] Host: {host}, Port: {port}")
         return
 
+    _ = yes  # accepted for §2 conformance; start has no destructive prompt today
     run_mcp_server(transport, host, port, force)
 
 
 @mcp.command("doctor", context_settings=CONTEXT_SETTINGS)
 def mcp_doctor():
-    """Diagnose MCP server setup and dependencies."""
+    """Diagnose MCP server setup and dependencies.
+
+    \b
+    Example:
+      $ crossref-local mcp doctor
+    """
     click.echo("MCP Server Diagnostics")
     click.echo("=" * 50)
     click.echo()
@@ -162,9 +187,45 @@ def mcp_doctor():
     click.echo("  crossref-local mcp start -t http      # HTTP transport")
 
 
-@mcp.command("installation", context_settings=CONTEXT_SETTINGS)
-def mcp_installation():
-    """Show MCP client installation instructions."""
+@mcp.command(
+    "show-installation", aliases=["installation"], context_settings=CONTEXT_SETTINGS
+)
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def mcp_installation(as_json: bool):
+    """Show MCP client installation instructions.
+
+    \b
+    Example:
+      $ crossref-local mcp show-installation
+      $ crossref-local mcp show-installation --json
+      $ crossref-local mcp installation        # alias
+    """
+    if as_json:
+        import json as _json
+
+        payload = {
+            "stdio": {
+                "mcpServers": {
+                    "crossref-local": {
+                        "command": "crossref-local",
+                        "args": ["mcp", "start"],
+                        "env": {"CROSSREF_LOCAL_DB": "/path/to/crossref.db"},
+                    }
+                }
+            },
+            "http": {
+                "server_command": "crossref-local mcp start -t http --host 0.0.0.0 --port 8082",
+                "client": {
+                    "mcpServers": {
+                        "crossref-remote": {"url": "http://your-server:8082/mcp"}
+                    }
+                },
+            },
+            "see_also": "docs/remote-deployment.md",
+        }
+        click.echo(_json.dumps(payload, indent=2))
+        return
+
     click.echo("MCP Client Configuration")
     click.echo("=" * 50)
     click.echo()
@@ -216,6 +277,12 @@ def mcp_list_tools(verbose: int, compact: bool, as_json: bool):
       -v      - Signatures
       -vv     - Signatures + one-line description
       -vvv    - Signatures + full description
+
+    \b
+    Example:
+      $ crossref-local mcp list-tools
+      $ crossref-local mcp list-tools -vv
+      $ crossref-local mcp list-tools --json
     """
     try:
         from .mcp_server import mcp as mcp_server

@@ -1,132 +1,236 @@
 """Tests for crossref_local.jobs module."""
 
-import tempfile
 from pathlib import Path
+
+import pytest
 
 from crossref_local import jobs
 
 
-class TestJobsModule:
-    """Test the jobs module public API."""
-
-    def test_jobs_exports(self):
-        """Test that jobs module exports expected functions."""
-        assert hasattr(jobs, "create")
-        assert hasattr(jobs, "get")
-        assert hasattr(jobs, "list_jobs")
-        assert hasattr(jobs, "run")
-        assert callable(jobs.create)
-        assert callable(jobs.get)
-        assert callable(jobs.list_jobs)
-        assert callable(jobs.run)
+# ---------- module-level API surface ----------
 
 
-class TestJobQueue:
-    """Test JobQueue class directly with temp directory."""
-
-    def test_create_returns_job(self):
-        """Test that create returns a Job object."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
-            job = queue.create(items=["item1", "item2"], name="test_job")
-            assert job is not None
-            assert hasattr(job, "id")
-            assert job.items == ["item1", "item2"]
-            assert job.metadata.get("name") == "test_job"
-
-    def test_create_persists_job(self):
-        """Test that created job is persisted."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
-            job = queue.create(items=["item1", "item2", "item3"], name="test_job")
-            # Job should be retrievable
-            loaded = queue.load(job.id)
-            assert loaded is not None
-            assert loaded.metadata.get("name") == "test_job"
-            assert len(loaded.items) == 3
-
-    def test_load_nonexistent_job_returns_none(self):
-        """Test that loading non-existent job returns None."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
-            result = queue.load("nonexistent_job_id")
-            assert result is None
-
-    def test_list_returns_list(self):
-        """Test that list returns a list."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
-            result = queue.list()
-            assert isinstance(result, list)
-
-    def test_list_includes_created_jobs(self):
-        """Test that list includes created jobs."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
-            job1 = queue.create(items=["a"], name="job1")
-            job2 = queue.create(items=["b"], name="job2")
-
-            job_list = queue.list()
-            job_ids = [j.id for j in job_list]
-
-            assert job1.id in job_ids
-            assert job2.id in job_ids
-
-    def test_delete_removes_job(self):
-        """Test that delete removes a job."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
-            job = queue.create(items=["a"])
-
-            assert queue.load(job.id) is not None
-            result = queue.delete(job.id)
-            assert result is True
-            assert queue.load(job.id) is None
+@pytest.mark.parametrize("attr", ["create", "get", "list_jobs", "run"])
+def test_jobs_module_exposes_expected_callable(attr):
+    # Arrange
+    target = jobs
+    # Act
+    obj = getattr(target, attr, None)
+    # Assert
+    assert callable(obj)
 
 
-class TestJob:
-    """Test Job dataclass."""
+# ---------- JobQueue ----------
 
-    def test_job_pending_property(self):
-        """Test pending property returns items not processed."""
-        job = jobs.Job(id="test", items=["a", "b", "c"])
-        job.completed = ["a"]
-        job.failed = {"b": "error"}
 
-        assert job.pending == ["c"]
+@pytest.fixture
+def queue(tmp_path):
+    """Construct a fresh JobQueue pointing at tmp_path."""
+    return jobs.JobQueue(jobs_dir=tmp_path)
 
-    def test_job_progress_property(self):
-        """Test progress property returns correct percentage."""
-        job = jobs.Job(id="test", items=["a", "b", "c", "d"])
-        job.completed = ["a", "b"]
 
-        assert job.progress == 50.0
+def test_jobqueue_create_returns_non_none_job_object(queue):
+    # Arrange
+    items = ["item1", "item2"]
+    # Act
+    job = queue.create(items=items, name="test_job")
+    # Assert
+    assert job is not None
 
-    def test_job_to_dict(self):
-        """Test to_dict serialization."""
-        job = jobs.Job(id="test123", items=["x", "y"])
-        d = job.to_dict()
 
-        assert d["id"] == "test123"
-        assert d["items"] == ["x", "y"]
-        assert "status" in d
-        assert "created_at" in d
+def test_jobqueue_create_assigns_id_attribute_to_new_job(queue):
+    # Arrange
+    items = ["item1", "item2"]
+    # Act
+    job = queue.create(items=items, name="test_job")
+    # Assert
+    assert hasattr(job, "id")
 
-    def test_job_from_dict(self):
-        """Test from_dict deserialization."""
-        data = {
-            "id": "test456",
-            "items": ["p", "q"],
-            "completed": ["p"],
-            "failed": {},
-            "status": "running",
-            "created_at": 1234567890.0,
-            "updated_at": 1234567890.0,
-            "metadata": {"name": "test"},
-        }
-        job = jobs.Job.from_dict(data)
 
-        assert job.id == "test456"
-        assert job.items == ["p", "q"]
-        assert job.completed == ["p"]
-        assert job.status == "running"
+def test_jobqueue_create_preserves_items_on_new_job(queue):
+    # Arrange
+    items = ["item1", "item2"]
+    # Act
+    job = queue.create(items=items, name="test_job")
+    # Assert
+    assert job.items == items
+
+
+def test_jobqueue_create_stores_name_in_metadata(queue):
+    # Arrange
+    # Act
+    job = queue.create(items=["a", "b"], name="test_job")
+    # Assert
+    assert job.metadata.get("name") == "test_job"
+
+
+def test_jobqueue_load_returns_persisted_job_after_create(queue):
+    # Arrange
+    job = queue.create(items=["item1", "item2", "item3"], name="test_job")
+    # Act
+    loaded = queue.load(job.id)
+    # Assert
+    assert loaded is not None
+
+
+def test_jobqueue_load_preserves_item_count_after_round_trip(queue):
+    # Arrange
+    job = queue.create(items=["item1", "item2", "item3"], name="test_job")
+    # Act
+    loaded = queue.load(job.id)
+    # Assert
+    assert len(loaded.items) == 3
+
+
+def test_jobqueue_load_returns_none_for_unknown_job_id(queue):
+    # Arrange
+    # Act
+    result = queue.load("nonexistent_job_id")
+    # Assert
+    assert result is None
+
+
+def test_jobqueue_list_returns_list_instance_when_empty(queue):
+    # Arrange
+    # Act
+    result = queue.list()
+    # Assert
+    assert isinstance(result, list)
+
+
+def test_jobqueue_list_includes_every_created_job_id(queue):
+    # Arrange
+    job1 = queue.create(items=["a"], name="job1")
+    job2 = queue.create(items=["b"], name="job2")
+    # Act
+    listed_ids = [j.id for j in queue.list()]
+    # Assert
+    assert {job1.id, job2.id}.issubset(set(listed_ids))
+
+
+def test_jobqueue_delete_returns_true_for_existing_job(queue):
+    # Arrange
+    job = queue.create(items=["a"])
+    # Act
+    result = queue.delete(job.id)
+    # Assert
+    assert result is True
+
+
+def test_jobqueue_delete_makes_job_subsequently_unloadable(queue):
+    # Arrange
+    job = queue.create(items=["a"])
+    queue.delete(job.id)
+    # Act
+    loaded = queue.load(job.id)
+    # Assert
+    assert loaded is None
+
+
+# ---------- Job dataclass ----------
+
+
+def test_job_pending_property_excludes_completed_and_failed_items():
+    # Arrange
+    job = jobs.Job(id="test", items=["a", "b", "c"])
+    job.completed = ["a"]
+    job.failed = {"b": "error"}
+    # Act
+    pending = job.pending
+    # Assert
+    assert pending == ["c"]
+
+
+def test_job_progress_property_reports_percentage_of_completed_items():
+    # Arrange
+    job = jobs.Job(id="test", items=["a", "b", "c", "d"])
+    job.completed = ["a", "b"]
+    # Act
+    pct = job.progress
+    # Assert
+    assert pct == 50.0
+
+
+@pytest.fixture
+def _simple_job_dict():
+    job = jobs.Job(id="test123", items=["x", "y"])
+    return job.to_dict()
+
+
+def test_job_to_dict_preserves_id(_simple_job_dict):
+    # Arrange
+    d = _simple_job_dict
+    # Act
+    # Assert
+    assert d["id"] == "test123"
+
+
+def test_job_to_dict_preserves_items(_simple_job_dict):
+    # Arrange
+    d = _simple_job_dict
+    # Act
+    # Assert
+    assert d["items"] == ["x", "y"]
+
+
+def test_job_to_dict_includes_status_key(_simple_job_dict):
+    # Arrange
+    d = _simple_job_dict
+    # Act
+    # Assert
+    assert "status" in d
+
+
+def test_job_to_dict_includes_created_at_key(_simple_job_dict):
+    # Arrange
+    d = _simple_job_dict
+    # Act
+    # Assert
+    assert "created_at" in d
+
+
+@pytest.fixture
+def _round_tripped_job():
+    data = {
+        "id": "test456",
+        "items": ["p", "q"],
+        "completed": ["p"],
+        "failed": {},
+        "status": "running",
+        "created_at": 1234567890.0,
+        "updated_at": 1234567890.0,
+        "metadata": {"name": "test"},
+    }
+    return jobs.Job.from_dict(data)
+
+
+def test_job_from_dict_restores_id(_round_tripped_job):
+    # Arrange
+    job = _round_tripped_job
+    # Act
+    # Assert
+    assert job.id == "test456"
+
+
+def test_job_from_dict_restores_items_list(_round_tripped_job):
+    # Arrange
+    job = _round_tripped_job
+    # Act
+    # Assert
+    assert job.items == ["p", "q"]
+
+
+def test_job_from_dict_restores_completed_list(_round_tripped_job):
+    # Arrange
+    job = _round_tripped_job
+    # Act
+    # Assert
+    assert job.completed == ["p"]
+
+
+def test_job_from_dict_restores_status(_round_tripped_job):
+    # Arrange
+    job = _round_tripped_job
+    # Act
+    # Assert
+    assert job.status == "running"

@@ -4,79 +4,101 @@ import asyncio
 
 import pytest
 
+# PA-303: fastmcp is in [mcp]/[dev] extras, not [project] dependencies.
+# `crossref_local.mcp_server` re-exports from `._cli.mcp_server`, which
+# does `from fastmcp import FastMCP` at module top.
+fastmcp = pytest.importorskip("fastmcp")
+
 from crossref_local.mcp_server import mcp
 
 
-def _get_tools():
-    """Get tools dict from FastMCP v2."""
+@pytest.fixture
+def tools_by_name():
+    """Snapshot of registered MCP tools, keyed by name."""
     tools = asyncio.run(mcp.list_tools())
     return {t.name: t for t in tools}
 
 
-class TestMCPServerSetup:
-    """Tests for MCP server configuration."""
-
-    def test_mcp_server_has_name(self):
-        """MCP server has a name."""
-        assert mcp.name == "crossref-local"
-
-    def test_mcp_server_has_tools(self):
-        """MCP server has registered tools."""
-        tools = _get_tools()
-        assert len(tools) > 0
-
-    def test_expected_tools_registered(self):
-        """Expected tools are registered."""
-        tools = _get_tools()
-        expected = ["search", "search_by_doi", "status"]
-        for tool_name in expected:
-            assert tool_name in tools, f"Missing tool: {tool_name}"
+# ---------- server identity ----------
 
 
-class TestSearchTool:
-    """Tests for search MCP tool."""
-
-    def test_search_tool_exists(self):
-        """search tool is registered."""
-        assert "search" in _get_tools()
-
-    def test_search_has_description(self):
-        """search tool has description."""
-        tool = _get_tools()["search"]
-        assert tool.description is not None
-        assert len(tool.description) > 0
+def test_mcp_server_name_matches_package_distribution_name():
+    # Arrange
+    server = mcp
+    # Act
+    name = server.name
+    # Assert
+    assert name == "crossref-local"
 
 
-class TestSearchByDoiTool:
-    """Tests for search_by_doi MCP tool."""
-
-    def test_search_by_doi_tool_exists(self):
-        """search_by_doi tool is registered."""
-        assert "search_by_doi" in _get_tools()
-
-
-class TestStatusTool:
-    """Tests for status MCP tool."""
-
-    def test_status_tool_exists(self):
-        """status tool is registered."""
-        assert "status" in _get_tools()
+def test_mcp_server_registers_at_least_one_tool(tools_by_name):
+    # Arrange
+    # Act
+    count = len(tools_by_name)
+    # Assert
+    assert count > 0
 
 
-class TestRunServer:
-    """Tests for run_server function."""
+# ---------- expected tools registered ----------
 
-    def test_run_server_import(self):
-        """run_server can be imported."""
-        from crossref_local.mcp_server import run_server
 
-        assert callable(run_server)
+def test_mcp_server_registers_search_works_tool(tools_by_name):
+    # Arrange
+    # Act
+    present = "search_works" in tools_by_name
+    # Assert
+    assert present
 
-    def test_main_import(self):
-        """main entry point can be imported."""
-        from crossref_local.mcp_server import main
 
-        assert callable(main)
+def test_mcp_server_registers_search_by_doi_tool(tools_by_name):
+    # Arrange
+    # Act
+    present = "search_by_doi" in tools_by_name
+    # Assert
+    assert present
+
+
+def test_mcp_server_registers_get_status_tool(tools_by_name):
+    # Arrange
+    # Act
+    present = "get_status" in tools_by_name
+    # Assert
+    assert present
+
+
+# ---------- search_works metadata ----------
+
+
+def test_mcp_search_works_tool_has_nonempty_description(tools_by_name):
+    # Arrange
+    tool = tools_by_name["search_works"]
+    # Act
+    desc = tool.description or ""
+    # Assert
+    assert len(desc) > 0
+
+
+# ---------- run_server / main entry-points ----------
+
+
+def test_run_server_module_attribute_is_callable():
+    # Arrange
+    from crossref_local.mcp_server import run_server
+
+    # Act
+    is_callable = callable(run_server)
+    # Assert
+    assert is_callable
+
+
+def test_main_module_attribute_is_callable():
+    # Arrange
+    from crossref_local.mcp_server import main
+
+    # Act
+    is_callable = callable(main)
+    # Assert
+    assert is_callable
 
 
 if __name__ == "__main__":

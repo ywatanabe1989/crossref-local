@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "crossref-local"
-version = "0.7.3"
+version = "0.7.4"
 description = "Local CrossRef database with 167M+ works and full-text search"
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -36,14 +36,21 @@ classifiers = [
 dependencies = [
     "click>=8.0",
     "rich>=13.0",
-    "scitex-dev>=0.1.0",
+    "scitex-config>=0.3.0",
+    "scitex-dev>=0.11.5",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
+    "fastapi>=0.100",
+    "fastmcp>=2.0.0",
+    "matplotlib>=3.7",
+    "networkx>=3.0",
     "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "pytest>=7.0",
+    "pyvis>=0.3",
+    "uvicorn>=0.20",
 ]
 viz = [
     "pyvis>=0.3",
@@ -80,7 +87,9 @@ crossref-local = "crossref_local"
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/crossref_local"
+Documentation = "https://crossref-local.readthedocs.io"
 Repository = "https://github.com/ywatanabe1989/crossref_local"
+Issues = "https://github.com/ywatanabe1989/crossref_local/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/crossref_local"]
@@ -89,3 +98,11 @@ packages = ["src/crossref_local"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+parallel = true
+source = ["crossref_local"]
+concurrency = ["multiprocessing", "thread"]
+
+[tool.coverage.paths]
+source = ["src/crossref_local", "*/site-packages/crossref_local"]

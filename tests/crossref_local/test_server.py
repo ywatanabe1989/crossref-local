@@ -1,8 +1,9 @@
 """Tests for crossref_local.server module (FastAPI HTTP server)."""
 
-import json
 import pytest
 
+# PA-303: fastapi is in [api]/[dev] extras, not [project] dependencies
+fastapi = pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
 
 from crossref_local.server import app
@@ -14,212 +15,504 @@ def client():
     return TestClient(app)
 
 
-class TestRootEndpoint:
-    """Tests for / endpoint."""
-
-    def test_root_returns_api_info(self, client):
-        """GET / returns API information."""
-        response = client.get("/")
-        assert response.status_code == 200
-        data = response.json()
-        assert "name" in data
-        assert "version" in data
-        assert "endpoints" in data
-
-    def test_root_lists_endpoints(self, client):
-        """GET / lists available endpoints."""
-        response = client.get("/")
-        data = response.json()
-        endpoints = data["endpoints"]
-        assert "health" in endpoints
-        assert "info" in endpoints
+@pytest.fixture
+def real_doi_from_search(client):
+    """Resolve a real DOI by hitting /works; skip if none found."""
+    response = client.get("/works?q=test&limit=1")
+    if response.status_code != 200:
+        pytest.skip("could not resolve a sample DOI via /works")
+    results = response.json().get("results", [])
+    if not results:
+        pytest.skip("no /works results to derive a DOI from")
+    return results[0]["doi"]
 
 
-class TestHealthEndpoint:
-    """Tests for /health endpoint."""
-
-    def test_health_returns_healthy(self, client):
-        """GET /health returns healthy status."""
-        response = client.get("/health")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "healthy"
-        assert "database_connected" in data
-
-
-class TestInfoEndpoint:
-    """Tests for /info endpoint."""
-
-    def test_info_returns_stats(self, client):
-        """GET /info returns database statistics."""
-        response = client.get("/info")
-        assert response.status_code == 200
-        data = response.json()
-        assert "total_papers" in data
-        assert "fts_indexed" in data
-        assert isinstance(data["total_papers"], int)
+@pytest.fixture
+def batch_dois(client):
+    """Resolve several DOIs for batch tests; skip if too few."""
+    response = client.get("/works?q=science&limit=3")
+    if response.status_code != 200:
+        pytest.skip("could not collect a batch of DOIs from /works")
+    results = response.json().get("results", [])
+    if not results:
+        pytest.skip("no /works results to derive batch DOIs from")
+    return [w["doi"] for w in results]
 
 
-class TestWorksSearchEndpoint:
-    """Tests for /works endpoint (search)."""
-
-    def test_search_requires_query(self, client):
-        """GET /works requires q parameter."""
-        response = client.get("/works")
-        assert response.status_code == 422  # Validation error
-
-    def test_search_returns_results(self, client):
-        """GET /works?q=query returns search results."""
-        response = client.get("/works?q=cancer&limit=3")
-        assert response.status_code == 200
-        data = response.json()
-        assert "query" in data
-        assert "total" in data
-        assert "results" in data
-        assert data["query"] == "cancer"
-
-    def test_search_respects_limit(self, client):
-        """GET /works respects limit parameter."""
-        response = client.get("/works?q=biology&limit=5")
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data["results"]) <= 5
-
-    def test_search_includes_elapsed_time(self, client):
-        """GET /works includes elapsed_ms."""
-        response = client.get("/works?q=physics&limit=1")
-        data = response.json()
-        assert "elapsed_ms" in data
-        assert isinstance(data["elapsed_ms"], (int, float))
-
-    def test_search_results_have_doi(self, client):
-        """Search results include DOI."""
-        response = client.get("/works?q=medicine&limit=3")
-        data = response.json()
-        for work in data["results"]:
-            assert "doi" in work
-            assert work["doi"].startswith("10.")
+# ---------- / ----------
 
 
-class TestWorksGetEndpoint:
-    """Tests for /works/{doi} endpoint."""
-
-    def test_get_nonexistent_doi_returns_404(self, client):
-        """GET /works/{doi} returns 404 for nonexistent DOI."""
-        response = client.get("/works/10.9999/nonexistent")
-        assert response.status_code == 404
-
-    def test_get_valid_doi_returns_work(self, client):
-        """GET /works/{doi} returns work for valid DOI."""
-        # First search to find a valid DOI
-        search = client.get("/works?q=test&limit=1")
-        if search.status_code == 200 and search.json()["results"]:
-            doi = search.json()["results"][0]["doi"]
-            response = client.get(f"/works/{doi}")
-            assert response.status_code == 200
-            data = response.json()
-            assert data["doi"] == doi
+def test_root_endpoint_returns_200_status(client):
+    # Arrange
+    # Act
+    response = client.get("/")
+    # Assert
+    assert response.status_code == 200
 
 
-class TestWorksBatchEndpoint:
-    """Tests for /works/batch endpoint."""
-
-    def test_batch_returns_results(self, client):
-        """POST /works/batch returns batch results."""
-        # First get some valid DOIs
-        search = client.get("/works?q=science&limit=3")
-        if search.status_code == 200 and search.json()["results"]:
-            dois = [w["doi"] for w in search.json()["results"]]
-            response = client.post("/works/batch", json={"dois": dois})
-            assert response.status_code == 200
-            data = response.json()
-            assert "requested" in data
-            assert "found" in data
-            assert "results" in data
-
-    def test_batch_with_empty_list(self, client):
-        """POST /works/batch handles empty list."""
-        response = client.post("/works/batch", json={"dois": []})
-        assert response.status_code == 200
-        data = response.json()
-        assert data["requested"] == 0
-        assert data["found"] == 0
+def test_root_endpoint_response_contains_name_field(client):
+    # Arrange
+    # Act
+    data = client.get("/").json()
+    # Assert
+    assert "name" in data
 
 
-class TestCitationEndpoints:
-    """Tests for /citations/* endpoints."""
-
-    def test_citing_returns_list(self, client):
-        """GET /citations/{doi}/citing returns list of citing papers."""
-        # Use a DOI from search
-        search = client.get("/works?q=test&limit=1")
-        if search.status_code == 200 and search.json()["results"]:
-            doi = search.json()["results"][0]["doi"]
-            response = client.get(f"/citations/{doi}/citing?limit=10")
-            assert response.status_code == 200
-            data = response.json()
-            assert "doi" in data
-            assert "citing_count" in data
-            assert "papers" in data
-            assert isinstance(data["papers"], list)
-
-    def test_cited_returns_list(self, client):
-        """GET /citations/{doi}/cited returns list of cited papers."""
-        search = client.get("/works?q=test&limit=1")
-        if search.status_code == 200 and search.json()["results"]:
-            doi = search.json()["results"][0]["doi"]
-            response = client.get(f"/citations/{doi}/cited?limit=10")
-            assert response.status_code == 200
-            data = response.json()
-            assert "doi" in data
-            assert "cited_count" in data
-            assert "papers" in data
-            assert isinstance(data["papers"], list)
-
-    def test_count_returns_integer(self, client):
-        """GET /citations/{doi}/count returns citation count."""
-        search = client.get("/works?q=test&limit=1")
-        if search.status_code == 200 and search.json()["results"]:
-            doi = search.json()["results"][0]["doi"]
-            response = client.get(f"/citations/{doi}/count")
-            assert response.status_code == 200
-            data = response.json()
-            assert "doi" in data
-            assert "citation_count" in data
-            assert isinstance(data["citation_count"], int)
-
-    def test_network_returns_graph(self, client):
-        """GET /citations/{doi}/network returns citation network."""
-        search = client.get("/works?q=test&limit=1")
-        if search.status_code == 200 and search.json()["results"]:
-            doi = search.json()["results"][0]["doi"]
-            response = client.get(f"/citations/{doi}/network?depth=1")
-            assert response.status_code == 200
-            data = response.json()
-            assert "center_doi" in data
-            assert "nodes" in data
-            assert "edges" in data
-            assert isinstance(data["nodes"], list)
-            assert isinstance(data["edges"], list)
+def test_root_endpoint_response_contains_version_field(client):
+    # Arrange
+    # Act
+    data = client.get("/").json()
+    # Assert
+    assert "version" in data
 
 
-class TestBackwardsCompatibleEndpoints:
-    """Tests for backwards-compatible /api/* endpoints."""
+def test_root_endpoint_response_contains_endpoints_field(client):
+    # Arrange
+    # Act
+    data = client.get("/").json()
+    # Assert
+    assert "endpoints" in data
 
-    def test_api_search_endpoint(self, client):
-        """GET /api/search/ works for backwards compatibility."""
-        response = client.get("/api/search/?q=cancer&limit=3")
-        assert response.status_code == 200
-        data = response.json()
-        assert "results" in data
-        assert "total" in data
 
-    def test_api_stats_endpoint(self, client):
-        """GET /api/stats/ works for backwards compatibility."""
-        response = client.get("/api/stats/")
-        assert response.status_code == 200
-        data = response.json()
-        assert "total_papers" in data
+def test_root_endpoint_endpoints_dict_lists_health(client):
+    # Arrange
+    # Act
+    endpoints = client.get("/").json()["endpoints"]
+    # Assert
+    assert "health" in endpoints
+
+
+def test_root_endpoint_endpoints_dict_lists_info(client):
+    # Arrange
+    # Act
+    endpoints = client.get("/").json()["endpoints"]
+    # Assert
+    assert "info" in endpoints
+
+
+# ---------- /health ----------
+
+
+def test_health_endpoint_returns_200_status(client):
+    # Arrange
+    # Act
+    response = client.get("/health")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_health_endpoint_reports_status_healthy(client):
+    # Arrange
+    # Act
+    data = client.get("/health").json()
+    # Assert
+    assert data["status"] == "healthy"
+
+
+def test_health_endpoint_includes_database_connected_field(client):
+    # Arrange
+    # Act
+    data = client.get("/health").json()
+    # Assert
+    assert "database_connected" in data
+
+
+# ---------- /info ----------
+
+
+def test_info_endpoint_returns_200_status(client):
+    # Arrange
+    # Act
+    response = client.get("/info")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_info_endpoint_includes_total_papers_field(client):
+    # Arrange
+    # Act
+    data = client.get("/info").json()
+    # Assert
+    assert "total_papers" in data
+
+
+def test_info_endpoint_includes_fts_indexed_field(client):
+    # Arrange
+    # Act
+    data = client.get("/info").json()
+    # Assert
+    assert "fts_indexed" in data
+
+
+def test_info_endpoint_total_papers_field_is_integer(client):
+    # Arrange
+    # Act
+    data = client.get("/info").json()
+    # Assert
+    assert isinstance(data["total_papers"], int)
+
+
+# ---------- /works search ----------
+
+
+def test_works_search_requires_q_parameter_returns_422(client):
+    # Arrange
+    # Act
+    response = client.get("/works")
+    # Assert
+    assert response.status_code == 422
+
+
+def test_works_search_with_query_returns_200(client):
+    # Arrange
+    # Act
+    response = client.get("/works?q=cancer&limit=3")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_works_search_response_contains_query_field(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=cancer&limit=3").json()
+    # Assert
+    assert "query" in data
+
+
+def test_works_search_response_contains_total_field(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=cancer&limit=3").json()
+    # Assert
+    assert "total" in data
+
+
+def test_works_search_response_contains_results_field(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=cancer&limit=3").json()
+    # Assert
+    assert "results" in data
+
+
+def test_works_search_query_field_echoes_supplied_q_parameter(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=cancer&limit=3").json()
+    # Assert
+    assert data["query"] == "cancer"
+
+
+def test_works_search_results_length_respects_limit_parameter(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=biology&limit=5").json()
+    # Assert
+    assert len(data["results"]) <= 5
+
+
+def test_works_search_response_includes_elapsed_ms_field(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=physics&limit=1").json()
+    # Assert
+    assert "elapsed_ms" in data
+
+
+def test_works_search_elapsed_ms_field_is_number_type(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=physics&limit=1").json()
+    # Assert
+    assert isinstance(data["elapsed_ms"], (int, float))
+
+
+def test_works_search_every_result_has_doi_field(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=medicine&limit=3").json()
+    # Assert
+    assert all("doi" in w for w in data["results"])
+
+
+def test_works_search_every_result_doi_starts_with_10(client):
+    # Arrange
+    # Act
+    data = client.get("/works?q=medicine&limit=3").json()
+    # Assert
+    assert all(w["doi"].startswith("10.") for w in data["results"])
+
+
+# ---------- /works/{doi} ----------
+
+
+def test_works_get_endpoint_returns_404_for_unknown_doi(client):
+    # Arrange
+    # Act
+    response = client.get("/works/10.9999/nonexistent")
+    # Assert
+    assert response.status_code == 404
+
+
+def test_works_get_endpoint_returns_200_for_known_doi(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    response = client.get(f"/works/{doi}")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_works_get_endpoint_returns_matching_doi_field(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/works/{doi}").json()
+    # Assert
+    assert data["doi"] == doi
+
+
+# ---------- /works/batch ----------
+
+
+def test_works_batch_endpoint_returns_200_for_real_dois(client, batch_dois):
+    # Arrange
+    # Act
+    response = client.post("/works/batch", json={"dois": batch_dois})
+    # Assert
+    assert response.status_code == 200
+
+
+def test_works_batch_endpoint_response_contains_requested_field(client, batch_dois):
+    # Arrange
+    # Act
+    data = client.post("/works/batch", json={"dois": batch_dois}).json()
+    # Assert
+    assert "requested" in data
+
+
+def test_works_batch_endpoint_response_contains_found_field(client, batch_dois):
+    # Arrange
+    # Act
+    data = client.post("/works/batch", json={"dois": batch_dois}).json()
+    # Assert
+    assert "found" in data
+
+
+def test_works_batch_endpoint_response_contains_results_field(client, batch_dois):
+    # Arrange
+    # Act
+    data = client.post("/works/batch", json={"dois": batch_dois}).json()
+    # Assert
+    assert "results" in data
+
+
+def test_works_batch_endpoint_empty_list_returns_200_status(client):
+    # Arrange
+    # Act
+    response = client.post("/works/batch", json={"dois": []})
+    # Assert
+    assert response.status_code == 200
+
+
+def test_works_batch_endpoint_empty_list_reports_requested_zero(client):
+    # Arrange
+    # Act
+    data = client.post("/works/batch", json={"dois": []}).json()
+    # Assert
+    assert data["requested"] == 0
+
+
+def test_works_batch_endpoint_empty_list_reports_found_zero(client):
+    # Arrange
+    # Act
+    data = client.post("/works/batch", json={"dois": []}).json()
+    # Assert
+    assert data["found"] == 0
+
+
+# ---------- /citations/{doi}/citing ----------
+
+
+def test_citations_citing_endpoint_returns_200_status(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    response = client.get(f"/citations/{doi}/citing?limit=10")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_citations_citing_response_contains_papers_list(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/citing?limit=10").json()
+    # Assert
+    assert isinstance(data["papers"], list)
+
+
+def test_citations_citing_response_contains_citing_count_field(
+    client, real_doi_from_search
+):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/citing?limit=10").json()
+    # Assert
+    assert "citing_count" in data
+
+
+# ---------- /citations/{doi}/cited ----------
+
+
+def test_citations_cited_endpoint_returns_200_status(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    response = client.get(f"/citations/{doi}/cited?limit=10")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_citations_cited_response_contains_papers_list(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/cited?limit=10").json()
+    # Assert
+    assert isinstance(data["papers"], list)
+
+
+def test_citations_cited_response_contains_cited_count_field(
+    client, real_doi_from_search
+):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/cited?limit=10").json()
+    # Assert
+    assert "cited_count" in data
+
+
+# ---------- /citations/{doi}/count ----------
+
+
+def test_citations_count_endpoint_returns_200_status(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    response = client.get(f"/citations/{doi}/count")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_citations_count_response_includes_doi_field(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/count").json()
+    # Assert
+    assert "doi" in data
+
+
+def test_citations_count_citation_count_field_is_integer_type(
+    client, real_doi_from_search
+):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/count").json()
+    # Assert
+    assert isinstance(data["citation_count"], int)
+
+
+# ---------- /citations/{doi}/network ----------
+
+
+def test_citations_network_endpoint_returns_200_status(client, real_doi_from_search):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    response = client.get(f"/citations/{doi}/network?depth=1")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_citations_network_response_contains_center_doi(
+    client, real_doi_from_search
+):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/network?depth=1").json()
+    # Assert
+    assert "center_doi" in data
+
+
+def test_citations_network_response_nodes_field_is_list(
+    client, real_doi_from_search
+):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/network?depth=1").json()
+    # Assert
+    assert isinstance(data["nodes"], list)
+
+
+def test_citations_network_response_edges_field_is_list(
+    client, real_doi_from_search
+):
+    # Arrange
+    doi = real_doi_from_search
+    # Act
+    data = client.get(f"/citations/{doi}/network?depth=1").json()
+    # Assert
+    assert isinstance(data["edges"], list)
+
+
+# ---------- backwards-compatible /api/* endpoints ----------
+
+
+def test_api_search_legacy_endpoint_returns_200_status(client):
+    # Arrange
+    # Act
+    response = client.get("/api/search/?q=cancer&limit=3")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_api_search_legacy_response_contains_results_field(client):
+    # Arrange
+    # Act
+    data = client.get("/api/search/?q=cancer&limit=3").json()
+    # Assert
+    assert "results" in data
+
+
+def test_api_search_legacy_response_contains_total_field(client):
+    # Arrange
+    # Act
+    data = client.get("/api/search/?q=cancer&limit=3").json()
+    # Assert
+    assert "total" in data
+
+
+def test_api_stats_legacy_endpoint_returns_200_status(client):
+    # Arrange
+    # Act
+    response = client.get("/api/stats/")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_api_stats_legacy_response_contains_total_papers_field(client):
+    # Arrange
+    # Act
+    data = client.get("/api/stats/").json()
+    # Assert
+    assert "total_papers" in data
 
 
 if __name__ == "__main__":

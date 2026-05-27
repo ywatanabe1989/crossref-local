@@ -1,10 +1,12 @@
 ---
+description: |
+  [TOPIC] Retrieval
+  [DETAILS] Fetch full metadata for one or many DOIs, and enrich search results with
+tags: [crossref-local-retrieval, crossref-local]
 package: crossref-local
 skill: retrieval
-name: retrieval
-tags: [crossref-local, scitex-package]
-description: Retrieval — Fetch full metadata for one or many DOIs, and enrich search results with
 ---
+
 
 # Retrieval
 

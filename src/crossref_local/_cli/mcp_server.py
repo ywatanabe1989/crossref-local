@@ -29,7 +29,7 @@ mcp = FastMCP(
 )
 
 
-@mcp.tool()
+@mcp.tool(name="search_works")
 def search(
     query: str,
     limit: int = 10,
@@ -152,7 +152,7 @@ def search_by_doi(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool()
+@mcp.tool(name="get_status")
 def status() -> str:
     """Report local CrossRef database status — path, work count (~167M), FTS5 index size, citation-graph edge count, and access mode (DB vs HTTP). Use when the user asks "is the CrossRef db ready?", "how many papers do I have?", "check crossref-local status", or before running a search to confirm the db is usable.
 
@@ -227,7 +227,7 @@ def check_citations(
     return json.dumps(result.to_dict(), indent=2)
 
 
-@mcp.tool()
+@mcp.tool(name="check_bibtex")
 def check_bibtex_file(
     file_path: str, validate_metadata: bool = True, suggest_enrichment: bool = True
 ) -> str:
@@ -468,6 +468,72 @@ def cache_export(
 
     path = cache.export(name, output_path, format=format, fields=fields)
     return json.dumps({"exported": path, "format": format})
+
+
+# §5 — skills introspection (audit-mcp-tools)
+
+
+@mcp.tool()
+def crossref_local_skills_list() -> str:
+    """List the names of every skill page shipped by crossref-local.
+
+    Returns
+    -------
+        JSON string with `{"success": true, "package": "crossref-local",
+        "skills": ["01_configuration", ...]}`.
+    """
+    from pathlib import Path
+
+    try:
+        skills_dir = Path(__file__).resolve().parents[1] / "_skills" / "crossref-local"
+        names = sorted(p.stem for p in skills_dir.glob("*.md") if p.name != "SKILL.md")
+        return json.dumps(
+            {"success": True, "package": "crossref-local", "skills": names},
+            indent=2,
+        )
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e)}, indent=2)
+
+
+@mcp.tool()
+def crossref_local_skills_get(name: str) -> str:
+    """Fetch the full Markdown content of one crossref-local skill page.
+
+    Args:
+        name: Skill page name without `.md`, e.g. `01_configuration`.
+
+    Returns
+    -------
+        JSON string with `{"success": true, "package": "crossref-local",
+        "name": <name>, "content": <markdown>}`, or an error envelope.
+    """
+    from pathlib import Path
+
+    try:
+        skills_dir = Path(__file__).resolve().parents[1] / "_skills" / "crossref-local"
+        target = skills_dir / f"{name}.md"
+        if not target.exists():
+            available = sorted(
+                p.stem for p in skills_dir.glob("*.md") if p.name != "SKILL.md"
+            )
+            return json.dumps(
+                {
+                    "success": False,
+                    "error": f"unknown skill {name!r}; available: {available}",
+                },
+                indent=2,
+            )
+        return json.dumps(
+            {
+                "success": True,
+                "package": "crossref-local",
+                "name": name,
+                "content": target.read_text(encoding="utf-8"),
+            },
+            indent=2,
+        )
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e)}, indent=2)
 
 
 def run_server(

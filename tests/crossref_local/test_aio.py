@@ -1,227 +1,383 @@
 """Tests for crossref_local.aio module (async API)."""
 
-import pytest
 import asyncio
+
+import pytest
 
 from crossref_local import aio
 from crossref_local._core.models import SearchResult, Work
 
 
-class TestAsyncSearch:
-    """Tests for aio.search function."""
-
-    @pytest.mark.asyncio
-    async def test_search_returns_search_result(self):
-        """aio.search() returns SearchResult object."""
-        results = await aio.search("science", limit=1)
-        assert isinstance(results, SearchResult)
-
-    @pytest.mark.asyncio
-    async def test_search_result_has_query(self):
-        """SearchResult contains the query string."""
-        results = await aio.search("biology", limit=1)
-        assert results.query == "biology"
-
-    @pytest.mark.asyncio
-    async def test_search_result_has_total(self):
-        """SearchResult has total count."""
-        results = await aio.search("medicine", limit=1)
-        assert isinstance(results.total, int)
-        assert results.total >= 0
-
-    @pytest.mark.asyncio
-    async def test_search_returns_work_objects(self):
-        """aio.search() returns Work objects."""
-        results = await aio.search("chemistry", limit=3)
-        for work in results.works:
-            assert isinstance(work, Work)
-
-    @pytest.mark.asyncio
-    async def test_search_respects_limit(self):
-        """aio.search() respects limit parameter."""
-        results = await aio.search("cancer", limit=5)
-        assert len(results.works) <= 5
-
-    @pytest.mark.asyncio
-    async def test_search_with_offset(self):
-        """aio.search() with offset skips results."""
-        results1 = await aio.search("neuroscience", limit=5, offset=0)
-        results2 = await aio.search("neuroscience", limit=5, offset=5)
-
-        if len(results1.works) >= 5 and len(results2.works) >= 1:
-            assert results1.works[0].doi != results2.works[0].doi
+# ---------- aio.search ----------
 
 
-class TestAsyncCount:
-    """Tests for aio.count function."""
-
-    @pytest.mark.asyncio
-    async def test_count_returns_integer(self):
-        """aio.count() returns an integer."""
-        n = await aio.count("science")
-        assert isinstance(n, int)
-
-    @pytest.mark.asyncio
-    async def test_count_non_negative(self):
-        """aio.count() returns non-negative value."""
-        n = await aio.count("biology")
-        assert n >= 0
-
-    @pytest.mark.asyncio
-    async def test_count_rare_term(self):
-        """aio.count() for rare terms returns small numbers."""
-        n = await aio.count("xyznonexistent123")
-        assert n == 0
+@pytest.mark.asyncio
+async def test_aio_search_returns_search_result_instance():
+    # Arrange
+    # Act
+    results = await aio.search("science", limit=1)
+    # Assert
+    assert isinstance(results, SearchResult)
 
 
-class TestAsyncGet:
-    """Tests for aio.get function."""
-
-    @pytest.mark.asyncio
-    async def test_get_existing_doi(self, sample_doi):
-        """aio.get() returns Work for existing DOI."""
-        work = await aio.get(sample_doi)
-        assert work is None or isinstance(work, Work)
-
-    @pytest.mark.asyncio
-    async def test_get_nonexistent_doi(self):
-        """aio.get() returns None for nonexistent DOI."""
-        work = await aio.get("10.0000/nonexistent")
-        assert work is None
-
-    @pytest.mark.asyncio
-    async def test_get_work_has_doi(self, sample_doi):
-        """Returned Work has correct DOI."""
-        work = await aio.get(sample_doi)
-        if work:
-            assert work.doi == sample_doi
+@pytest.mark.asyncio
+async def test_aio_search_result_query_matches_supplied_string():
+    # Arrange
+    query = "biology"
+    # Act
+    results = await aio.search(query, limit=1)
+    # Assert
+    assert results.query == query
 
 
-class TestAsyncGetMany:
-    """Tests for aio.get_many function."""
-
-    @pytest.mark.asyncio
-    async def test_get_many_returns_list(self, sample_doi):
-        """aio.get_many() returns a list."""
-        works = await aio.get_many([sample_doi])
-        assert isinstance(works, list)
-
-    @pytest.mark.asyncio
-    async def test_get_many_empty_list(self):
-        """aio.get_many() with empty list returns empty list."""
-        works = await aio.get_many([])
-        assert works == []
-
-    @pytest.mark.asyncio
-    async def test_get_many_skips_missing(self):
-        """aio.get_many() skips nonexistent DOIs."""
-        works = await aio.get_many(["10.0000/nonexistent1", "10.0000/nonexistent2"])
-        assert works == []
+@pytest.mark.asyncio
+async def test_aio_search_result_total_is_integer_type():
+    # Arrange
+    # Act
+    results = await aio.search("medicine", limit=1)
+    # Assert
+    assert isinstance(results.total, int)
 
 
-class TestAsyncExists:
-    """Tests for aio.exists function."""
-
-    @pytest.mark.asyncio
-    async def test_exists_returns_bool(self, sample_doi):
-        """aio.exists() returns boolean."""
-        result = await aio.exists(sample_doi)
-        assert isinstance(result, bool)
-
-    @pytest.mark.asyncio
-    async def test_exists_nonexistent(self):
-        """aio.exists() returns False for nonexistent DOI."""
-        result = await aio.exists("10.0000/nonexistent")
-        assert result is False
+@pytest.mark.asyncio
+async def test_aio_search_result_total_is_nonnegative():
+    # Arrange
+    # Act
+    results = await aio.search("medicine", limit=1)
+    # Assert
+    assert results.total >= 0
 
 
-class TestAsyncInfo:
-    """Tests for aio.info function."""
-
-    @pytest.mark.asyncio
-    async def test_info_returns_dict(self):
-        """aio.info() returns a dictionary."""
-        info = await aio.info()
-        assert isinstance(info, dict)
-
-    @pytest.mark.asyncio
-    async def test_info_has_db_path(self):
-        """Info dict contains db_path."""
-        info = await aio.info()
-        assert "db_path" in info
-
-    @pytest.mark.asyncio
-    async def test_info_has_works_count(self):
-        """Info dict contains works count."""
-        info = await aio.info()
-        assert "works" in info
-        assert isinstance(info["works"], int)
+@pytest.mark.asyncio
+async def test_aio_search_yields_work_objects_for_every_hit():
+    # Arrange
+    # Act
+    results = await aio.search("chemistry", limit=3)
+    # Assert
+    assert all(isinstance(w, Work) for w in results.works)
 
 
-class TestAsyncSearchMany:
-    """Tests for aio.search_many function."""
-
-    @pytest.mark.asyncio
-    async def test_search_many_returns_list(self):
-        """aio.search_many() returns list of SearchResults."""
-        results = await aio.search_many(["science", "biology"], limit=1)
-        assert isinstance(results, list)
-        assert len(results) == 2
-        for r in results:
-            assert isinstance(r, SearchResult)
-
-    @pytest.mark.asyncio
-    async def test_search_many_concurrent(self):
-        """aio.search_many() runs queries concurrently."""
-        queries = ["physics", "chemistry", "biology"]
-        results = await aio.search_many(queries, limit=1)
-        assert len(results) == 3
+@pytest.mark.asyncio
+async def test_aio_search_respects_limit_argument_on_returned_works():
+    # Arrange
+    limit = 5
+    # Act
+    results = await aio.search("cancer", limit=limit)
+    # Assert
+    assert len(results.works) <= limit
 
 
-class TestAsyncCountMany:
-    """Tests for aio.count_many function."""
-
-    @pytest.mark.asyncio
-    async def test_count_many_returns_dict(self):
-        """aio.count_many() returns dict mapping query to count."""
-        counts = await aio.count_many(["science", "biology"])
-        assert isinstance(counts, dict)
-        assert "science" in counts
-        assert "biology" in counts
-
-    @pytest.mark.asyncio
-    async def test_count_many_values_are_ints(self):
-        """aio.count_many() values are integers."""
-        counts = await aio.count_many(["physics", "chemistry"])
-        for query, count in counts.items():
-            assert isinstance(count, int)
-            assert count >= 0
+@pytest.fixture
+async def _aio_neuroscience_paging():
+    """Return (page1, page2) for offset paging, or skip if too few hits."""
+    page1 = await aio.search("neuroscience", limit=5, offset=0)
+    if len(page1.works) < 5:
+        pytest.skip("not enough hits for paging assertion")
+    page2 = await aio.search("neuroscience", limit=5, offset=5)
+    if not page2.works:
+        pytest.skip("offset page empty in this fixture")
+    return page1, page2
 
 
-class TestConcurrency:
-    """Tests for concurrent async operations."""
+@pytest.mark.asyncio
+async def test_aio_search_with_offset_yields_distinct_first_doi_from_page_zero(
+    _aio_neuroscience_paging,
+):
+    # Arrange
+    page1, page2 = _aio_neuroscience_paging
+    # Act
+    same = page1.works[0].doi == page2.works[0].doi
+    # Assert
+    assert not same
 
-    @pytest.mark.asyncio
-    async def test_concurrent_searches(self):
-        """Multiple concurrent searches work correctly."""
-        tasks = [
-            aio.search("science", limit=1),
-            aio.search("biology", limit=1),
-            aio.search("physics", limit=1),
-        ]
-        results = await asyncio.gather(*tasks)
-        assert len(results) == 3
-        for r in results:
-            assert isinstance(r, SearchResult)
 
-    @pytest.mark.asyncio
-    async def test_concurrent_mixed_operations(self, sample_doi):
-        """Mixed concurrent operations work correctly."""
-        tasks = [
-            aio.search("science", limit=1),
-            aio.count("biology"),
-            aio.get(sample_doi),
-            aio.info(),
-        ]
-        results = await asyncio.gather(*tasks)
-        assert len(results) == 4
+# ---------- aio.count ----------
+
+
+@pytest.mark.asyncio
+async def test_aio_count_returns_integer_type():
+    # Arrange
+    # Act
+    n = await aio.count("science")
+    # Assert
+    assert isinstance(n, int)
+
+
+@pytest.mark.asyncio
+async def test_aio_count_returns_nonnegative_value_for_known_term():
+    # Arrange
+    # Act
+    n = await aio.count("biology")
+    # Assert
+    assert n >= 0
+
+
+@pytest.mark.asyncio
+async def test_aio_count_returns_zero_for_nonsense_term_with_no_hits():
+    # Arrange
+    # Act
+    n = await aio.count("xyznonexistent123")
+    # Assert
+    assert n == 0
+
+
+# ---------- aio.get ----------
+
+
+@pytest.mark.asyncio
+async def test_aio_get_returns_work_or_none_for_sample_doi(sample_doi):
+    # Arrange
+    # Act
+    work = await aio.get(sample_doi)
+    # Assert
+    assert work is None or isinstance(work, Work)
+
+
+@pytest.mark.asyncio
+async def test_aio_get_returns_none_for_doi_absent_from_database():
+    # Arrange
+    # Act
+    work = await aio.get("10.0000/nonexistent")
+    # Assert
+    assert work is None
+
+
+@pytest.fixture
+async def _existing_work(sample_doi):
+    work = await aio.get(sample_doi)
+    if work is None:
+        pytest.skip("sample DOI not present in fixture DB")
+    return work
+
+
+@pytest.mark.asyncio
+async def test_aio_get_returned_work_doi_matches_input(_existing_work, sample_doi):
+    # Arrange
+    work = _existing_work
+    # Act
+    doi = work.doi
+    # Assert
+    assert doi == sample_doi
+
+
+# ---------- aio.get_many ----------
+
+
+@pytest.mark.asyncio
+async def test_aio_get_many_returns_list_instance(sample_doi):
+    # Arrange
+    # Act
+    works = await aio.get_many([sample_doi])
+    # Assert
+    assert isinstance(works, list)
+
+
+@pytest.mark.asyncio
+async def test_aio_get_many_returns_empty_list_for_empty_input():
+    # Arrange
+    # Act
+    works = await aio.get_many([])
+    # Assert
+    assert works == []
+
+
+@pytest.mark.asyncio
+async def test_aio_get_many_returns_empty_list_when_all_dois_are_unknown():
+    # Arrange
+    dois = ["10.0000/nonexistent1", "10.0000/nonexistent2"]
+    # Act
+    works = await aio.get_many(dois)
+    # Assert
+    assert works == []
+
+
+# ---------- aio.exists ----------
+
+
+@pytest.mark.asyncio
+async def test_aio_exists_returns_boolean_type_for_known_doi(sample_doi):
+    # Arrange
+    # Act
+    result = await aio.exists(sample_doi)
+    # Assert
+    assert isinstance(result, bool)
+
+
+@pytest.mark.asyncio
+async def test_aio_exists_returns_false_for_doi_absent_from_database():
+    # Arrange
+    # Act
+    result = await aio.exists("10.0000/nonexistent")
+    # Assert
+    assert result is False
+
+
+# ---------- aio.info ----------
+
+
+@pytest.mark.asyncio
+async def test_aio_info_returns_dict_instance():
+    # Arrange
+    # Act
+    info = await aio.info()
+    # Assert
+    assert isinstance(info, dict)
+
+
+@pytest.mark.asyncio
+async def test_aio_info_dict_contains_db_path_key():
+    # Arrange
+    # Act
+    info = await aio.info()
+    # Assert
+    assert "db_path" in info
+
+
+@pytest.mark.asyncio
+async def test_aio_info_dict_contains_works_key():
+    # Arrange
+    # Act
+    info = await aio.info()
+    # Assert
+    assert "works" in info
+
+
+@pytest.mark.asyncio
+async def test_aio_info_works_value_is_integer_type():
+    # Arrange
+    # Act
+    info = await aio.info()
+    # Assert
+    assert isinstance(info["works"], int)
+
+
+# ---------- aio.search_many ----------
+
+
+@pytest.mark.asyncio
+async def test_aio_search_many_returns_list_instance():
+    # Arrange
+    # Act
+    results = await aio.search_many(["science", "biology"], limit=1)
+    # Assert
+    assert isinstance(results, list)
+
+
+@pytest.mark.asyncio
+async def test_aio_search_many_returns_one_entry_per_input_query():
+    # Arrange
+    queries = ["science", "biology"]
+    # Act
+    results = await aio.search_many(queries, limit=1)
+    # Assert
+    assert len(results) == len(queries)
+
+
+@pytest.mark.asyncio
+async def test_aio_search_many_each_entry_is_search_result():
+    # Arrange
+    queries = ["science", "biology"]
+    # Act
+    results = await aio.search_many(queries, limit=1)
+    # Assert
+    assert all(isinstance(r, SearchResult) for r in results)
+
+
+@pytest.mark.asyncio
+async def test_aio_search_many_handles_three_queries_concurrently():
+    # Arrange
+    queries = ["physics", "chemistry", "biology"]
+    # Act
+    results = await aio.search_many(queries, limit=1)
+    # Assert
+    assert len(results) == 3
+
+
+# ---------- aio.count_many ----------
+
+
+@pytest.mark.asyncio
+async def test_aio_count_many_returns_dict_instance():
+    # Arrange
+    # Act
+    counts = await aio.count_many(["science", "biology"])
+    # Assert
+    assert isinstance(counts, dict)
+
+
+@pytest.mark.asyncio
+async def test_aio_count_many_keys_include_every_input_query():
+    # Arrange
+    queries = ["science", "biology"]
+    # Act
+    counts = await aio.count_many(queries)
+    # Assert
+    assert set(queries).issubset(counts.keys())
+
+
+@pytest.mark.asyncio
+async def test_aio_count_many_values_are_all_integers():
+    # Arrange
+    queries = ["physics", "chemistry"]
+    # Act
+    counts = await aio.count_many(queries)
+    # Assert
+    assert all(isinstance(c, int) for c in counts.values())
+
+
+@pytest.mark.asyncio
+async def test_aio_count_many_values_are_all_nonnegative():
+    # Arrange
+    queries = ["physics", "chemistry"]
+    # Act
+    counts = await aio.count_many(queries)
+    # Assert
+    assert all(c >= 0 for c in counts.values())
+
+
+# ---------- concurrency under asyncio.gather ----------
+
+
+@pytest.mark.asyncio
+async def test_asyncio_gather_runs_three_searches_and_returns_three_results():
+    # Arrange
+    tasks = [
+        aio.search("science", limit=1),
+        aio.search("biology", limit=1),
+        aio.search("physics", limit=1),
+    ]
+    # Act
+    results = await asyncio.gather(*tasks)
+    # Assert
+    assert len(results) == 3
+
+
+@pytest.mark.asyncio
+async def test_asyncio_gather_three_searches_returns_only_search_result_objects():
+    # Arrange
+    tasks = [
+        aio.search("science", limit=1),
+        aio.search("biology", limit=1),
+        aio.search("physics", limit=1),
+    ]
+    # Act
+    results = await asyncio.gather(*tasks)
+    # Assert
+    assert all(isinstance(r, SearchResult) for r in results)
+
+
+@pytest.mark.asyncio
+async def test_asyncio_gather_runs_mixed_operations_and_returns_four_results(
+    sample_doi,
+):
+    # Arrange
+    tasks = [
+        aio.search("science", limit=1),
+        aio.count("biology"),
+        aio.get(sample_doi),
+        aio.info(),
+    ]
+    # Act
+    results = await asyncio.gather(*tasks)
+    # Assert
+    assert len(results) == 4
