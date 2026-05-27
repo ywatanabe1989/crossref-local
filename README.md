@@ -360,3 +360,83 @@ Searching 167M records in milliseconds via FTS5.
 **When to use OpenAlex**: Semantic search, citation analysis, topic discovery.
 
 </details>
+
+## Installation
+
+```bash
+pip install crossref-local              # core
+pip install crossref-local[mcp]         # + MCP server
+```
+
+From source:
+```bash
+git clone https://github.com/ywatanabe1989/crossref-local
+cd crossref-local && make install
+```
+
+## 4 Interfaces
+
+<details open>
+<summary><strong>Python API</strong></summary>
+
+```python
+from crossref_local import search, get, count
+
+# Full-text search (22ms for 541 matches across 167M records)
+results = search("hippocampal sharp wave ripples")
+for work in results:
+    print(f"{work.title} ({work.year})")
+
+# Get by DOI
+work = get("10.1126/science.aax0758")
+print(work.citation())
+
+# Count matches
+n = count("machine learning")  # 477,922 matches
+```
+
+</details>
+
+<details>
+<summary><strong>CLI</strong></summary>
+
+```bash
+crossref-local search "CRISPR genome editing" -n 5
+crossref-local search-by-doi 10.1038/nature12373
+crossref-local status  # Configuration and database stats
+```
+
+</details>
+
+<details>
+<summary><strong>HTTP API</strong></summary>
+
+See the [HTTP API section](#http-api) above for all endpoints.
+
+</details>
+
+<details>
+<summary><strong>MCP Server</strong></summary>
+
+See the [MCP Server section](#mcp-server) above for configuration.
+
+</details>
+
+## Part of SciTeX
+
+`crossref-local` is part of [**SciTeX**](https://scitex.ai).
+
+>Four Freedoms for Research
+>
+>0. The freedom to **run** your research anywhere — your machine, your terms.
+>1. The freedom to **study** how every step works — from raw data to final manuscript.
+>2. The freedom to **redistribute** your workflows, not just your papers.
+>3. The freedom to **modify** any module and share improvements with the community.
+>
+>AGPL-3.0 — because we believe research infrastructure deserves the same freedoms as the software it runs on.
+
+---
+
+<p align="center">
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+</p>
