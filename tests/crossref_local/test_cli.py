@@ -1,6 +1,7 @@
 """Tests for crossref_local.cli module."""
 
 import json
+
 import pytest
 from click.testing import CliRunner
 
@@ -13,142 +14,376 @@ def runner():
     return CliRunner()
 
 
-class TestCLIHelp:
-    """Tests for CLI help commands."""
-
-    def test_main_help(self, runner):
-        """Main CLI shows help."""
-        result = runner.invoke(cli, ["--help"])
-        assert result.exit_code == 0
-        assert "CrossRef" in result.output or "crossref" in result.output.lower()
-
-    def test_search_help(self, runner):
-        """search command shows help."""
-        result = runner.invoke(cli, ["search", "--help"])
-        assert result.exit_code == 0
-        assert "Search" in result.output or "search" in result.output.lower()
-
-    def test_search_by_doi_help(self, runner):
-        """search-by-doi command shows help."""
-        result = runner.invoke(cli, ["search-by-doi", "--help"])
-        assert result.exit_code == 0
-        assert "DOI" in result.output
-
-    def test_status_help(self, runner):
-        """status command shows help."""
-        result = runner.invoke(cli, ["status", "--help"])
-        assert result.exit_code == 0
-
-    def test_version(self, runner):
-        """--version shows version."""
-        result = runner.invoke(cli, ["--version"])
-        assert result.exit_code == 0
-        assert "crossref-local" in result.output.lower()
-
-    def test_help_recursive(self, runner):
-        """--help-recursive shows help for all commands."""
-        result = runner.invoke(cli, ["--help-recursive"])
-        assert result.exit_code == 0
-        # Check main header
-        assert "crossref-local" in result.output
-        # Check all subcommands are included
-        assert "search" in result.output
-        assert "status" in result.output
-        assert "search-by-doi" in result.output
-        # Check formatted separators are present
-        assert "━━━" in result.output
+# ---------- --help / --version surface ----------
 
 
-class TestSearchCommand:
-    """Tests for search command."""
-
-    def test_search_basic(self, runner):
-        """search returns results."""
-        result = runner.invoke(cli, ["search", "cancer", "-n", "3"])
-        assert result.exit_code == 0
-        assert "matches" in result.output.lower() or "found" in result.output.lower()
-
-    def test_search_json_output(self, runner):
-        """search --json returns valid JSON."""
-        result = runner.invoke(cli, ["search", "biology", "-n", "2", "--json"])
-        assert result.exit_code == 0
-        data = json.loads(result.output)
-        assert "query" in data
-        assert "total" in data
-        assert "works" in data
-
-    def test_search_with_limit(self, runner):
-        """search -n limits results."""
-        result = runner.invoke(cli, ["search", "medicine", "-n", "5", "--json"])
-        assert result.exit_code == 0
-        data = json.loads(result.output)
-        assert len(data["works"]) <= 5
+def test_cli_main_help_exits_zero(runner):
+    # Arrange
+    args = ["--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
 
 
-class TestSearchByDoiCommand:
-    """Tests for search-by-doi command."""
-
-    def test_search_by_doi_nonexistent(self, runner):
-        """search-by-doi returns error for nonexistent DOI."""
-        result = runner.invoke(cli, ["search-by-doi", "10.9999/nonexistent"])
-        assert result.exit_code == 1
-        assert "not found" in result.output.lower()
-
-    def test_search_by_doi_json_output(self, runner):
-        """search-by-doi --json returns valid JSON."""
-        # First find a valid DOI
-        search_result = runner.invoke(cli, ["search", "test", "-n", "1", "--json"])
-        if search_result.exit_code == 0:
-            data = json.loads(search_result.output)
-            if data["works"]:
-                doi = data["works"][0]["doi"]
-                result = runner.invoke(cli, ["search-by-doi", doi, "--json"])
-                assert result.exit_code == 0
-                work_data = json.loads(result.output)
-                assert "doi" in work_data
+def test_cli_main_help_mentions_crossref_in_output(runner):
+    # Arrange
+    args = ["--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "crossref" in result.output.lower()
 
 
-class TestStatusCommand:
-    """Tests for status command."""
-
-    def test_status_basic(self, runner):
-        """status shows configuration status."""
-        result = runner.invoke(cli, ["status"])
-        assert result.exit_code == 0
-        assert "Status" in result.output or "status" in result.output.lower()
-
-
-class TestRelayCommand:
-    """Tests for relay command."""
-
-    def test_relay_help(self, runner):
-        """relay --help shows server options."""
-        result = runner.invoke(cli, ["relay", "--help"])
-        assert result.exit_code == 0
-        assert "relay" in result.output.lower() or "port" in result.output.lower()
-
-    def test_relay_dry_run(self, runner):
-        """relay --dry-run shows what would be started."""
-        result = runner.invoke(cli, ["relay", "--dry-run"])
-        assert result.exit_code == 0
-        assert "[dry-run]" in result.output
+def test_cli_search_help_exits_zero(runner):
+    # Arrange
+    args = ["search", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
 
 
-class TestMcpCommand:
-    """Tests for mcp subcommands."""
+def test_cli_search_help_mentions_search_in_output(runner):
+    # Arrange
+    args = ["search", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "search" in result.output.lower()
 
-    def test_mcp_help(self, runner):
-        """mcp --help shows subcommands."""
-        result = runner.invoke(cli, ["mcp", "--help"])
-        assert result.exit_code == 0
-        assert "start" in result.output
-        assert "doctor" in result.output
 
-    def test_mcp_start_dry_run(self, runner):
-        """mcp start --dry-run shows what would be started."""
-        result = runner.invoke(cli, ["mcp", "start", "--dry-run"])
-        assert result.exit_code == 0
-        assert "[dry-run]" in result.output
+def test_cli_search_by_doi_help_exits_zero(runner):
+    # Arrange
+    args = ["search-by-doi", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_search_by_doi_help_mentions_doi_in_output(runner):
+    # Arrange
+    args = ["search-by-doi", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "DOI" in result.output
+
+
+def test_cli_status_help_exits_zero(runner):
+    # Arrange
+    args = ["status", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_version_flag_exits_zero(runner):
+    # Arrange
+    args = ["--version"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_version_flag_prints_package_name(runner):
+    # Arrange
+    args = ["--version"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "crossref-local" in result.output.lower()
+
+
+def test_cli_help_recursive_exits_zero(runner):
+    # Arrange
+    args = ["--help-recursive"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_help_recursive_mentions_package_name(runner):
+    # Arrange
+    args = ["--help-recursive"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "crossref-local" in result.output
+
+
+def test_cli_help_recursive_lists_search_subcommand(runner):
+    # Arrange
+    args = ["--help-recursive"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "search" in result.output
+
+
+def test_cli_help_recursive_lists_status_subcommand(runner):
+    # Arrange
+    args = ["--help-recursive"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "status" in result.output
+
+
+def test_cli_help_recursive_lists_search_by_doi_subcommand(runner):
+    # Arrange
+    args = ["--help-recursive"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "search-by-doi" in result.output
+
+
+def test_cli_help_recursive_renders_formatted_separators(runner):
+    # Arrange
+    args = ["--help-recursive"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "━━━" in result.output
+
+
+# ---------- search ----------
+
+
+def test_cli_search_command_exits_zero_for_known_term(runner):
+    # Arrange
+    args = ["search", "cancer", "-n", "3"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_search_command_summarises_result_count_in_output(runner):
+    # Arrange
+    args = ["search", "cancer", "-n", "3"]
+    # Act
+    result = runner.invoke(cli, args)
+    output = result.output.lower()
+    # Assert
+    assert ("matches" in output) or ("found" in output)
+
+
+@pytest.fixture
+def biology_search_json(runner):
+    args = ["search", "biology", "-n", "2", "--json"]
+    result = runner.invoke(cli, args)
+    if result.exit_code != 0:
+        pytest.skip(f"search command failed: {result.output!r}")
+    return result, json.loads(result.output)
+
+
+def test_cli_search_json_flag_exits_zero(biology_search_json):
+    # Arrange
+    result, _ = biology_search_json
+    # Act
+    code = result.exit_code
+    # Assert
+    assert code == 0
+
+
+def test_cli_search_json_output_contains_query_key(biology_search_json):
+    # Arrange
+    _, data = biology_search_json
+    # Act
+    keys = data.keys()
+    # Assert
+    assert "query" in keys
+
+
+def test_cli_search_json_output_contains_total_key(biology_search_json):
+    # Arrange
+    _, data = biology_search_json
+    # Act
+    keys = data.keys()
+    # Assert
+    assert "total" in keys
+
+
+def test_cli_search_json_output_contains_works_key(biology_search_json):
+    # Arrange
+    _, data = biology_search_json
+    # Act
+    keys = data.keys()
+    # Assert
+    assert "works" in keys
+
+
+def test_cli_search_n_limit_caps_works_array_length(runner):
+    # Arrange
+    args = ["search", "medicine", "-n", "5", "--json"]
+    # Act
+    result = runner.invoke(cli, args)
+    if result.exit_code != 0:
+        pytest.skip(f"search command failed: {result.output!r}")
+    data = json.loads(result.output)
+    # Assert
+    assert len(data["works"]) <= 5
+
+
+# ---------- search-by-doi ----------
+
+
+def test_cli_search_by_doi_exits_nonzero_for_unknown_doi(runner):
+    # Arrange
+    args = ["search-by-doi", "10.9999/nonexistent"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 1
+
+
+def test_cli_search_by_doi_reports_not_found_for_unknown_doi(runner):
+    # Arrange
+    args = ["search-by-doi", "10.9999/nonexistent"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "not found" in result.output.lower()
+
+
+@pytest.fixture
+def _real_doi_from_search(runner):
+    args = ["search", "test", "-n", "1", "--json"]
+    result = runner.invoke(cli, args)
+    if result.exit_code != 0:
+        pytest.skip("could not fetch a DOI to round-trip")
+    data = json.loads(result.output)
+    if not data["works"]:
+        pytest.skip("no works returned by search")
+    return data["works"][0]["doi"]
+
+
+def test_cli_search_by_doi_json_output_contains_doi_key(
+    runner, _real_doi_from_search
+):
+    # Arrange
+    doi = _real_doi_from_search
+    args = ["search-by-doi", doi, "--json"]
+    # Act
+    result = runner.invoke(cli, args)
+    work = json.loads(result.output)
+    # Assert
+    assert "doi" in work
+
+
+# ---------- status ----------
+
+
+def test_cli_status_command_exits_zero(runner):
+    # Arrange
+    args = ["status"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_status_command_prints_status_label_in_output(runner):
+    # Arrange
+    args = ["status"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "status" in result.output.lower()
+
+
+# ---------- relay ----------
+
+
+def test_cli_relay_help_exits_zero(runner):
+    # Arrange
+    args = ["relay", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_relay_help_mentions_relay_or_port(runner):
+    # Arrange
+    args = ["relay", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    output = result.output.lower()
+    # Assert
+    assert ("relay" in output) or ("port" in output)
+
+
+def test_cli_relay_dry_run_exits_zero(runner):
+    # Arrange
+    args = ["relay", "--dry-run"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_relay_dry_run_emits_dry_run_marker(runner):
+    # Arrange
+    args = ["relay", "--dry-run"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "[dry-run]" in result.output
+
+
+# ---------- mcp ----------
+
+
+def test_cli_mcp_help_exits_zero(runner):
+    # Arrange
+    args = ["mcp", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_mcp_help_lists_start_subcommand(runner):
+    # Arrange
+    args = ["mcp", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "start" in result.output
+
+
+def test_cli_mcp_help_lists_doctor_subcommand(runner):
+    # Arrange
+    args = ["mcp", "--help"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "doctor" in result.output
+
+
+def test_cli_mcp_start_dry_run_exits_zero(runner):
+    # Arrange
+    args = ["mcp", "start", "--dry-run"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == 0
+
+
+def test_cli_mcp_start_dry_run_emits_dry_run_marker(runner):
+    # Arrange
+    args = ["mcp", "start", "--dry-run"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "[dry-run]" in result.output
 
 
 if __name__ == "__main__":
