@@ -67,15 +67,24 @@ async def test_aio_search_respects_limit_argument_on_returned_works():
     assert len(results.works) <= limit
 
 
-@pytest.mark.asyncio
-async def test_aio_search_with_offset_yields_distinct_first_doi_from_page_zero():
-    # Arrange
+@pytest.fixture
+async def _aio_neuroscience_paging():
+    """Return (page1, page2) for offset paging, or skip if too few hits."""
     page1 = await aio.search("neuroscience", limit=5, offset=0)
     if len(page1.works) < 5:
         pytest.skip("not enough hits for paging assertion")
     page2 = await aio.search("neuroscience", limit=5, offset=5)
     if not page2.works:
         pytest.skip("offset page empty in this fixture")
+    return page1, page2
+
+
+@pytest.mark.asyncio
+async def test_aio_search_with_offset_yields_distinct_first_doi_from_page_zero(
+    _aio_neuroscience_paging,
+):
+    # Arrange
+    page1, page2 = _aio_neuroscience_paging
     # Act
     same = page1.works[0].doi == page2.works[0].doi
     # Assert

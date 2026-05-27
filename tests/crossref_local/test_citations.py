@@ -419,11 +419,8 @@ def test_citation_network_to_networkx_returns_digraph_when_networkx_available(
     sample_doi,
 ):
     # Arrange
+    nx = pytest.importorskip("networkx")
     network = CitationNetwork(sample_doi, depth=0)
-    try:
-        import networkx as nx
-    except ImportError:
-        pytest.skip("networkx not installed")
     # Act
     graph = network.to_networkx()
     # Assert

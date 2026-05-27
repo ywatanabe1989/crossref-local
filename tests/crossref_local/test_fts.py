@@ -75,14 +75,21 @@ def test_search_respects_limit_argument_for_returned_works():
     assert len(results.works) <= limit
 
 
-def test_search_with_offset_skips_already_returned_dois():
-    # Arrange
+@pytest.fixture
+def _neuroscience_paging():
+    """Two-page neuroscience search, or skip when the fixture is too small."""
     page1 = search("neuroscience", limit=5, offset=0)
     if len(page1.works) < 5:
         pytest.skip("not enough hits to validate offset")
     page2 = search("neuroscience", limit=5, offset=5)
-    if len(page2.works) < 1:
+    if not page2.works:
         pytest.skip("offset page is empty in this fixture")
+    return page1, page2
+
+
+def test_search_with_offset_skips_already_returned_dois(_neuroscience_paging):
+    # Arrange
+    page1, page2 = _neuroscience_paging
     # Act
     same = page1.works[0].doi == page2.works[0].doi
     # Assert

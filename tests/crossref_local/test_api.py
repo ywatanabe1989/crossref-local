@@ -66,14 +66,23 @@ def test_search_results_works_length_respects_limit_argument():
     assert len(results.works) <= limit
 
 
-def test_search_with_offset_returns_distinct_first_doi_from_first_page():
-    # Arrange
+@pytest.fixture
+def _neuroscience_paging():
+    """Two pages of neuroscience hits, or skip if the fixture is too small."""
     first = search("neuroscience", limit=5, offset=0)
     if len(first.works) < 5:
         pytest.skip("not enough hits to validate offset semantics")
     second = search("neuroscience", limit=5, offset=5)
     if not second.works:
         pytest.skip("offset page is empty in this fixture")
+    return first, second
+
+
+def test_search_with_offset_returns_distinct_first_doi_from_first_page(
+    _neuroscience_paging,
+):
+    # Arrange
+    first, second = _neuroscience_paging
     # Act
     same = first.works[0].doi == second.works[0].doi
     # Assert
@@ -154,12 +163,17 @@ def test_count_returns_positive_value_for_cancer_query():
 # ---------- exists() ----------
 
 
-def test_exists_returns_true_for_known_doi():
-    # Arrange
+@pytest.fixture
+def _quantum_doi():
     results = search("quantum", limit=1)
     if not results.works:
         pytest.skip("no quantum hits in fixture DB")
-    doi = results.works[0].doi
+    return results.works[0].doi
+
+
+def test_exists_returns_true_for_known_doi(_quantum_doi):
+    # Arrange
+    doi = _quantum_doi
     # Act
     present = exists(doi)
     # Assert
@@ -245,11 +259,17 @@ def test_enrich_preserves_total_from_input_search_result():
     assert enriched.total == results.total
 
 
-def test_enrich_preserves_works_count_from_input_search_result():
-    # Arrange
+@pytest.fixture
+def _quantum_search_result():
     results = search("quantum", limit=1)
     if not results.works:
         pytest.skip("no quantum hits in fixture DB")
+    return results
+
+
+def test_enrich_preserves_works_count_from_input_search_result(_quantum_search_result):
+    # Arrange
+    results = _quantum_search_result
     # Act
     enriched = enrich(results)
     # Assert
@@ -283,12 +303,17 @@ def test_enrich_dois_returns_only_work_instances(_ml_dois):
     assert all(isinstance(w, Work) for w in works)
 
 
-def test_enrich_dois_returns_no_more_works_than_dois_supplied():
-    # Arrange
+@pytest.fixture
+def _neuroscience_dois():
     results = search("neuroscience", limit=3)
     if not results.works:
         pytest.skip("no neuroscience hits in fixture DB")
-    dois = [w.doi for w in results.works]
+    return [w.doi for w in results.works]
+
+
+def test_enrich_dois_returns_no_more_works_than_dois_supplied(_neuroscience_dois):
+    # Arrange
+    dois = _neuroscience_dois
     # Act
     works = enrich_dois(dois)
     # Assert

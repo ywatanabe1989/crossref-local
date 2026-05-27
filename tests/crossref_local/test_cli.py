@@ -219,16 +219,22 @@ def test_cli_search_json_output_contains_works_key(biology_search_json):
     assert "works" in keys
 
 
-def test_cli_search_n_limit_caps_works_array_length(runner):
-    # Arrange
+@pytest.fixture
+def medicine_search_json(runner):
     args = ["search", "medicine", "-n", "5", "--json"]
-    # Act
     result = runner.invoke(cli, args)
     if result.exit_code != 0:
         pytest.skip(f"search command failed: {result.output!r}")
-    data = json.loads(result.output)
+    return json.loads(result.output)
+
+
+def test_cli_search_n_limit_caps_works_array_length(medicine_search_json):
+    # Arrange
+    data = medicine_search_json
+    # Act
+    n_works = len(data["works"])
     # Assert
-    assert len(data["works"]) <= 5
+    assert n_works <= 5
 
 
 # ---------- search-by-doi ----------
