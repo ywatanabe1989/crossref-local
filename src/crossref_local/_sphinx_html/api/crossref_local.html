@@ -132,14 +132,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#data-classes">Data Classes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#work">Work</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#crossref_local.Work"><code class="docutils literal notranslate"><span class="pre">Work</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#searchresult">SearchResult</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#crossref_local.SearchResult"><code class="docutils literal notranslate"><span class="pre">SearchResult</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#work">Work</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#searchresult">SearchResult</a></li>
 </ul>
 </li>
 </ul>
@@ -189,7 +183,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#crossref_local.SearchResult" title="crossref_local._core.models.SearchResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchResult</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchResult</span></code></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SearchResult with matching works</p>
@@ -214,7 +208,7 @@
 <dd class="field-odd"><p><strong>doi</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Digital Object Identifier</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#crossref_local.Work" title="crossref_local._core.models.Work"><code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code></a>]</span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code>]</span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Work object or None if not found</p>
@@ -239,7 +233,7 @@
 <dd class="field-odd"><p><strong>dois</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – List of DOIs</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="#crossref_local.Work" title="crossref_local._core.models.Work"><code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code></a>]</span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code>]</span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List of Work objects (missing DOIs are skipped)</p>
@@ -335,13 +329,13 @@ fetches full metadata for each work, adding citation counts and references.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>results</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#crossref_local.SearchResult" title="crossref_local._core.models.SearchResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchResult</span></code></a></span>) – SearchResult from search()</p></li>
+<li><p><strong>results</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchResult</span></code></span>) – SearchResult from search()</p></li>
 <li><p><strong>include_citations</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Include citation counts</p></li>
 <li><p><strong>include_references</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Include reference DOIs</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#crossref_local.SearchResult" title="crossref_local._core.models.SearchResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchResult</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchResult</span></code></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SearchResult with enriched works</p>
@@ -374,7 +368,7 @@ and reference lists.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="#crossref_local.Work" title="crossref_local._core.models.Work"><code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code></a>]</span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code>]</span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List of Work objects with full metadata</p>
@@ -425,187 +419,187 @@ and reference lists.</p>
 <section id="work">
 <h3>Work<a class="headerlink" href="#work" title="Link to this heading"></a></h3>
 <dl class="py class">
-<dt class="sig sig-object py" id="crossref_local.Work">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">crossref_local.</span></span><span class="sig-name descname"><span class="pre">Work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publisher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">citation_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.Work" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">crossref_local.</span></span><span class="sig-name descname"><span class="pre">Work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publisher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">citation_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Represents a scholarly work from CrossRef.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.doi">
-<span class="sig-name descname"><span class="pre">doi</span></span><a class="headerlink" href="#crossref_local.Work.doi" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">doi</span></span></dt>
 <dd><p>Digital Object Identifier</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.title">
-<span class="sig-name descname"><span class="pre">title</span></span><a class="headerlink" href="#crossref_local.Work.title" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">title</span></span></dt>
 <dd><p>Work title</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.authors">
-<span class="sig-name descname"><span class="pre">authors</span></span><a class="headerlink" href="#crossref_local.Work.authors" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">authors</span></span></dt>
 <dd><p>List of author names</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.year">
-<span class="sig-name descname"><span class="pre">year</span></span><a class="headerlink" href="#crossref_local.Work.year" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">year</span></span></dt>
 <dd><p>Publication year</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.journal">
-<span class="sig-name descname"><span class="pre">journal</span></span><a class="headerlink" href="#crossref_local.Work.journal" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">journal</span></span></dt>
 <dd><p>Journal/container title</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.issn">
-<span class="sig-name descname"><span class="pre">issn</span></span><a class="headerlink" href="#crossref_local.Work.issn" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">issn</span></span></dt>
 <dd><p>Journal ISSN</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.volume">
-<span class="sig-name descname"><span class="pre">volume</span></span><a class="headerlink" href="#crossref_local.Work.volume" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">volume</span></span></dt>
 <dd><p>Volume number</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.issue">
-<span class="sig-name descname"><span class="pre">issue</span></span><a class="headerlink" href="#crossref_local.Work.issue" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">issue</span></span></dt>
 <dd><p>Issue number</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.page">
-<span class="sig-name descname"><span class="pre">page</span></span><a class="headerlink" href="#crossref_local.Work.page" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">page</span></span></dt>
 <dd><p>Page range</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.publisher">
-<span class="sig-name descname"><span class="pre">publisher</span></span><a class="headerlink" href="#crossref_local.Work.publisher" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">publisher</span></span></dt>
 <dd><p>Publisher name</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.type">
-<span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#crossref_local.Work.type" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">type</span></span></dt>
 <dd><p>Work type (journal-article, book-chapter, etc.)</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.abstract">
-<span class="sig-name descname"><span class="pre">abstract</span></span><a class="headerlink" href="#crossref_local.Work.abstract" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">abstract</span></span></dt>
 <dd><p>Abstract text (if available)</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.url">
-<span class="sig-name descname"><span class="pre">url</span></span><a class="headerlink" href="#crossref_local.Work.url" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">url</span></span></dt>
 <dd><p>Resource URL</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.citation_count">
-<span class="sig-name descname"><span class="pre">citation_count</span></span><a class="headerlink" href="#crossref_local.Work.citation_count" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">citation_count</span></span></dt>
 <dd><p>Number of citations (if available)</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.references">
-<span class="sig-name descname"><span class="pre">references</span></span><a class="headerlink" href="#crossref_local.Work.references" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">references</span></span></dt>
 <dd><p>List of reference DOIs</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">doi</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">doi</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id1">
-<span class="sig-name descname"><span class="pre">title</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">title</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id2">
-<span class="sig-name descname"><span class="pre">authors</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">authors</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id3">
-<span class="sig-name descname"><span class="pre">year</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">year</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id4">
-<span class="sig-name descname"><span class="pre">journal</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">journal</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id5">
-<span class="sig-name descname"><span class="pre">issn</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">issn</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id6">
-<span class="sig-name descname"><span class="pre">volume</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">volume</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id7">
-<span class="sig-name descname"><span class="pre">issue</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">issue</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id8">
-<span class="sig-name descname"><span class="pre">page</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">page</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id9">
-<span class="sig-name descname"><span class="pre">publisher</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id9" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">publisher</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id10">
-<span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id10" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id11">
-<span class="sig-name descname"><span class="pre">abstract</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id11" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">abstract</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id12">
-<span class="sig-name descname"><span class="pre">url</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id12" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">url</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id13">
-<span class="sig-name descname"><span class="pre">citation_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id13" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">citation_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id14">
-<span class="sig-name descname"><span class="pre">references</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#id14" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">references</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.impact_factor">
-<span class="sig-name descname"><span class="pre">impact_factor</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#crossref_local.Work.impact_factor" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">impact_factor</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.Work.impact_factor_source">
-<span class="sig-name descname"><span class="pre">impact_factor_source</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#crossref_local.Work.impact_factor_source" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">impact_factor_source</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.Work.from_metadata">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.from_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.Work.from_metadata" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.from_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Create Work from CrossRef metadata JSON.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -615,7 +609,7 @@ and reference lists.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#crossref_local.Work" title="crossref_local._core.models.Work"><code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Work</span></code></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Work instance</p>
@@ -624,8 +618,8 @@ and reference lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.Work.to_dict">
-<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.Work.to_dict" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert to dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -635,8 +629,8 @@ and reference lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.Work.citation">
-<span class="sig-name descname"><span class="pre">citation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'apa'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.citation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.Work.citation" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">citation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'apa'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.citation"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Format as citation string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -652,8 +646,8 @@ and reference lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.Work.to_text">
-<span class="sig-name descname"><span class="pre">to_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.to_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.Work.to_text" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">to_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.to_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Format as human-readable text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -669,8 +663,8 @@ and reference lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.Work.to_bibtex">
-<span class="sig-name descname"><span class="pre">to_bibtex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.to_bibtex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.Work.to_bibtex" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">to_bibtex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.to_bibtex"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Format as BibTeX entry.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -683,8 +677,8 @@ and reference lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.Work.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.Work.save" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#Work.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Save work to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -711,8 +705,8 @@ and reference lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.Work.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publisher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">citation_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crossref_local.Work.__init__" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publisher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">citation_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impact_factor_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -721,67 +715,67 @@ and reference lists.</p>
 <section id="searchresult">
 <h3>SearchResult<a class="headerlink" href="#searchresult" title="Link to this heading"></a></h3>
 <dl class="py class">
-<dt class="sig sig-object py" id="crossref_local.SearchResult">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">crossref_local.</span></span><span class="sig-name descname"><span class="pre">SearchResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">works</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#SearchResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.SearchResult" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">crossref_local.</span></span><span class="sig-name descname"><span class="pre">SearchResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">works</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#SearchResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Container for search results with metadata.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.SearchResult.works">
-<span class="sig-name descname"><span class="pre">works</span></span><a class="headerlink" href="#crossref_local.SearchResult.works" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">works</span></span></dt>
 <dd><p>List of Work objects</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.SearchResult.total">
-<span class="sig-name descname"><span class="pre">total</span></span><a class="headerlink" href="#crossref_local.SearchResult.total" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">total</span></span></dt>
 <dd><p>Total number of matches</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.SearchResult.query">
-<span class="sig-name descname"><span class="pre">query</span></span><a class="headerlink" href="#crossref_local.SearchResult.query" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">query</span></span></dt>
 <dd><p>Original search query</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.SearchResult.elapsed_ms">
-<span class="sig-name descname"><span class="pre">elapsed_ms</span></span><a class="headerlink" href="#crossref_local.SearchResult.elapsed_ms" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">elapsed_ms</span></span></dt>
 <dd><p>Search time in milliseconds</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="crossref_local.SearchResult.limit_info">
-<span class="sig-name descname"><span class="pre">limit_info</span></span><a class="headerlink" href="#crossref_local.SearchResult.limit_info" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">limit_info</span></span></dt>
 <dd><p>Information about result limiting</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id15">
-<span class="sig-name descname"><span class="pre">works</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#crossref_local.Work" title="crossref_local._core.models.Work"><span class="pre">Work</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#id15" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">works</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Work</span><span class="p"><span class="pre">]</span></span></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id16">
-<span class="sig-name descname"><span class="pre">total</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#id16" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">total</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id17">
-<span class="sig-name descname"><span class="pre">query</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#id17" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id18">
-<span class="sig-name descname"><span class="pre">elapsed_ms</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#id18" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">elapsed_ms</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id19">
-<span class="sig-name descname"><span class="pre">limit_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">LimitInfo</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id19" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">limit_info</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">LimitInfo</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.SearchResult.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#SearchResult.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crossref_local.SearchResult.save" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_abstract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/crossref_local/_core/models.html#SearchResult.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Save search results to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -810,8 +804,8 @@ and reference lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="crossref_local.SearchResult.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">works</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crossref_local.SearchResult.__init__" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">works</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd></dd></dl>
 
 </dd></dl>

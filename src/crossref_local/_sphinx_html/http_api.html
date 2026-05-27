@@ -133,14 +133,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/crossref_local.html#data-classes">Data Classes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/crossref_local.html#work">Work</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/crossref_local.html#crossref_local.Work"><code class="docutils literal notranslate"><span class="pre">Work</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="api/crossref_local.html#searchresult">SearchResult</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/crossref_local.html#crossref_local.SearchResult"><code class="docutils literal notranslate"><span class="pre">SearchResult</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="api/crossref_local.html#work">Work</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/crossref_local.html#searchresult">SearchResult</a></li>
 </ul>
 </li>
 </ul>
@@ -185,28 +179,28 @@
 <h2>Endpoints<a class="headerlink" href="#endpoints" title="Link to this heading"></a></h2>
 <section id="root">
 <h3>Root<a class="headerlink" href="#root" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /
 </pre></div>
 </div>
 <p>Returns API information and available endpoints.</p>
 </section>
 <section id="health-check">
 <h3>Health Check<a class="headerlink" href="#health-check" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /health</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /health
 </pre></div>
 </div>
 <p>Returns server health status.</p>
 </section>
 <section id="database-info">
 <h3>Database Info<a class="headerlink" href="#database-info" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /info</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /info
 </pre></div>
 </div>
 <p>Returns database statistics (total works, FTS indexed count).</p>
 </section>
 <section id="search-works">
 <h3>Search Works<a class="headerlink" href="#search-works" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /works?q=&lt;query&gt;&amp;limit=&lt;n&gt;&amp;offset=&lt;n&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /works?q=&lt;query&gt;&amp;limit=&lt;n&gt;&amp;offset=&lt;n&gt;
 </pre></div>
 </div>
 <p>Parameters:</p>
@@ -241,7 +235,7 @@
 </section>
 <section id="get-work-by-doi">
 <h3>Get Work by DOI<a class="headerlink" href="#get-work-by-doi" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /works/{doi}</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /works/{doi}
 </pre></div>
 </div>
 <p>Example:</p>
@@ -251,7 +245,7 @@
 </section>
 <section id="batch-lookup">
 <h3>Batch Lookup<a class="headerlink" href="#batch-lookup" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">POST /works/batch</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>POST /works/batch
 </pre></div>
 </div>
 <p>Request body:</p>
@@ -266,28 +260,28 @@
 <h2>Citations<a class="headerlink" href="#citations" title="Link to this heading"></a></h2>
 <section id="get-citing-papers">
 <h3>Get Citing Papers<a class="headerlink" href="#get-citing-papers" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /citations/{doi}/citing?limit=&lt;n&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /citations/{doi}/citing?limit=&lt;n&gt;
 </pre></div>
 </div>
 <p>Returns DOIs of papers that cite the given work.</p>
 </section>
 <section id="get-cited-papers">
 <h3>Get Cited Papers<a class="headerlink" href="#get-cited-papers" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /citations/{doi}/cited?limit=&lt;n&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /citations/{doi}/cited?limit=&lt;n&gt;
 </pre></div>
 </div>
 <p>Returns DOIs of papers that the given work cites (references).</p>
 </section>
 <section id="citation-count">
 <h3>Citation Count<a class="headerlink" href="#citation-count" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /citations/{doi}/count</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /citations/{doi}/count
 </pre></div>
 </div>
 <p>Returns the number of citations for a work.</p>
 </section>
 <section id="citation-network">
 <h3>Citation Network<a class="headerlink" href="#citation-network" title="Link to this heading"></a></h3>
-<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">GET /citations/{doi}/network?depth=&lt;n&gt;&amp;max_citing=&lt;n&gt;&amp;max_cited=&lt;n&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /citations/{doi}/network?depth=&lt;n&gt;&amp;max_citing=&lt;n&gt;&amp;max_cited=&lt;n&gt;
 </pre></div>
 </div>
 <p>Returns a citation network graph.</p>
