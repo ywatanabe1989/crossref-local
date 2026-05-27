@@ -9,8 +9,9 @@ import shutil
 import pytest
 
 
-def test_scitex_dev_audit_all_reports_clean_for_crossref_local():
-    # Arrange
+@pytest.fixture
+def audit_all_runner():
+    """Yield the scitex-dev audit-all callable, or skip if CLI absent."""
     if shutil.which("scitex-dev") is None:
         pytest.skip(
             "scitex-dev not installed — add `scitex-dev[cli-audit]` "
@@ -18,8 +19,13 @@ def test_scitex_dev_audit_all_reports_clean_for_crossref_local():
         )
     from scitex_dev.testing import audit_all_for_package
 
-    # Act
-    result = audit_all_for_package("crossref-local")
+    return audit_all_for_package
 
+
+def test_scitex_dev_audit_all_reports_clean_for_crossref_local(audit_all_runner):
+    # Arrange
+    distribution = "crossref-local"
+    # Act
+    result = audit_all_runner(distribution)
     # Assert
     assert result is None

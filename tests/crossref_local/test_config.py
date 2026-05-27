@@ -76,28 +76,41 @@ def test_get_db_path_includes_offending_path_in_error_message(crossref_local_db_
     assert "/nonexistent/path.db" in msg
 
 
-def test_get_db_path_autodetects_existing_default_database():
-    # Arrange
+@pytest.fixture
+def _auto_detected_db_path():
+    """Return the auto-detected DB path, or skip if none available."""
     Config.reset()
-    # Act
     try:
-        path = get_db_path()
+        return get_db_path()
     except FileNotFoundError:
         pytest.skip("No database available for auto-detection test")
+
+
+def test_get_db_path_autodetects_existing_default_database(_auto_detected_db_path):
+    # Arrange
+    path = _auto_detected_db_path
+    # Act
+    exists = path.exists()
     # Assert
-    assert path.exists()
+    assert exists
 
 
 # ---------- Config ----------
 
 
-def test_config_get_db_path_caches_result_across_calls():
-    # Arrange
+@pytest.fixture
+def _first_resolved_db_path():
+    """Return Config.get_db_path() once; skip if no DB available."""
     Config.reset()
     try:
-        first = Config.get_db_path()
+        return Config.get_db_path()
     except FileNotFoundError:
         pytest.skip("No database available")
+
+
+def test_config_get_db_path_caches_result_across_calls(_first_resolved_db_path):
+    # Arrange
+    first = _first_resolved_db_path
     # Act
     second = Config.get_db_path()
     # Assert
