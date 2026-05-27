@@ -9,7 +9,8 @@ import shutil
 import pytest
 
 
-def test_audit_all_clean():
+def test_scitex_dev_audit_all_reports_clean_for_crossref_local():
+    # Arrange
     if shutil.which("scitex-dev") is None:
         pytest.skip(
             "scitex-dev not installed — add `scitex-dev[cli-audit]` "
@@ -17,4 +18,8 @@ def test_audit_all_clean():
         )
     from scitex_dev.testing import audit_all_for_package
 
-    audit_all_for_package('crossref-local')
+    # Act
+    result = audit_all_for_package("crossref-local")
+
+    # Assert
+    assert result is None
