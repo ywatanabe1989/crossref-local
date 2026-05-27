@@ -31,7 +31,7 @@ except Exception:
     pass
 
 # Test database path
-TEST_DB_PATH = Path(__file__).parent / "fixtures" / "test_crossref.db"
+TEST_DB_PATH = Path(__file__).parent / "crossref_local" / "fixtures" / "test_crossref.db"
 
 # Module-name allowlist of tests that DON'T need the local CrossRef DB
 # (everything else gets auto-skipped when the DB is missing).
@@ -67,7 +67,7 @@ def pytest_configure(config):
 
     Resolution order:
 
-    1. Fixture DB at `tests/fixtures/test_crossref.db` (CI / local smoke).
+    1. Fixture DB at `tests/crossref_local/fixtures/test_crossref.db` (CI / local smoke).
     2. Any path in `DEFAULT_DB_PATHS` (includes
        `~/proj/crossref-local/data/crossref.db` — the canonical
        db-host-side install location).
